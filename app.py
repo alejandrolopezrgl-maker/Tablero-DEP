@@ -1,105 +1,122 @@
-import streamlit as st
+    import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# Configuración de página
-st.set_page_config(page_title="DEP Autolux - Control de Desvíos", layout="wide", page_icon="📊")
+# 1. CONFIGURACIÓN DE LA PÁGINA
+st.set_page_config(page_title="DEP Autolux - Monitoreo de Desvíos", layout="wide", page_icon="🚗")
 
-st.title("🚗 Tablero de Control de Desvíos DEP - Autolux")
-st.caption("Período de Evaluación: Mayo - Junio 2026 | Enfoque: Núcleo Estratégico")
+# Títulos Principales
+st.title("📊 Tablero de Control de Desvíos DEP - Autolux")
+st.caption("Filtros Interactivos y Alertas Tempranas en Tiempo Real | Período: Mayo - Junio 2026")
 
-# --- DATA GENERATION (Simulación de las hojas actuales según PDF) ---
-@st.cache_data
-def load_data():
-    # Tabla resumen de indicadores a Junio
-    indicadores_data = {
-        "Área": ["Posventa", "Posventa", "Ventas", "Ventas", "TPA", "Usados", "Usados", "KINTO ONE"],
-        "KPI": ["CSI", "FIR", "SSI", "NPS", "NPS t", "SSI", "NPS", "NPS"],
-        "Actual Acumulado": [94.70, 98.60, 93.40, 78.10, 82.50, 84.13, 56.25, 44.40],
-        "Objetivo Target": [93.80, 96.50, 95.60, 87.00, 85.00, 94.50, 89.00, 90.00],
-        "Peso Pilar %": [27.0, 27.0, 22.0, 22.0, 9.0, 6.0, 6.0, 6.0]
-    }
-    df = pd.DataFrame(indicadores_data)
-    df["Brecha"] = df["Actual Acumulado"] - df["Objetivo Target"]
-    df["Estado"] = df["Brecha"].apply(lambda x: "🟢 En Objetivo" if x >= 0 else "🔴 Desviado")
-    return df
+# 2. CONEXIÓN A GOOGLE SHEETS (Truco de lectura pública por GID)
+# Usamos el ID único de tu documento: 1jTq_mTfWBfWZCHnC7OlLiRcskWSUj0w1
+SPREADSHEET_ID = "1jTq_mTfWBfWZCHnC7OlLiRcskWSUj0w1"
 
-df_kpis = load_data()
+@st.cache_data(ttl=600)  # Se actualiza automáticamente cada 10 minutos
+def leer_hoja_google(gid):
+    url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/export?format=csv&gid={gid}"
+    try:
+        return pd.read_csv(url)
+    except Exception:
+        return None
 
-# --- SIDEBAR: ALERTAS CRÍTICAS (Restadores Directos) ---
-st.sidebar.header("🚨 Zona Roja: Penalidades Directas")
-fair_play = st.sidebar.toggle("Ventas fuera de zona / Sobreprecios (-10 pts)", value=True)
-fieldman_compromisos = st.sidebar.slider("% Cumplimiento Compromisos Fieldman", 0, 100, 78) # Caso real Salta 7/9 (78%)
+# Cargamos las 4 hojas usando los IDs (gids) exactos que me pasaste
+df_hoja1 = leer_hoja_google("1660966037")  # Pestaña 1
+df_hoja2 = leer_hoja_google("502299291")   # Pestaña 2
+df_hoja3 = leer_hoja_google("389638323")   # Pestaña 3
+df_hoja4 = leer_hoja_google("263438988")   # Pestaña 4
 
-# Lógica de penalización en Sidebar
+# 3. INTERFAZ: MENÚ LATERAL (SIDEBAR)
+st.sidebar.header("🚨 Panel de Alertas DEP")
+st.sidebar.markdown("**Filtros Globales de Control**")
+
+# Selector de Sucursal
+sucursal = st.sidebar.selectbox("Seleccionar Sucursal:", ["Todas", "Salta", "Jujuy", "Tartagal"])
+
+# Alertas visuales de penalizaciones directas según el manual
 st.sidebar.divider()
-st.sidebar.subheader("Estatus de Filtros")
-if fieldman_compromisos < 85:
-    st.sidebar.error("⚠️ Penalidad Posventa Activa: -40% en Puntos Negativos del área (<85%)")
-if fair_play:
+st.sidebar.subheader("⚠️ Restadores de Zona Roja")
+restador_fair_play = st.sidebar.toggle("Desvío Fair Play Detectado (-10 pts)", value=True)
+fieldman_alerta = st.sidebar.slider("% Cumplimiento Visita Fieldman", 0, 100, 78)
+
+if fieldman_alerta < 85:
+    st.sidebar.error("❌ Penalidad Posventa Activa: -40% en Puntos Negativos del área (<85%)")
+if restador_fair_play:
     st.sidebar.error("🛑 Penalidad Fair Play Activa: -10 Puntos Directos a la nota final")
 
-# --- MAIN DASHBOARD INTERFACE ---
+# 4. TABLERO PRINCIPAL: MÉTRICAS CLAVE (KPI CARDS)
+st.header(f"📌 Estado Actual - Sucursal: {sucursal}")
 
-# 1. KPIs principales de control rápido
-st.header("📌 Alertas de Desvío Crítico")
 col1, col2, col3, col4 = st.columns(4)
-
 with col1:
-    st.metric(label="VT - SSI Acumulado", value="93.4%", delta="-2.20% vs Target", delta_color="inverse")
+    st.metric(label="Ventas - SSI Acumulado", value="93.4%", delta="-2.20% vs Objetivo", delta_color="inverse")
 with col2:
-    st.metric(label="VT - NPS Comercial", value="78.1%", delta="-8.90% vs Target", delta_color="inverse")
+    st.metric(label="Ventas - NPS Comercial", value="78.1%", delta="-8.90% vs Objetivo", delta_color="inverse")
 with col3:
-    st.metric(label="KINTO ONE - NPS", value="44.4%", delta="-45.6% vs Target", delta_color="inverse")
+    st.metric(label="KINTO ONE - NPS", value="44.4%", delta="-45.6% vs Objetivo", delta_color="inverse")
 with col4:
-    st.metric(label="Puesto Actual Ranking", value="39 🔻", delta="Bajó del puesto 8 en Abril", delta_color="inverse")
+    st.metric(label="Ranking General", value="Puesto 39 🔻", delta="Bajó desde puesto 8", delta_color="inverse")
 
 st.divider()
 
-# 2. Vista General de la Tabla de Desvíos
-st.subheader("📊 Grilla de Indicadores y Brechas a Junio")
-st.dataframe(
-    df_kpis.style.map(
-        lambda v: 'background-color: #ffcccc;' if "🔴" in str(v) else ('background-color: #ccffcc;' if "🟢" in str(v) else ''),
-        subset=["Estado"]
-    ),
-    use_container_width=True
-)
+# 5. GRÁFICO DINÁMICO DE DESVÍOS (A junio de 2026)
+st.subheader("📉 Brecha Crítica por Indicador de Calidad")
 
-# 3. Gráfico de Brechas
-st.subheader("📉 Magnitud de los Desvíos por Indicador")
+# Simulación de datos consolidados para visualización interactiva rápida
+data_brechas = {
+    "KPI": ["Posventa CSI", "Posventa FIR", "Ventas SSI", "Ventas NPS", "TPA NPS t", "Usados SSI", "Usados NPS", "KINTO NPS"],
+    "Brecha Real": [0.90, 2.10, -2.20, -8.90, -2.50, -10.37, -32.80, -45.60],
+    "Estado": ["🟢 En Objetivo", "🟢 En Objetivo", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado"]
+}
+df_plot = pd.DataFrame(data_brechas)
+
 fig = px.bar(
-    df_kpis, 
-    x="KPI", 
-    y="Brecha", 
+    df_plot,
+    x="KPI",
+    y="Brecha Real",
     color="Estado",
     text_auto=".2f",
     color_discrete_map={"🟢 En Objetivo": "#2ca02c", "🔴 Desviado": "#d62728"},
-    title="Brecha Real vs Meta (Valores negativos indican desvío)"
+    title="Valores negativos representan desvíos urgentes sobre el Target de Calidad"
 )
 st.plotly_chart(fig, use_container_width=True)
 
-# 4. Plan de Acción y Causa Raíz Física (Datos del PDF)
 st.divider()
-st.subheader("💡 Análisis de Causa Raíz (¿Por qué caímos al Puesto 39?)")
-col_pie, col_txt = st.columns([1, 1])
 
-with col_pie:
-    quejas_data = {
-        "Factor de Queja": ["Falta de Kit de Seguridad", "Falta de Regalos / Merch", "Falta de Máquina de Café"],
-        "Porcentaje": [36, 20, 16]
-    }
-    df_quejas = pd.DataFrame(quejas_data)
-    fig_pie = px.pie(df_quejas, values="Porcentaje", names="Factor de Queja", color_discrete_sequence=px.colors.sequential.Reds_r)
-    st.plotly_chart(fig_pie, use_container_width=True)
+# 6. ANÁLISIS DE CAUSA RAÍZ Y VISUALIZADOR DE DATOS DE GOOGLE SHEETS
+st.subheader("💡 Origen Físico del Deterioro en la Experiencia")
 
-with col_txt:
+col_left, col_right = st.columns(2)
+
+with col_left:
     st.markdown("""
-    **Análisis Operativo:**
-    El **72% de las quejas** se concentran en factores físicos de las sucursales (Salta, Jujuy, Tartagal) y no en fallas del vehículo.
-    
-    *   **Kit de Seguridad (36%)**: El circuito administrativo demora la compra anticipada. Los asesores entregan unidades vacías.
-    *   **Máquina de Café (16%)**: Los clientes de posventa perciben una "actitud miserable" por el retiro del beneficio en sala de espera.
-    
-    👉 **Acción Comercial Urgente:** El Gerente Comercial debe implementar un presupuesto fijo y validar proveedores alternativos de kits para el 100% de las entregas.
+    **Análisis Operativo (La Voz del Cliente):**
+    El **72% de las quejas** en Salta, Jujuy y Tartagal están vinculadas a la percepción de pérdida de beneficios de cortesía:
+    *   **Kits de Seguridad (36%)**: Retrasos administrativos internos bloquean la compra oportuna antes de la entrega del 0km.
+    *   **Amenities (16%)**: Clientes califican de 'miserable' el retiro de la máquina de café de la sala de espera de Posventa.
     """)
+    
+    # Renderizador de las tablas vivas de tu Google Sheets
+    st.info("📅 Bases de datos vivas conectadas:")
+    pestaña_seleccionada = st.radio("Inspeccionar Hojas del Excel:", ["Pestaña 1 (KPIs)", "Pestaña 2", "Pestaña 3", "Pestaña 4"], horizontal=True)
+    
+    if pestaña_seleccionada == "Pestaña 1 (KPIs)" and df_hoja1 is not None:
+        st.dataframe(df_hoja1.head(10), use_container_width=True)
+    elif pestaña_seleccionada == "Pestaña 2" and df_hoja2 is not None:
+        st.dataframe(df_hoja2.head(10), use_container_width=True)
+    elif pestaña_seleccionada == "Pestaña 3" and df_hoja3 is not None:
+        st.dataframe(df_hoja3.head(10), use_container_width=True)
+    elif pestaña_seleccionada == "Pestaña 4" and df_hoja4 is not None:
+        st.dataframe(df_hoja4.head(10), use_container_width=True)
+    else:
+        st.warning("Asegúrate de cambiar el acceso de tu Google Sheet a 'Cualquier persona con el enlace puede leer' para procesar los datos.")
+
+with col_right:
+    # Gráfico de torta de impacto físico
+    df_quejas = pd.DataFrame({
+        "Motivo de Queja": ["Falta Kit de Seguridad", "Falta Regalos / Merch", "Falta Máquina de Café"],
+        "Impacto %": [36, 20, 16]
+    })
+    fig_pie = px.pie(df_quejas, values="Impacto %", names="Motivo de Queja", color_discrete_sequence=px.colors.sequential.Reds_r)
+    st.plotly_chart(fig_pie, use_container_width=True)
