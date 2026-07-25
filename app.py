@@ -88,7 +88,7 @@ st.divider()
 
 # 6. ANÁLISIS DE CAUSA RAÍZ (LA VOZ DEL CLIENTE)
 st.subheader("🕵️ Causa Raíz Física: El Deterioro de la Experiencia en Sucursal")
-col_graf, col_txt = st.columns([1, 1])
+col_graf, col_txt = st.columns()
 
 with col_graf:
     # Datos exactos del gráfico de torta de quejas del reporte
@@ -125,22 +125,16 @@ st.subheader("📋 Plan de Acción Comercial - Seguimiento Operativo")
 plan_data = {
     "Sucursal": ["Salta - Jujuy - Tartagal", "Salta - Jujuy", "Salta - Jujuy - Tartagal"],
     "Sector": ["Comercial", "USI", "Posventa"],
-    "Problema Detectado": ["Unidades retiradas sin obsequio de entrega", "Falta de stock y demora en aprobación de presupuestos", "Retiro de máquina de café en salas de espera"],
+    "Problema Detectado": ["Unidades retiradas sin obsequio de entrega", "Falta de stock y de aprobación de presupuestos", "Retiro de máquina de café en salas de espera"],
     "Causa Raíz": ["Demoras en circuito administrativo de aprobación", "Falta de fluidez y ausencia de presupuesto fijo", "Optimización de costos mal orientada"],
-    "Acción Correctiva Obligatoria": ["Consultar presupuesto de kits de seguridad alternativos", "Diseñar e implementar propuesta formal de presupuesto fijo", "Restaurar servicio de amenities y máquina de café expendedora"],
+    "Acción Correctiva Obligatoria": ["Consultar presupuesto de kits de seguridad alternativos", "Diseñar e implementar propuesta de presupuesto fijo", "Restaurar servicio de amenities y máquina de café"],
     "Responsable": ["Asesores UCT / Resp. Comercial", "Gerencia Comercial", "Responsable Posventa"],
-    "Estatus Actual": ["🟡 En Proceso", "🔴 Pendiente", "🟢 Restablecido"]
+    "Estatus Actual": ["En Proceso", "Pendiente", "Restablecido"]
 }
 df_plan = pd.DataFrame(plan_data)
 
-# Renderizado con estilos de semáforo
-def color_estatus(val):
-    if val == "🟢 Restablecido": return "background-color: #ccffcc"
-    elif val == "🟡 En Proceso": return "background-color: #fff3cd"
-    elif val == "🔴 Pendiente": return "background-color: #f8d7da"
-    return ""
-
-st.dataframe(df_plan.style.applymap(color_estatus, subset=["Estatus Actual"]), use_container_width=True)
+# Mostramos la tabla limpia sin estilos conflictivos
+st.dataframe(df_plan, use_container_width=True)
 
 st.divider()
 
@@ -161,10 +155,4 @@ elif pestaña == "MAY-CATEGORIA (Pestaña 4)" and df_may_categoria is not None:
 else:
     st.error("No se pudo leer esta pestaña. Verifica que el archivo de Google Sheets tenga el acceso configurado como 'Cualquier persona con el enlace puede leer'.")
 
-
-
-
-
-    
   
-       
