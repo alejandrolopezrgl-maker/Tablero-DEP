@@ -10,7 +10,7 @@ st.title("📊 Tablero de Control de Desvíos DEP - Autolux")
 st.caption("Datos Reales del Período: Mayo - Junio 2026 | Monitoreo de Plan de Acción Comercial e Indicadores")
 
 # 2. CONEXIÓN DIRECTA A GOOGLE SHEETS
-SPREADSHEET_ID = "1jTq_mTfWBfWZCHnC7OlLiRcskWSUj0w1"
+SPREADSHEET_ID = "15387_DES012-26"
 
 @st.cache_data(ttl=60)  # Se actualiza rápido cada 1 minuto
 def cargar_todo_google():
