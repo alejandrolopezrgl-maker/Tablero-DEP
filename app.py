@@ -9,12 +9,11 @@ st.set_page_config(page_title="DEP Autolux - Gestión de Desvíos", layout="wide
 st.title("📊 Tablero de Control de Desvíos DEP - Autolux")
 st.caption("Datos Reales del Período: Mayo - Junio 2026 | Monitoreo de Plan de Acción Comercial e Indicadores")
 
-# 2. CONEXIÓN DIRECTA A GOOGLE SHEETS
+# 2. CONEXIÓN DIRECTA A GOOGLE SHEETS (Enlace limpio y verificado)
 SPREADSHEET_ID = "1jTq_mTfWBfWZCHnC7OlLiRcskWSUj0w1"
 
-@st.cache_data(ttl=60)  # Se actualiza rápido cada 1 minuto
+@st.cache_data(ttl=60)
 def cargar_todo_google():
-    # Truco técnico para leer todo el libro de Google Sheets de forma directa sin usar gids numéricos
     url = f"https://google.com{SPREADSHEET_ID}/export?format=xlsx"
     try:
         xls = pd.ExcelFile(url)
@@ -24,14 +23,13 @@ def cargar_todo_google():
         st.sidebar.error(f"Detalle de conexión: {e}")
         return None
 
-# Cargamos el diccionario con todas tus pestañas vivas
+# Cargamos las pestañas
 diccionario_hojas = cargar_todo_google()
 
 # 3. BARRA LATERAL (SIDEBAR): CONTROL DE RIESGOS Y PENALIDADES DIRECTAS
 st.sidebar.header("🚨 Zona Roja: Penalidades Directas")
 st.sidebar.markdown("Filtros dinámicos basados en penalidades activas según reporte:")
 
-# Controles manuales de penalizaciones reales
 penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts directos)", value=False)
 penalidad_movilidad = st.sidebar.toggle("Falta Certificación Estilo Movilidad (-5 pts)", value=False)
 visitas_fieldman = st.sidebar.slider("% Cumplimiento Visitas Fieldman", 0, 100, 78)
@@ -63,7 +61,6 @@ st.divider()
 # 5. GRÁFICO DE BRECHAS REALES (TABLA DE INDICADORES DE JUNIO)
 st.subheader("📉 Brecha de Calidad Real vs Target por Indicador (Puro y Acumulado)")
 
-# Datos extraídos estrictamente de la página de indicadores de Junio del reporte
 datos_junio = {
     "Área / KPI": ["PVT CSI", "PVT FIR", "PVT NPS", "VT SSI", "VT NPS", "TPA NPS t", "Usados SSI", "Usados NPS", "KINTO SHARE NPS", "KINTO ONE NPS"],
     "Brecha Real %": [0.90, 2.10, 1.00, -2.20, -8.90, -2.50, -10.37, -32.80, 5.90, -45.60],
@@ -82,7 +79,6 @@ fig_brechas = px.bar(
 )
 st.plotly_chart(fig_brechas, use_container_width=True)
 
-# Mensaje dinámico de advertencia basado en observaciones reales
 st.warning("💡 **Acción Comercial Urgente:** Se necesitan **55 encuestas perfectas (SSI 100)** en Ventas y **31 encuestas perfectas** en Usados para neutralizar la brecha actual.")
 
 st.divider()
@@ -92,7 +88,6 @@ st.subheader("🕵️ Causa Raíz Física: El Deterioro de la Experiencia en Suc
 col_graf, col_txt = st.columns(2)
 
 with col_graf:
-    # Datos exactos del gráfico de torta de quejas del reporte
     datos_quejas = {
         "Motivo de la Queja": ["Falta de Kit de Seguridad", "Falta de Presentes / Merchandising", "Falta de Máquina de Café"],
         "Impacto %": [36.0, 20.0, 16.0]
@@ -122,7 +117,6 @@ st.divider()
 # 7. MONITOREO DEL PLAN DE ACCIÓN COMERCIAL 2026
 st.subheader("📋 Plan de Acción Comercial - Seguimiento Operativo")
 
-# Creación de la tabla del plan de acción extraída del PDF
 plan_data = {
     "Sucursal": ["Salta - Jujuy - Tartagal", "Salta - Jujuy", "Salta - Jujuy - Tartagal"],
     "Sector": ["Comercial", "USI", "Posventa"],
@@ -133,8 +127,6 @@ plan_data = {
     "Estatus Actual": ["En Proceso", "Pendiente", "Restablecido"]
 }
 df_plan = pd.DataFrame(plan_data)
-
-# Mostramos la tabla limpia sin estilos conflictivos
 st.dataframe(df_plan, use_container_width=True)
 
 st.divider()
@@ -144,12 +136,8 @@ st.subheader("📂 Consulta de Hojas Vivas (Google Sheets)")
 
 if diccionario_hojas is not None:
     st.info("¡Conexión Exitosa! Selecciona abajo qué pestaña de tu archivo de Google Sheets deseas inspeccionar:")
-    
-    # Creamos los botones selectores basados directamente en los nombres reales de tus pestañas de Excel
     lista_hojas = list(diccionario_hojas.keys())
     pestaña_seleccionada = st.radio("Pestañas disponibles encontradas:", lista_hojas, horizontal=True)
-    
-    # Mostramos la tabla de la pestaña seleccionada de forma dinámica
     st.dataframe(diccionario_hojas[pestaña_seleccionada], use_container_width=True)
 else:
     st.error("No se pudo leer la información de Google Sheets. Asegúrate de que los permisos de tu archivo en Google Drive estén configurados en 'Cualquier persona con el enlace puede leer'.")
