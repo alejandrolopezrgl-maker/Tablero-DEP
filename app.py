@@ -7,47 +7,82 @@ st.set_page_config(page_title="DEP Autolux - Gestión de Desvíos", layout="wide
 
 # Títulos de la Aplicación Operativa
 st.title("📊 Tablero de Control de Desvíos DEP - Autolux")
-st.caption("Ecosistema Integrado Mayo - Junio 2026 | Datos Consolidados sin Dependencia de Red")
+st.caption("Ecosistema Integrado Mayo - Junio 2026 | Simulación de Penalizaciones Matemáticas en Tiempo Real")
 
 # 2. BARRA LATERAL (SIDEBAR): CONTROL DE RIESGOS Y PENALIDADES DIRECTAS
 st.sidebar.header("🚨 Zona Roja: Penalidades Directas")
-st.sidebar.markdown("Filtros dinámicos basados en penalidades activas según reporte:")
+st.sidebar.markdown("Interactúa con los filtros para ver el impacto matemático directo en el tablero:")
 
+# Controles interactivos
 penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts directos)", value=False)
 penalidad_movilidad = st.sidebar.toggle("Falta Certificación Estilo Movilidad (-5 pts)", value=False)
 visitas_fieldman = st.sidebar.slider("% Cumplimiento Visitas Fieldman", 0, 100, 78)
 
+# Lógica de cálculo de penalizadores y alertas visuales
+puntos_a_restar_global = 0
+penalizacion_posventa_activa = False
+
 st.sidebar.divider()
 st.sidebar.subheader("Estatus de Alertas")
+
 if visitas_fieldman < 85:
-    st.sidebar.error("❌ Penalidad Posventa Activa: Cumplimiento <85% genera castigo en Puntos Negativos del área.")
+    st.sidebar.error("❌ Penalidad Posventa Activa: Cumplimiento <85% genera castigo automático en Puntos Negativos (-40%).")
+    penalizacion_posventa_activa = True
+else:
+    st.sidebar.success("🟢 Posventa a salvo del castigo de Fieldman (≥85%).")
+
 if penalidad_fair_play:
     st.sidebar.error("🛑 Penalidad Fair Play Activa: -10 puntos automáticos sobre la nota general.")
+    puntos_a_restar_global += 10
+
 if penalidad_movilidad:
     st.sidebar.warning("⚠️ Penalidad Movilidad: -5 puntos directos por falta de certificación.")
+    puntos_a_restar_global += 5
 
-# 3. CUADRO DE MANDO PRINCIPAL (KPI CARDS REALES A JUNIO)
+# 3. VALORES BASE OPERATIVOS DE AUTOLUX
+score_global_base = 64.80
+brecha_kinto_base = -45.60
+brecha_posventa_nps_base = 1.00
+
+# Aplicamos el impacto matemático de la barra lateral en tiempo real
+score_global_calculado = score_global_base - puntos_a_restar_global
+if penalizacion_posventa_activa:
+    brecha_posventa_nps_base = brecha_posventa_nps_base - 40.00  # Castigo severo en el pilar por normas DEP
+
+# Determinamos categoría final dinámica
+if score_global_calculado >= 90:
+    categoria_dinamica = "Categoría A"
+    delta_color_cat = "normal"
+elif score_global_calculado >= 80:
+    categoria_dinamica = "Categoría B"
+    delta_color_cat = "off"
+else:
+    categoria_dinamica = "Categoría C"
+    delta_color_cat = "inverse"
+
+# 4. CUADRO DE MANDO PRINCIPAL (KPI CARDS INTEGRADOS CON TUS FILTROS)
 st.header("📌 Resumen Ejecutivo de Desvíos")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric(label="Ventas - SSI Acumulado", value="93.40%", delta="-2.20% vs Target (95.6%)", delta_color="inverse")
 with col2:
-    st.metric(label="Ventas - NPS Comercial", value="78.10%", delta="-8.90% vs Target (87.0%)", delta_color="inverse")
+    # Mostramos el impacto dinámico si se activa Fair Play o Movilidad afectando el Score General
+    st.metric(label="Resultado Global Autolux", value=f"{score_global_calculado:.2f} pts", delta=f"-{puntos_a_restar_global} pts por penalidad" if puntos_a_restar_global > 0 else "Sin penalidad directa", delta_color="inverse" if puntos_a_restar_global > 0 else "normal")
 with col3:
-    st.metric(label="KINTO ONE - NPS", value="44.40%", delta="-45.60% vs Target (90.0%)", delta_color="inverse")
+    st.metric(label="KINTO ONE - NPS", value="44.40%", delta=f"{brecha_kinto_base:.2f}% vs Target (90.0%)", delta_color="inverse")
 with col4:
-    st.metric(label="Evolución de Ranking Calidad", value="Puesto 39 🔻", delta="Desplome desde el Puesto 8", delta_color="inverse")
+    st.metric(label="Categorización Dinámica DEP", value=categoria_dinamica, delta=f"Puesto 39 en el Ranking", delta_color=delta_color_cat)
 
 st.divider()
 
-# 4. GRÁFICO DE BRECHAS REALES (TABLA DE INDICADORES DE JUNIO)
+# 5. GRÁFICO DE BRECHAS REACCIONANDO EN TIEMPO REAL
 st.subheader("📉 Brecha de Calidad Real vs Target por Indicador (Puro y Acumulado)")
 
 datos_junio = {
     "Área / KPI": ["PVT CSI", "PVT FIR", "PVT NPS", "VT SSI", "VT NPS", "TPA NPS t", "Usados SSI", "Usados NPS", "KINTO SHARE NPS", "KINTO ONE NPS"],
-    "Brecha Real %": [0.90, 2.10, 1.00, -2.20, -8.90, -2.50, -10.37, -32.80, 5.90, -45.60],
-    "Estado": ["🟢 En Objetivo", "🟢 En Objetivo", "🟢 En Objetivo", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🟢 En Objetivo", "🔴 Desviado"]
+    "Brecha Real %": [0.90, 2.10, brecha_posventa_nps_base, -2.20, -8.90, -2.50, -10.37, -32.80, 5.90, brecha_kinto_base],
+    "Estado": ["🟢 En Objetivo", "🟢 En Objetivo", "🟢 En Objetivo" if brecha_posventa_nps_base >= 0 else "🔴 Castigado por Fieldman", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🟢 En Objetivo", "🔴 Desviado"]
 }
 df_junio = pd.DataFrame(datos_junio)
 
@@ -57,16 +92,19 @@ fig_brechas = px.bar(
     y="Brecha Real %",
     color="Estado",
     text_auto=".2f",
-    color_discrete_map={"🟢 En Objetivo": "#2ca02c", "🔴 Desviado": "#d62728"},
-    title="Análisis de Brechas a Junio (Valores negativos indican desvíos críticos bajo la meta)"
+    color_discrete_map={"🟢 En Objetivo": "#2ca02c", "🔴 Desviado": "#d62728", "🔴 Castigado por Fieldman": "#7f1d1d"},
+    title="Análisis Dinámico de Brechas (El pilar PVT NPS se desplomará si bajas el cumplimiento de Visitas Fieldman <85%)"
 )
 st.plotly_chart(fig_brechas, use_container_width=True)
 
-st.warning("💡 **Acción Comercial Urgente:** Se necesitan **55 encuestas perfectas (SSI 100)** en Ventas y **31 encuestas perfectas** en Usados para neutralizar la brecha actual.")
+if puntos_a_restar_global > 0 or penalizacion_posventa_activa:
+    st.error(f"⚠️ **Simulador de Auditoría:** El puntaje actual refleja un descuento activo de -{puntos_a_restar_global} puntos directos y/o penalizaciones estructurales por fallas de cumplimiento normativo.")
+else:
+    st.warning("💡 **Acción Comercial Urgente:** Se necesitan **55 encuestas perfectas (SSI 100)** en Ventas y **31 encuestas perfectas** en Usados para neutralizar la brecha actual.")
 
 st.divider()
 
-# 5. ANÁLISIS DE CAUSA RAÍZ (LA VOZ DEL CLIENTE)
+# 6. ANÁLISIS DE CAUSA RAÍZ (LA VOZ DEL CLIENTE)
 st.subheader("🕵️ Causa Raíz Física: El Deterioro de la Experiencia en Sucursal")
 col_graf, col_txt = st.columns(2)
 
@@ -97,7 +135,7 @@ with col_txt:
 
 st.divider()
 
-# 6. MONITOREO DEL PLAN DE ACCIÓN COMERCIAL 2026
+# 7. MONITOREO DEL PLAN DE ACCIÓN COMERCIAL 2026
 st.subheader("📋 Plan de Acción Comercial - Seguimiento Operativo")
 
 plan_data = {
@@ -114,9 +152,8 @@ st.dataframe(df_plan, use_container_width=True)
 
 st.divider()
 
-# 7. CONSOLIDADO DE TUS PESTAÑAS DEL EXCEL (INYECCIÓN NATIVA)
+# 8. CONSOLIDADO DE TUS PESTAÑAS DEL EXCEL (INYECCIÓN NATIVA INTERACTIVA)
 st.subheader("📂 Consulta de Hojas de Datos (DEP 2026)")
-st.info("Visualización integrada de tus registros oficiales para el análisis de gestión.")
 
 pestaña_seleccionada = st.radio("Selecciona la pestaña a inspeccionar:", ["COM", "MAY-AREA", "MAY-CATEGORIA"], horizontal=True)
 
@@ -131,18 +168,20 @@ if pestaña_seleccionada == "COM":
     st.dataframe(pd.DataFrame(datos_com), use_container_width=True)
 
 elif pestaña_seleccionada == "MAY-AREA":
+    # Reflejamos dinámicamente si hay penalizaciones en la tabla de datos inyectada
+    puntos_ventas = 45.20 - (10 if penalidad_fair_play else 0)
     datos_area = {
         "Pilar DEP": ["Ventas (Core)", "Ventas Especiales", "Posventa (Calidad)", "TPA (Ahorro)", "KINTO", "Usados", "TCFA", "ESG", "General"],
         "Ponderación Oficial": ["22.00%", "5.00%", "27.00%", "9.00%", "6.00%", "6.00%", "4.00%", "1.00%", "20.00%"],
-        "Puntaje Obtenido (Mayo)": [45.20, 80.00, 94.70, 72.10, 0.00, 0.00, 100.00, 100.00, 85.00],
-        "Desvío Detectado": ["🔴 Severo por SSI/NPS", "🟢 En Objetivo", "🟢 Destacado (CSI 94.7)", "🔴 Bajo Mínimo", "🛑 Penalización 0", "🛑 Penalización 0", "🟢 Óptimo", "🟢 Óptimo", "🟡 Alerta"]
+        "Puntaje Obtenido (Mayo)": [puntos_ventas, 80.00, 94.70, 72.10, 0.00, 0.00, 100.00, 100.00, 85.00],
+        "Desvío Detectado": ["🔴 Castigado por Fair Play" if penalidad_fair_play else "🔴 Severo por SSI/NPS", "🟢 En Objetivo", "🟢 Destacado (CSI 94.7)", "🔴 Bajo Mínimo", "🛑 Penalización 0", "🛑 Penalización 0", "🟢 Óptimo", "🟢 Óptimo", "🟡 Alerta"]
     }
     st.dataframe(pd.DataFrame(datos_area), use_container_width=True)
 
 elif pestaña_seleccionada == "MAY-CATEGORIA":
     datos_cat = {
         "Evaluación General": ["Puntaje Global Requerido", "Mínimo Ventas", "Mínimo Posventa", "Resultado Global Autolux"],
-        "Condición Manual DEP": ["≥ 90.00 Puntos (Cat. A)", "≥ 80.00 Puntos", "≥ 70.00 Puntos", "64.80 Puntos"],
-        "Situación Actual": ["🔴 Fuera de Rango", "🔴 Incumplido (Faltan 55 Encuestas)", "🟢 Cumplido", "❌ Categoría C (Puesto 39)"]
+        "Condición Manual DEP": ["≥ 90.00 Puntos (Cat. A)", "≥ 80.00 Puntos", "≥ 70.00 Puntos", f"{score_global_calculado:.2f} Puntos"],
+        "Situación Actual": ["🔴 Fuera de Rango", "🔴 Incumplido" if penalidad_fair_play else "🔴 Incumplido (Faltan 55 Encuestas)", "🟢 Cumplido" if not penalizacion_posventa_activa else "🔴 Caído por Fieldman", f"❌ {categoria_dinamica} (Puesto 39)"]
     }
     st.dataframe(pd.DataFrame(datos_cat), use_container_width=True)
