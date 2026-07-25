@@ -88,7 +88,7 @@ st.divider()
 
 # 6. ANÁLISIS DE CAUSA RAÍZ (LA VOZ DEL CLIENTE)
 st.subheader("🕵️ Causa Raíz Física: El Deterioro de la Experiencia en Sucursal")
-col_graf, col_txt = st.columns()
+col_graf, col_txt = st.columns(2)
 
 with col_graf:
     # Datos exactos del gráfico de torta de quejas del reporte
