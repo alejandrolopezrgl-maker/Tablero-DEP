@@ -9,22 +9,23 @@ st.set_page_config(page_title="DEP Autolux - Gestión de Desvíos", layout="wide
 st.title("📊 Tablero de Control de Desvíos DEP - Autolux")
 st.caption("Datos Reales del Período: Mayo - Junio 2026 | Monitoreo de Plan de Acción Comercial e Indicadores")
 
-# 2. CONEXIÓN A GOOGLE SHEETS
+# 2. CONEXIÓN DIRECTA A GOOGLE SHEETS
 SPREADSHEET_ID = "1jTq_mTfWBfWZCHnC7OlLiRcskWSUj0w1"
 
-@st.cache_data(ttl=300)  # Se actualiza cada 5 minutos
-def leer_hoja_google(gid):
-    url = f"https://google.com{SPREADSHEET_ID}/export?format=csv&gid={gid}"
+@st.cache_data(ttl=60)  # Se actualiza rápido cada 1 minuto
+def cargar_todo_google():
+    # Truco técnico para leer todo el libro de Google Sheets de forma directa sin usar gids numéricos
+    url = f"https://google.com{SPREADSHEET_ID}/export?format=xlsx"
     try:
-        return pd.read_csv(url)
-    except Exception:
+        xls = pd.ExcelFile(url)
+        hojas = {sheet_name: xls.parse(sheet_name) for sheet_name in xls.sheet_names}
+        return hojas
+    except Exception as e:
+        st.sidebar.error(f"Detalle de conexión: {e}")
         return None
 
-# Carga de tus pestañas reales
-df_com = leer_hoja_google("1660966037")          # Pestaña: COM
-df_may_area = leer_hoja_google("502299291")     # Pestaña: MAY-AREA
-df_hoja1 = leer_hoja_google("389638323")        # Pestaña: Hoja 1
-df_may_categoria = leer_hoja_google("263438988") # Pestaña: MAY-CATEGORIA
+# Cargamos el diccionario con todas tus pestañas vivas
+diccionario_hojas = cargar_todo_google()
 
 # 3. BARRA LATERAL (SIDEBAR): CONTROL DE RIESGOS Y PENALIDADES DIRECTAS
 st.sidebar.header("🚨 Zona Roja: Penalidades Directas")
@@ -140,19 +141,15 @@ st.divider()
 
 # 8. VISUALIZADOR DIRECTO DE TUS HOJAS DE GOOGLE SHEETS
 st.subheader("📂 Consulta de Hojas Vivas (Google Sheets)")
-st.info("Haz clic en los botones para revisar los datos en bruto directo desde tu archivo compartido.")
 
-pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["COM (Pestaña 1)", "MAY-AREA (Pestaña 2)", "Hoja 1 (Pestaña 3)", "MAY-CATEGORIA (Pestaña 4)"], horizontal=True)
-
-if pestaña == "COM (Pestaña 1)" and df_com is not None:
-    st.dataframe(df_com, use_container_width=True)
-elif pestaña == "MAY-AREA (Pestaña 2)" and df_may_area is not None:
-    st.dataframe(df_may_area, use_container_width=True)
-elif pestaña == "Hoja 1 (Pestaña 3)" and df_hoja1 is not None:
-    st.dataframe(df_hoja1, use_container_width=True)
-elif pestaña == "MAY-CATEGORIA (Pestaña 4)" and df_may_categoria is not None:
-    st.dataframe(df_may_categoria, use_container_width=True)
+if diccionario_hojas is not None:
+    st.info("¡Conexión Exitosa! Selecciona abajo qué pestaña de tu archivo de Google Sheets deseas inspeccionar:")
+    
+    # Creamos los botones selectores basados directamente en los nombres reales de tus pestañas de Excel
+    lista_hojas = list(diccionario_hojas.keys())
+    pestaña_seleccionada = st.radio("Pestañas disponibles encontradas:", lista_hojas, horizontal=True)
+    
+    # Mostramos la tabla de la pestaña seleccionada de forma dinámica
+    st.dataframe(diccionario_hojas[pestaña_seleccionada], use_container_width=True)
 else:
-    st.error("No se pudo leer esta pestaña. Verifica que el archivo de Google Sheets tenga el acceso configurado como 'Cualquier persona con el enlace puede leer'.")
-
-  
+    st.error("No se pudo leer la información de Google Sheets. Asegúrate de que los permisos de tu archivo en Google Drive estén configurados en 'Cualquier persona con el enlace puede leer'.")
