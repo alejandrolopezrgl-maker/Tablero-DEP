@@ -83,7 +83,7 @@ else:
     st.caption("Estructura oficial homologada sobre una base de 900 puntos máximos auditables.")
     
     # Matriz interactiva armada con los 9 capítulos del PDF oficiales de Toyota
-     base_emt_data = {
+         base_emt_data = {
         "Capítulo": [
             "A - Estructura Central", 
             "B - Servicio al Cliente", 
