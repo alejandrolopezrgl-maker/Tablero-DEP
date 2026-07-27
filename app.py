@@ -37,7 +37,7 @@ if penalidad_movilidad:
     st.sidebar.warning("⚠️ Penalidad Movilidad: -5 puntos directos por falta de certificación.")
     puntos_a_restar_global += 5
 
-# Valores base extraídos de la pantalla oficial enviada
+# Valores base oficiales extraídos del Power BI de Toyota
 score_global_base = 61.20
 score_global_calculado = score_global_base - puntos_a_restar_global
 
@@ -51,16 +51,16 @@ else:
     categoria_dinamica = "Categoría C"
     delta_color_cat = "inverse"
 
-# 3. CUADRO DE MANDO PRINCIPAL (MÉTRICAS OFICIALES)
+# 3. CUADRO DE MANDO PRINCIPAL (MÉTRICAS OFICIALES ACTUALIZADAS)
 st.header("📌 Resumen Ejecutivo de Desvíos")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric(label="Cumplimiento General DEP", value=f"{score_global_calculado:.1f}%", delta=f"-{puntos_a_restar_global}% Penalidad" if puntos_a_restar_global > 0 else "Estable", delta_color="inverse" if puntos_a_restar_global > 0 else "normal")
 with col2:
-    st.metric(label="Ranking General Oficial", value="Puesto 26 🏆", delta="Posición consolidada al 26/6/26")
+    st.metric(label="Ranking General Oficial", value="Puesto 26 🏆", delta="Posición real cerrada al 26/6/26")
 with col3:
-    st.metric(label="Pilar Posventa (Líder)", value="98.0%", delta="Máximo desempeño histórico", delta_color="normal")
+    st.metric(label="Pilar Posventa (Líder)", value="98.0%", delta="Máximo desempeño en cuadro", delta_color="normal")
 with col4:
     st.metric(label="Estatus de Categoría", value=categoria_dinamica, delta="Requiere ≥90% para Cat. A", delta_color=delta_color_cat)
 
@@ -75,7 +75,6 @@ df_areas = pd.DataFrame({
     "Estado": ["🔴 Crítico", "🔴 Crítico", "🟢 Excelente", "🟡 Desviado", "🔴 Crítico", "🟡 En Alerta", "🟡 Desviado", "🟡 Desviado", "🟡 Desviado"]
 })
 
-# Filtro multiselección para limpiar gráficos en reuniones
 filtros = st.multiselect("🔍 Filtrar áreas específicas para enfocar el análisis:", options=df_areas["Área"].unique(), default=[])
 df_plot_areas = df_areas[df_areas["Área"].isin(filtros)] if filtros else df_areas
 
@@ -103,8 +102,8 @@ with col_left:
 with col_right:
     st.markdown("""
     **Factores Críticos en Sucursales (Salta / Tartagal):**
-    *   **Área Ventas (26%)**: El desplome es causado por la insatisfacción de las encuestas de entrega de unidades. Los clientes penalizan la falta de kits de seguridad y obsequios corporativos básicos.
-    *   **Área KINTO (33%)**: Se registran quejas por demoras en la entrega física de la flota de movilidad y la ausencia de amenities en los sectores de espera de los clientes comerciales.
+    *   **Área Ventas (26%)**: El desplome es provocado por la insatisfacción en las encuestas de entrega de unidades. Los clientes penalizan la falta física de kits de seguridad y obsequios corporativos.
+    *   **Área KINTO (33%)**: Se registran quejas por demoras en la asignación física de la flota de movilidad y la ausencia de amenities en los sectores de espera.
     """)
 
 st.divider()
@@ -132,10 +131,11 @@ elif pestaña == "Simulador Preventivo EMT":
     p_dig = 100 if "🟢" in estatus_digital else 0
     total_sim = 700 + p_kinto + p_dig
     
-    df_emt = pd.DataFrame({
-        "Macro-Capítulo EMT": ["A - Estructura", "B - Servicio", "C - Kinto", "D - Club Toyota", "E - TPA", "F - TFS", "G - Usados", "H - Convencional", "I - Servicios Conectados"],
-        "Puntaje Máximo":,
-        "Puntaje Simulado": [100, 100, p_kinto, 100, 100, 100, 100, p_dig, 100],
-        "Estatus": ["🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if p_kinto > 0 else "🔴 Alerta", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if p_dig > 0 else "🔴 Alerta", "🟢 Conforme"]
-    })
+    # ESTRUCTURA CORREGIDA COMPLETAMENTE BLINDADA SIN DOS PUNTOS CONFLICTIVOS
+    df_emt = pd.DataFrame()
+    df_emt["Macro-Capítulo EMT"] = ["A - Estructura", "B - Servicio", "C - Kinto", "D - Club Toyota", "E - TPA", "F - TFS", "G - Usados", "H - Convencional", "I - Servicios Conectados"]
+    df_emt["Puntaje Máximo"] = [100, 100, 100, 100, 100, 100, 100, 100, 100]
+    df_emt["Puntaje Simulado"] = [100, 100, p_kinto, 100, 100, 100, 100, p_dig, 100]
+    df_emt["Estatus"] = ["🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if p_kinto > 0 else "🔴 Alerta", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if p_dig > 0 else "🔴 Alerta", "🟢 Conforme"]
+    
     st.dataframe(df_emt, use_container_width=True)
