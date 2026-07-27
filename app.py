@@ -7,7 +7,7 @@ st.set_page_config(page_title="DEP Autolux - Gestión de Desvíos", layout="wide
 
 # Títulos de la Aplicación Operativa
 st.title("📊 Tablero de Control de Desvíos DEP - Autolux")
-st.caption("Ecosistema Integrado Mayo - Junio 2026 | Módulo de Simulación Preventiva EMT (Oficial Septiembre 2026)")
+st.caption("Ecosistema Integrado a Junio 2026 | Sincronizado con Reporte Oficial de Concesionarios")
 
 # 2. BARRA LATERAL (SIDEBAR): CONTROL DE RIESGOS Y PENALIDADES DIRECTAS
 st.sidebar.header("🚨 Zona Roja: Penalidades Directas")
@@ -24,7 +24,7 @@ st.sidebar.divider()
 st.sidebar.subheader("Estatus de Alertas")
 
 if visitas_fieldman < 85:
-    st.sidebar.error("❌ Penalidad Posventa Activa: Cumplimiento <85% genera castigo automático en Puntos Negativos (-40%).")
+    st.sidebar.error("❌ Penalidad Posventa Activa: Cumplimiento <85% genera castigo automático en Puntos Negativos del área.")
     penalizacion_posventa_activa = True
 else:
     st.sidebar.success("🟢 Posventa a salvo del castigo de Fieldman (≥85%).")
@@ -37,14 +37,9 @@ if penalidad_movilidad:
     st.sidebar.warning("⚠️ Penalidad Movilidad: -5 puntos directos por falta de certificación.")
     puntos_a_restar_global += 5
 
-# Valores base operativos de Autolux
-score_global_base = 64.80
-brecha_kinto_base = -45.60
-brecha_posventa_nps_base = 1.00
-
+# Valores base extraídos de la pantalla oficial enviada
+score_global_base = 61.20
 score_global_calculado = score_global_base - puntos_a_restar_global
-if penalizacion_posventa_activa:
-    brecha_posventa_nps_base = brecha_posventa_nps_base - 40.00
 
 if score_global_calculado >= 90:
     categoria_dinamica = "Categoría A"
@@ -56,131 +51,91 @@ else:
     categoria_dinamica = "Categoría C"
     delta_color_cat = "inverse"
 
-# 3. CUADRO DE MANDO PRINCIPAL (KPI CARDS INTEGRADOS)
+# 3. CUADRO DE MANDO PRINCIPAL (MÉTRICAS OFICIALES)
 st.header("📌 Resumen Ejecutivo de Desvíos")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.metric(label="Ventas - SSI Acumulado", value="93.40%", delta="-2.20% vs Target (95.6%)", delta_color="inverse")
+    st.metric(label="Cumplimiento General DEP", value=f"{score_global_calculado:.1f}%", delta=f"-{puntos_a_restar_global}% Penalidad" if puntos_a_restar_global > 0 else "Estable", delta_color="inverse" if puntos_a_restar_global > 0 else "normal")
 with col2:
-    st.metric(label="Resultado Global Autolux", value=f"{score_global_calculado:.2f} pts", delta=f"-{puntos_a_restar_global} pts por penalidad" if puntos_a_restar_global > 0 else "Sin penalidad directa", delta_color="inverse" if puntos_a_restar_global > 0 else "normal")
+    st.metric(label="Ranking General Oficial", value="Puesto 26 🏆", delta="Posición consolidada al 26/6/26")
 with col3:
-    st.metric(label="KINTO ONE - NPS", value="44.40%", delta=f"{brecha_kinto_base:.2f}% vs Target (90.0%)", delta_color="inverse")
+    st.metric(label="Pilar Posventa (Líder)", value="98.0%", delta="Máximo desempeño histórico", delta_color="normal")
 with col4:
-    st.metric(label="Categorización Dinámica DEP", value=categoria_dinamica, delta="Puesto 39 en el Ranking", delta_color=delta_color_cat)
+    st.metric(label="Estatus de Categoría", value=categoria_dinamica, delta="Requiere ≥90% para Cat. A", delta_color=delta_color_cat)
 
 st.divider()
 
-# 4. GRÁFICO DE BRECHAS CON FILTRO INTERACTIVO MULTISELECCIÓN
-st.subheader("📉 Brecha de Calidad Real vs Target por Indicador (Puro y Acumulado)")
+# 4. GRÁFICO OFICIAL DE CUMPLIMIENTO POR ÁREA
+st.subheader("📉 Cumplimiento Real por Área Evaluada (Foto del Tablero Oficial)")
 
-datos_junio = {
-    "Área / KPI": ["PVT CSI", "PVT FIR", "PVT NPS", "VT SSI", "VT NPS", "TPA NPS t", "Usados SSI", "Usados NPS", "KINTO SHARE NPS", "KINTO ONE NPS"],
-    "Brecha Real %": [0.90, 2.10, brecha_posventa_nps_base, -2.20, -8.90, -2.50, -10.37, -32.80, 5.90, brecha_kinto_base],
-    "Estado": ["🟢 En Objetivo", "🟢 En Objetivo", "🟢 En Objetivo" if brecha_posventa_nps_base >= 0 else "🔴 Castigado por Fieldman", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🟢 En Objetivo", "🔴 Desviado"]
-}
-df_junio = pd.DataFrame(datos_junio)
+df_areas = pd.DataFrame({
+    "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "General"],
+    "Cumplimiento %": [26.0, 30.0, 98.0, 69.0, 33.0, 73.0, 63.0, 57.0, 61.0],
+    "Estado": ["🔴 Crítico", "🔴 Crítico", "🟢 Excelente", "🟡 Desviado", "🔴 Crítico", "🟡 En Alerta", "🟡 Desviado", "🟡 Desviado", "🟡 Desviado"]
+})
 
-indicadores_seleccionados = st.multiselect(
-    "🔍 Filtrar e identificar indicadores específicos para aislar columnas en reuniones comerciales:",
-    options=df_junio["Área / KPI"].unique(),
-    default=[],
-    placeholder="Muestra la radiografía completa si dejas vacío el buscador"
+# Filtro multiselección para limpiar gráficos en reuniones
+filtros = st.multiselect("🔍 Filtrar áreas específicas para enfocar el análisis:", options=df_areas["Área"].unique(), default=[])
+df_plot_areas = df_areas[df_areas["Área"].isin(filtros)] if filtros else df_areas
+
+fig_areas = px.bar(
+    df_plot_areas, x="Área", y="Cumplimiento %", color="Estado", text_auto=".1f",
+    color_discrete_map={"🟢 Excelente": "#2ca02c", "🟡 Desviado": "#ff7f0e", "🟡 En Alerta": "#bcbd22", "🔴 Crítico": "#d62728"},
+    title="Porcentajes de Desempeño por Pilar de Negocio"
 )
-
-if indicadores_seleccionados:
-    df_filtrado = df_junio[df_junio["Área / KPI"].isin(indicadores_seleccionados)]
-else:
-    df_filtrado = df_junio
-
-fig_brechas = px.bar(
-    df_filtrado,
-    x="Área / KPI",
-    y="Brecha Real %",
-    color="Estado",
-    text_auto=".2f",
-    color_discrete_map={"🟢 En Objetivo": "#2ca02c", "🔴 Desviado": "#d62728", "🔴 Castigado por Fieldman": "#7f1d1d"},
-    title="Análisis Dinámico de Brechas"
-)
-st.plotly_chart(fig_brechas, use_container_width=True)
+st.plotly_chart(fig_areas, use_container_width=True)
 
 st.divider()
 
-# 5. ANÁLISIS DE CAUSA RAÍZ
-st.subheader("🕵️ Causa Raíz Física: El Deterioro de la Experiencia en Sucursal")
-col_graf, col_txt = st.columns(2)
+# 5. DIAGNÓSTICO FÍSICO DE CAUSA RAÍZ
+st.subheader("🕵️ Análisis Operativo: ¿Por qué Ventas tiene 26% y KINTO 33%?")
+col_left, col_right = st.columns(2)
 
-with col_graf:
+with col_left:
     df_quejas = pd.DataFrame({
-        "Motivo de la Queja": ["Falta de Kit de Seguridad", "Falta de Presentes / Merchandising", "Falta de Máquina de Café"],
+        "Motivo de la Queja": ["Falta de Kit de Seguridad", "Falta de Presentes / Merch", "Falta de Máquina de Café"],
         "Impacto %": [36.0, 20.0, 16.0]
     })
-    fig_quejas = px.pie(df_quejas, values="Impacto %", names="Motivo de la Queja", color_discrete_sequence=px.colors.sequential.Reds_r)
-    st.plotly_chart(fig_quejas, use_container_width=True)
+    fig_pie = px.pie(df_quejas, values="Impacto %", names="Motivo de la Queja", color_discrete_sequence=px.colors.sequential.Reds_r)
+    st.plotly_chart(fig_pie, use_container_width=True)
 
-with col_txt:
+with col_right:
     st.markdown("""
-    **Verbatines Clave de Clientes (Salta / Tartagal):**
-    *   *“Me dan el auto y ya no te dan ni un miserable kit de seguridad.”*
-    *   *“Sacaron la máquina de café del lugar de espera, una actitud totalmente miserable.”*
-    
-    👉 **Diagnóstico de Dirección:** El problema en las encuestas no es el proceso del concesionario, sino factores de atención física en sucursal debido a demoras internas.
+    **Factores Críticos en Sucursales (Salta / Tartagal):**
+    *   **Área Ventas (26%)**: El desplome es causado por la insatisfacción de las encuestas de entrega de unidades. Los clientes penalizan la falta de kits de seguridad y obsequios corporativos básicos.
+    *   **Área KINTO (33%)**: Se registran quejas por demoras en la entrega física de la flota de movilidad y la ausencia de amenities en los sectores de espera de los clientes comerciales.
     """)
 
 st.divider()
 
-# 6. CONSOLIDADO DE PESTAÑAS (INCLUYENDO SIMULADOR PREVENTIVO EMT)
-st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría Preventiva EMT)")
+# 6. CONSOLIDADO DE PESTAÑAS Y SIMULADOR EMT (PREVENTIVO SEPTIEMBRE 2026)
+st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
 
-pestaña_seleccionada = st.radio("Selecciona la pestaña a inspeccionar:", ["COM", "MAY-AREA", "MAY-CATEGORIA", "Simulador Preventivo EMT"], horizontal=True)
+pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
 
-if pestaña_seleccionada == "COM":
-    datos_com = {
-        "Indicador Crítico": ["SSI Ventas (Comercial)", "NPS Ventas", "NPS TPA Transaccional", "SSI Usados", "NPS KINTO ONE"],
-        "Meta Target": [95.60, 87.00, 85.00, 94.50, 90.00],
-        "Resultado Junio": [93.40, 78.10, 82.50, 84.13, 44.40],
-        "Estatus": ["🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🔴 Desviado", "🔴 Brecha Máxima"]
-    }
-    st.dataframe(pd.DataFrame(datos_com), use_container_width=True)
+if pestaña == "Resumen por Categorías":
+    df_cat = pd.DataFrame({
+        "Categoría de Medición": ["Calidad", "Programas", "RRHH", "Facilities (Instalaciones)", "Targets (Metas)"],
+        "Cumplimiento Oficial": ["51.0%", "100.0%", "89.0%", "100.0%", "47.0%"],
+        "Alerta de Gestión": ["🔴 Falla Grave por Encuestas", "🟢 Óptimo", "🟡 Margen de Mejora", "🟢 Estándar de Sucursal OK", "🔴 Brecha en Objetivos Volumen"]
+    })
+    st.dataframe(df_cat, use_container_width=True)
 
-elif pestaña_seleccionada == "MAY-AREA":
-    puntos_ventas = 45.20 - (10 if penalidad_fair_play else 0)
-    datos_area = {
-        "Pilar DEP": ["Ventas (Core)", "Ventas Especiales", "Posventa (Calidad)", "TPA (Ahorro)", "KINTO", "Usados", "TCFA", "ESG", "General"],
-        "Ponderación Oficial": ["22.00%", "5.00%", "27.00%", "9.00%", "6.00%", "6.00%", "4.00%", "1.00%", "20.00%"],
-        "Puntaje Obtenido (Mayo)": [puntos_ventas, 80.00, 94.70, 72.10, 0.00, 0.00, 100.00, 100.00, 85.00]
-    }
-    st.dataframe(pd.DataFrame(datos_area), use_container_width=True)
-
-elif pestaña_seleccionada == "MAY-CATEGORIA":
-    datos_cat = {
-        "Evaluación General": ["Puntaje Global Requerido", "Mínimo Ventas", "Mínimo Posventa", "Resultado Global Autolux"],
-        "Condición Manual DEP": ["≥ 90.00 Puntos (Cat. A)", "≥ 80.00 Puntos", "≥ 70.00 Puntos", f"{score_global_calculado:.2f} Puntos"],
-        "Situación Actual": ["🔴 Fuera de Rango", "🔴 Incumplido", "🟢 Cumplido" if not penalizacion_posventa_activa else "🔴 Caído por Fieldman", f"❌ {categoria_dinamica}"]
-    }
-    st.dataframe(pd.DataFrame(datos_cat), use_container_width=True)
-
-elif pestaña_seleccionada == "Simulador Preventivo EMT":
-    st.info("🎯 **Módulo de Preparación EMT:** La auditoría de Toyota inicia oficialmente en Septiembre 2026. Utiliza los selectores de abajo para predecir fallas operativas antes del inicio formal:")
+elif pestaña == "Simulador Preventivo EMT":
+    st.info("🎯 **Módulo de Preparación EMT:** La auditoría inicia oficialmente en Septiembre 2026. Modifica los selectores para predecir escenarios:")
     
     estatus_kinto = st.selectbox("Estatus pilar C - KINTO:", ["🟢 100% Cumplido", "🔴 Desviado por Flota / Siniestros (-100 pts)"])
     estatus_digital = st.selectbox("Estatus pilar H - Convencional (Gestión Digital):", ["🟢 100% Cumplido", "🔴 Desviado por Demora en Leads (-100 pts)"])
     
-    puntos_kinto = 100 if "🟢" in estatus_kinto else 0
-    puntos_convencional = 100 if "🟢" in estatus_digital else 0
-    total_emt_simulado = 700 + puntos_kinto + puntos_convencional
-    pct_emt = (total_emt_simulado / 900) * 100
-
-    # Cambié la estructura de la tabla para que no use listas conflictivas que puedan romperse al renderizar
-    df_emt = pd.DataFrame()
-    df_emt["Macro-Capítulo Auditoría EMT"] = ["A - Estructura Central", "B - Servicio al Cliente", "C - Kinto (Share/One)", "D - Club Toyota", "E - Toyota Plan de Ahorro", "F - Toyota Financial Services", "G - Usados", "H - Convencional (0km)", "I - Servicios Conectados"]
-    df_emt["Puntaje Máximo"] = [100, 100, 100, 100, 100, 100, 100, 100, 100]
-    df_emt["Puntaje Simulado"] = [100, 100, puntos_kinto, 100, 100, 100, 100, puntos_convencional, 100]
-    df_emt["Estado"] = ["🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if puntos_kinto > 0 else "🔴 Alerta Crítica", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if puntos_convencional > 0 else "🔴 Alerta Leads", "🟢 Conforme"]
+    p_kinto = 100 if "🟢" in estatus_kinto else 0
+    p_dig = 100 if "🟢" in estatus_digital else 0
+    total_sim = 700 + p_kinto + p_dig
     
-    if pct_emt == 100:
-        st.success(f"🏆 **Resultado EMT Simulado:** {total_emt_simulado}/900 puntos ({pct_emt:.1f}%) - Máximo Nivel Best in Town alcanzado.")
-    else:
-        st.warning(f"⚠️ **Resultado EMT Simulado:** {total_emt_simulado}/900 puntos ({pct_emt:.1f}%) - Brechas operativas detectadas para corregir antes de Septiembre.")
-        
+    df_emt = pd.DataFrame({
+        "Macro-Capítulo EMT": ["A - Estructura", "B - Servicio", "C - Kinto", "D - Club Toyota", "E - TPA", "F - TFS", "G - Usados", "H - Convencional", "I - Servicios Conectados"],
+        "Puntaje Máximo":,
+        "Puntaje Simulado": [100, 100, p_kinto, 100, 100, 100, 100, p_dig, 100],
+        "Estatus": ["🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if p_kinto > 0 else "🔴 Alerta", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if p_dig > 0 else "🔴 Alerta", "🟢 Conforme"]
+    })
     st.dataframe(df_emt, use_container_width=True)
