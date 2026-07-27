@@ -97,7 +97,9 @@ else:
         ],
         "Puntos Máximos":,
         "Puntos Obtenidos (Simulados)": [100, 100, 100, 100, 100, 100, 100, 100, 100]
+
     }
+
     
     df_base_emt = pd.DataFrame(base_emt_data)
     
