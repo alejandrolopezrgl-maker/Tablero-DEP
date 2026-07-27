@@ -11,7 +11,7 @@ st.caption("Ecosistema Integrado a Junio 2026 | Sincronizado con Reporte Oficial
 if "reestablecer" not in st.session_state:
     st.session_state.reestablecer = False
 
-# BARRA LATERAL
+# 2. BARRA LATERAL
 st.sidebar.header("🚨 Zona Roja: Penalidades Directas")
 if st.session_state.reestablecer:
     penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts directos)", value=False, key="fp_real")
@@ -25,7 +25,7 @@ else:
 
 puntos_a_restar_global = 0
 if visitas_fieldman < 85:
-    st.sidebar.error("❌ Penalidad Posventa Activa")
+    st.sidebar.error("❌ Penalidad Posventa Activa (<85%).")
 if penalidad_fair_play:
     puntos_a_restar_global += 10
 if penalidad_movilidad:
@@ -35,11 +35,11 @@ if st.sidebar.button("🔄 Restablecer Valores Reales"):
     st.session_state.reestablecer = True
     st.rerun()
 
-# DATOS BASE (TPA CORREGIDO A 72.8%)
+# 3. DATOS GENERALES (TPA CORREGIDO AL 72.8%)
 df_areas = pd.DataFrame({
     "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "General"],
     "Cumplimiento %": [40.7, 0.0, 90.5, 72.8, 35.8, 75.8, 75.0, 25.0, 44.2],
-    "Estado": ["🔴 Crítico", "🔴 Crítico (Nota 0)", "🟢 Excelente", "🟡 Desviado", "🔴 Crítico", "🟡 En Alerta", "🟡 En Alerta", "🔴 Crítico", "🟡 Desviado"]
+    "Estado": ["🔴 Crítico", "🔴 Crítico", "🟢 Excelente", "🟡 Desviado", "🔴 Crítico", "🟡 En Alerta", "🟡 En Alerta", "🔴 Crítico", "🟡 Desviado"]
 })
 
 filtros = st.multiselect("🔍 Filtrar áreas:", options=df_areas["Área"].unique(), default=[])
@@ -47,80 +47,50 @@ areas_activas = filtros if filtros else list(df_areas["Área"].unique())
 df_plot_areas = df_areas[df_areas["Área"].isin(areas_activas)]
 posventa_incluida = "Posventa" in areas_activas
 
-score_global_calculado = 62.00 - puntos_a_restar_global if posventa_incluida else df_plot_areas["Cumplimiento %"].mean() - puntos_a_restar_global
+score_global = 62.00 - puntos_a_restar_global if posventa_incluida else df_plot_areas["Cumplimiento %"].mean() - puntos_a_restar_global
 
 col1, col2, col3, col4 = st.columns(4)
-with col1: st.metric(label="Cumplimiento General DEP", value=f"{score_global_calculado:.1f}%")
-with col2: st.metric(label="Ranking General Oficial", value="Puesto 24 🏆" if posventa_incluida else "Puesto 39 🔻")
-with col3: st.metric(label="Pilar Posventa (Líder)", value="90.5%" if posventa_incluida else "Excluido 🚫")
-with col4: st.metric(label="Estatus de Categoría", value="Categoría C" if score_global_calculado < 80 else "Categoría B")
+with col1: st.metric("Cumplimiento DEP", f"{score_global:.1f}%")
+with col2: st.metric("Ranking Oficial", "Puesto 24 🏆" if posventa_incluida else "Puesto 39 🔻")
+with col3: st.metric("Pilar Posventa", "90.5%" if posventa_incluida else "Excluido 🚫")
+with col4: st.metric("Categoría", "Categoría C" if score_global < 80 else "Categoría B")
 
 st.divider()
-st.plotly_chart(px.bar(df_plot_areas, x="Área", y="Cumplimiento %", color="Estado", text_auto=".1f"), use_container_width=True)
-st.divider()
+st.plotly_chart(px.bar(df_plot_areas, x="Área", y="Cumplimiento %", color="Estado", text_auto=".1f", color_discrete_map={"🟢 Excelente": "#2ca02c", "🟡 Desviado": "#ff7f0e", "🟡 En Alerta": "#bcbd22", "🔴 Crítico": "#d62728"}), use_container_width=True)
 
-# QUEJAS Y PLAN
-col_left, col_right = st.columns(2)
-with col_left:
-    st.plotly_chart(px.pie(pd.DataFrame({"Motivo": ["Kit Seguridad", "Merch", "Café"], "Impacto": [36, 20, 16]}), values="Impacto", names="Motivo"), use_container_width=True)
-with col_right:
-    st.markdown("**Análisis de la Mejora:** Ventas subió. Focos críticos: Kinto y Especiales.")
-
+# 4. MATRICES DE ACCIÓN Y QUEJAS
 st.divider()
-st.subheader("📋 Plan de Acción Comercial")
-plan_data = {"Sucursal": ["Salta - Jujuy"], "Sector": ["Comercial"], "Problema Detected": ["Unidades sin obsequio"], "Causa Raíz": ["Demoras administrativas"], "Acción Correctiva Obligatoria": ["Consultar kits alternativos"], "Responsable": ["Asesores UCT"], "Estatus Actual": ["En Proceso"]}
-st.dataframe(pd.DataFrame(plan_data), use_container_width=True)
-st.divider()
-# 8. CONSOLIDADO POR CATEGORÍAS Y SIMULADOR EMT
-st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
-pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
+c_left, c_right = st.columns(2)
+with c_left:
+    st.plotly_chart(px.pie(pd.DataFrame({"Motivo": ["Kit Seguridad", "Merch", "Café"], "Impacto": [36, 20, 16]}), values="Impacto", names="Motivo", title="Quejas"), use_container_width=True)
+with c_right:
+    st.markdown("**Mejora:** Ventas subió a 40.7%. **Focos críticos:** Kinto y Especiales.")
 
-if pestaña == "Resumen por Categorías":
-    st.markdown("### Resumen consolidado por grandes grupos de auditoría")
-    st.dataframe(df_areas, use_container_width=True)
+st.dataframe(pd.DataFrame({"Sucursal": ["Salta-Jujuy"], "Sector": ["Comercial"], "Problema": ["Falta de obsequios"], "Acción": ["Kits alternativos"], "Estatus": ["En Proceso"]}), use_container_width=True)
+
+# 5. SIMULADOR EMT (900 PUNTOS BASE - REPARADO)
+st.divider()
+st.subheader("📋 Simulador Oficial EMT - TOYOTA (Target Septiembre)")
+
+base_emt_data = {
+    "Capítulo": ["A - Estructura Central", "B - Servicio al Cliente", "C - Kinto", "D - Club Toyota", "E - Toyota Plan de Ahorro", "F - Toyota Financial Services", "G - Usados", "H - Convencional", "I - Servicios Conectados"],
+    "Puntos Máximos":,
+    "Puntos Obtenidos (Simulados)":
+}
+
+df_editado_emt = st.data_editor(pd.DataFrame(base_emt_data), disabled=["Capítulo", "Puntos Máximos"], use_container_width=True)
+
+suma_max = df_editado_emt["Puntos Máximos"].sum()
+suma_obt = df_editado_emt["Puntos Obtenidos (Simulados)"].sum()
+pct_emt = (suma_obt / suma_max) * 100
+
+st.markdown("#### 🎯 Resultado Consolidado de la Simulación")
+if pct_emt == 100.0:
+    st.success(f"🏆 Perfecto: {suma_obt:.0f}/{suma_max:.0f} Puntos ({pct_emt:.1f}%)")
+elif pct_emt >= 90.0:
+    st.info(f"🟢 Conforme: {suma_obt:.0f}/{suma_max:.0f} Puntos ({pct_emt:.1f}%)")
+elif pct_emt >= 75.0:
+    st.warning(f"🟡 Alerta: {suma_obt:.0f}/{suma_max:.0f} Puntos ({pct_emt:.1f}%)")
 else:
-    st.markdown("### 📋 Simulador Oficial EMT - Estilo de Movilidad TOYOTA (Target Septiembre)")
-    st.caption("Estructura oficial homologada sobre una base de 900 puntos máximos auditables.")
-    
-    # Matriz interactiva armada con los 9 capítulos del PDF oficiales de Toyota
-         base_emt_data = {
-        "Capítulo": [
-            "A - Estructura Central", 
-            "B - Servicio al Cliente", 
-            "C - Kinto", 
-            "D - Club Toyota", 
-            "E - Toyota Plan de Ahorro", 
-            "F - Toyota Financial Services", 
-            "G - Usados", 
-            "H - Convencional", 
-            "I - Servicios Conectados"
-        ],
-        "Puntos Máximos": [100] * 9,
-        "Puntos Obtenidos (Simulados)": [100] * 9
-    }
-   
-
-    
-    df_base_emt = pd.DataFrame(base_emt_data)
-    
-    st.markdown("✏️ **Instrucción:** Modifica los valores de la columna **'Puntos Obtenidos (Simulados)'** para ensayar escenarios reales:")
-    
-    # Tabla editable interactiva
-    df_editado_emt = st.data_editor(df_base_emt, disabled=["Capítulo", "Puntos Máximos"], use_container_width=True)
-    
-    # Cálculos globales dinámicos
-    suma_maxima = df_editado_emt["Puntos Máximos"].sum()
-    suma_obtenida = df_editado_emt["Puntos Obtenidos (Simulados)"].sum()
-    porcentaje_emt_final = (suma_obtenida / suma_maxima) * 100
-    
-    st.markdown("#### 🎯 Resultado Consolidado de la Simulación")
-    
-    if porcentaje_emt_final == 100.0:
-        st.success(f"🏆 **Puntaje Perfecto:** {suma_obtenida:.0f} / {suma_maxima:.0f} Puntos Totales — **{porcentaje_emt_final:.1f}% de cumplimiento**. Escenario base ideal.")
-    elif porcentaje_emt_final >= 90.0:
-        st.info(f"🟢 **Zona Conforme:** {suma_obtenida:.0f} / {suma_maxima:.0f} Puntos Totales — **{porcentaje_emt_final:.1f}% de cumplimiento**. Perfil apto para aprobación.")
-    elif porcentaje_emt_final >= 75.0:
-        st.warning(f"🟡 **Zona de Alerta:** {suma_obtenida:.0f} / {suma_maxima:.0f} Puntos Totales — **{porcentaje_emt_final:.1f}% de cumplimiento**. Se detectan desvíos operativos leves.")
-    else:
-        st.error(f"🔴 **Alerta Crítica:** {suma_obtenida:.0f} / {suma_maxima:.0f} Puntos Totales — **{porcentaje_emt_final:.1f}% de cumplimiento**. El concesionario requiere contramedidas urgentes.")
+    st.error(f"🔴 Crítico: {suma_obt:.0f}/{suma_max:.0f} Puntos ({pct_emt:.1f}%)")
 
