@@ -191,4 +191,20 @@ elif pestaña == "Simulador Preventivo EMT":
     p_c = 100 if "🟢" in sim_kinto else 0
     p_d = 100 if "🟢" in sim_club else 0
     p_e = 100 if "🟢" in sim_tpa else 0
+    p_f = 100 if "🟢" in sim_tfs else 0
+    p_g = 100 if "🟢" in sim_usados else 0
+    p_h = 100 if "🟢" in sim_digital else 0
+    p_i = 100 if "🟢" in sim_conectados else 0
+    
+    total_sim = p_a + p_b + p_c + p_d + p_e + p_f + p_g + p_h + p_i
+    pct_emt = (total_sim / 900) * 100
+    
+    df_emt = pd.DataFrame()
+    df_emt["Macro-Capítulo EMT"] = ["A-Estructura", "B-Servicio", "C-Kinto", "D-Club", "E-TPA", "F-TFS", "G-Usados", "H-Convencional", "I-Conectados"]
+    df_emt["Puntaje Maximo"] = 100
+    df_emt["Puntaje Simulado"] = [p_a, p_b, p_c, p_d, p_e, p_f, p_g, p_h, p_i]
+    df_emt["Estado"] = ["🟢 Conforme" if x > 0 else "🔴 Alerta" for x in [p_a, p_b, p_c, p_d, p_e, p_f, p_g, p_h, p_i]]
+    
+    st.metric(label="🏆 NOTA CONSOLIDADA DE AUDITORÍA EMT SIMULADA", value=f"{total_sim} / 900 Puntos", delta=f"{pct_emt:.1f}% de Cumplimiento")
+    st.dataframe(df_emt, use_container_width=True)
 
