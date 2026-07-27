@@ -7,7 +7,7 @@ st.set_page_config(page_title="DEP Autolux - Gestión de Desvíos", layout="wide
 
 # Títulos de la Aplicación Operativa
 st.title("📊 Tablero de Control de Desvíos DEP - Autolux")
-st.caption("Ecosistema Integrado a Junio 2026 | Módulo Completo de Simulación Preventiva EMT")
+st.caption("Ecosistema Integrado a Junio 2026 | Sincronizado con Reporte Oficial (Puesto 24)")
 
 # 2. CONTROL DE MEMORIA PARA EL BOTÓN DE REINICIO
 if "reestablecer" not in st.session_state:
@@ -125,7 +125,43 @@ st.plotly_chart(px.bar(df_plot_areas, x="Área", y="Cumplimiento %", color="Esta
 
 st.divider()
 
-# 6. CONSOLIDADO POR CATEGORÍAS Y SIMULADOR EMT AVANZADO
+# 6. RESTAURADO: DIAGNÓSTICO FÍSICO DE CAUSA RAÍZ (LA TORTA)
+st.subheader("🕵️ Análisis Operativo: Plan de Acción Comercial en Sucursales")
+col_left, col_right = st.columns(2)
+
+with col_left:
+    df_quejas = pd.DataFrame({
+        "Motivo de la Queja": ["Falta de Kit de Seguridad", "Falta de Presentes / Merch", "Falta de Máquina de Café"],
+        "Impacto %": [36.0, 20.0, 16.0]
+    })
+    fig_pie = px.pie(df_quejas, values="Impacto %", names="Motivo de la Queja", color_discrete_sequence=px.colors.sequential.Reds_r, title="Distribución de Quejas de Clientes")
+    st.plotly_chart(fig_pie, use_container_width=True)
+
+with col_right:
+    st.markdown("""
+    **Análisis de la Mejora Actual (Puesto 26 ➔ 24):**
+    *   **Área Ventas (Subió a 40.7%)**: Las primeras entregas con presupuestos liberados para kits de seguridad de emergencia en Tartagal y Jujuy ayudaron a amortiguar la caída de las encuestas de satisfacción.
+    *   **Focos Críticos a Resolver**: Ventas Especiales (0.0%) y KINTO (35.8%) siguen congelados debido a retrasos en las entregas de flotas corporativas y la falta de amenities para clientes de movilidad.
+    """)
+
+st.divider()
+
+# 7. RESTAURADO: MATRIZ DE PLAN DE ACCIÓN OPERATIVO VIGENTE (CUADRO SEMÁFORO)
+st.subheader("📋 Plan de Acción Comercial - Seguimiento Operativo")
+plan_data = {
+    "Sucursal": ["Salta - Jujuy - Tartagal", "Salta - Jujuy", "Salta - Jujuy - Tartagal"],
+    "Sector": ["Comercial", "USI", "Posventa"],
+    "Problema Detectado": ["Unidades retiradas sin obsequio de entrega", "Falta de stock y de aprobación de presupuestos", "Retiro de máquina de café en salas de espera"],
+    "Causa Raíz": ["Demoras en circuito administrativo de aprobación", "Falta de fluidez y ausencia de presupuesto fijo", "Optimización de costos mal orientada"],
+    "Acción Correctiva Obligatoria": ["Consultar presupuesto de kits de seguridad alternativos", "Diseñar e implementar propuesta de presupuesto fijo", "Restaurar servicio de amenities y máquina de café"],
+    "Responsable": ["Asesores UCT / Resp. Comercial", "Gerencia Comercial", "Responsable Posventa"],
+    "Estatus Actual": ["En Proceso", "Pendiente", "Restablecido"]
+}
+st.dataframe(pd.DataFrame(plan_data), use_container_width=True)
+
+st.divider()
+
+# 8. CONSOLIDADO POR CATEGORÍAS Y SIMULADOR EMT AVANZADO
 st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
 
 pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
@@ -154,33 +190,3 @@ elif pestaña == "Simulador Preventivo EMT":
     p_b = 100 if "🟢" in sim_servicio else 0
     p_c = 100 if "🟢" in sim_kinto else 0
     p_d = 100 if "🟢" in sim_club else 0
-    p_e = 100 if "🟢" in sim_tpa else 0
-    p_f = 100 if "🟢" in sim_tfs else 0
-    p_g = 100 if "🟢" in sim_usados else 0
-    p_h = 100 if "🟢" in sim_digital else 0
-    p_i = 100 if "🟢" in sim_conectados else 0
-    
-    total_sim = p_a + p_b + p_c + p_d + p_e + p_f + p_g + p_h + p_i
-    pct_emt = (total_sim / 900) * 100
-    
-    # NUEVA ESTRUCTURA DE TABLA BLINDADA DE FORMA COLUMNA POR COLUMNA
-    df_emt = pd.DataFrame()
-    df_emt["Macro-Capítulo EMT"] = ["A - Estructura", "B - Servicio", "C - Kinto", "D - Club Toyota", "E - TPA", "F - TFS", "G - Usados", "H - Convencional", "I - Servicios Conectados"]
-    
-    # Inyección limpia de datos fijos e individuales para que nunca más falle el servidor
-    df_emt["Puntaje Máximo"] = [100, 100, 100, 100, 100, 100, 100, 100, 100]
-    df_emt["Puntaje Simulado"] = [p_a, p_b, p_c, p_d, p_e, p_f, p_g, p_h, p_i]
-    df_emt["Estatus"] = [
-        "🟢 Conforme" if p_a > 0 else "🔴 Alerta", "🟢 Conforme" if p_b > 0 else "🔴 Alerta",
-        "🟢 Conforme" if p_c > 0 else "🔴 Alerta", "🟢 Conforme" if p_d > 0 else "🔴 Alerta",
-        "🟢 Conforme" if p_e > 0 else "🔴 Alerta", "🟢 Conforme" if p_f > 0 else "🔴 Alerta",
-        "🟢 Conforme" if p_g > 0 else "🔴 Alerta", "🟢 Conforme" if p_h > 0 else "🔴 Alerta",
-        "🟢 Conforme" if p_i > 0 else "🔴 Alerta"
-    ]
-    
-    if pct_emt == 100:
-        st.success(f"🏆 **Resultado EMT Simulado:** {total_sim}/900 puntos ({pct_emt:.1f}%) - Cumplimiento Óptimo.")
-    else:
-        st.warning(f"⚠️ **Resultado EMT Simulado:** {total_sim}/900 puntos ({pct_emt:.1f}%) - Desvíos operativos detectados.")
-        
-    st.dataframe(df_emt, use_container_width=True)
