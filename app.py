@@ -163,7 +163,6 @@ elif pestaña_seleccionada == "MAY-CATEGORIA":
 elif pestaña_seleccionada == "Simulador Preventivo EMT":
     st.info("🎯 **Módulo de Preparación EMT:** La auditoría de Toyota inicia oficialmente en Septiembre 2026. Utiliza los selectores de abajo para predecir fallas operativas antes del inicio formal:")
     
-    # Selectores dinámicos por pilar para el simulador preventivo
     estatus_kinto = st.selectbox("Estatus pilar C - KINTO:", ["🟢 100% Cumplido", "🔴 Desviado por Flota / Siniestros (-100 pts)"])
     estatus_digital = st.selectbox("Estatus pilar H - Convencional (Gestión Digital):", ["🟢 100% Cumplido", "🔴 Desviado por Demora en Leads (-100 pts)"])
     
@@ -172,20 +171,16 @@ elif pestaña_seleccionada == "Simulador Preventivo EMT":
     total_emt_simulado = 700 + puntos_kinto + puntos_convencional
     pct_emt = (total_emt_simulado / 900) * 100
 
-    datos_emt = {
-        "Macro-Capítulo Auditoría EMT": [
-            "A - Estructura Central", "B - Servicio al Cliente", "C - Kinto (Share/One)", 
-            "D - Club Toyota", "E - Toyota Plan de Ahorro", "F - Toyota Financial Services", 
-            "G - Usados", "H - Convencional (0km)", "I - Servicios Conectados"
-        ],
-        "Puntaje Máximo":,
-        "Puntaje Simulado": [100, 100, puntos_kinto, 100, 100, 100, 100, puntos_convencional, 100],
-        "Estado": ["🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if puntos_kinto > 0 else "🔴 Alerta Crítica", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if puntos_convencional > 0 else "🔴 Alerta Leads", "🟢 Conforme"]
-    }
+    # Cambié la estructura de la tabla para que no use listas conflictivas que puedan romperse al renderizar
+    df_emt = pd.DataFrame()
+    df_emt["Macro-Capítulo Auditoría EMT"] = ["A - Estructura Central", "B - Servicio al Cliente", "C - Kinto (Share/One)", "D - Club Toyota", "E - Toyota Plan de Ahorro", "F - Toyota Financial Services", "G - Usados", "H - Convencional (0km)", "I - Servicios Conectados"]
+    df_emt["Puntaje Máximo"] = [100, 100, 100, 100, 100, 100, 100, 100, 100]
+    df_emt["Puntaje Simulado"] = [100, 100, puntos_kinto, 100, 100, 100, 100, puntos_convencional, 100]
+    df_emt["Estado"] = ["🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if puntos_kinto > 0 else "🔴 Alerta Crítica", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if puntos_convencional > 0 else "🔴 Alerta Leads", "🟢 Conforme"]
     
     if pct_emt == 100:
         st.success(f"🏆 **Resultado EMT Simulado:** {total_emt_simulado}/900 puntos ({pct_emt:.1f}%) - Máximo Nivel Best in Town alcanzado.")
     else:
         st.warning(f"⚠️ **Resultado EMT Simulado:** {total_emt_simulado}/900 puntos ({pct_emt:.1f}%) - Brechas operativas detectadas para corregir antes de Septiembre.")
         
-    st.dataframe(pd.DataFrame(datos_emt), use_container_width=True)
+    st.dataframe(df_emt, use_container_width=True)
