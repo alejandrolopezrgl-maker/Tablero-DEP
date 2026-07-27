@@ -161,7 +161,7 @@ st.dataframe(pd.DataFrame(plan_data), use_container_width=True)
 
 st.divider()
 
-# 8. CONSOLIDADO POR CATEGORÍAS Y SIMULADOR EMT CON TABLA RESTAURADA
+# 8. CONSOLIDADO POR CATEGORÍAS Y SIMULADOR EMT CON TABLA NATIVA REPARADA
 st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
 
 pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
@@ -191,3 +191,4 @@ elif pestaña == "Simulador Preventivo EMT":
     p_c = 100 if "🟢" in sim_kinto else 0
     p_d = 100 if "🟢" in sim_club else 0
     p_e = 100 if "🟢" in sim_tpa else 0
+
