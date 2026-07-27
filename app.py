@@ -57,7 +57,7 @@ if st.sidebar.button("🔄 Restablecer Valores Reales"):
     st.session_state.reestablecer = True
     st.rerun()
 
-# 4. DATOS BASE OFICIALES ACTUALIZADOS POR ÁREA (NOTA DE TPA CORREGIDA A 72.8%)
+# 4. DATOS BASE OFICIALES ACTUALIZADOS POR ÁREA (TPA AJUSTADO A 72.8%)
 df_areas = pd.DataFrame({
     "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "General"],
     "Cumplimiento %": [40.7, 0.0, 90.5, 72.8, 35.8, 75.8, 75.0, 25.0, 44.2],
@@ -170,4 +170,20 @@ if pestaña == "Resumen por Categorías":
     st.markdown("### Resumen consolidado por grandes grupos de auditoría")
     st.dataframe(df_areas, use_container_width=True)
 else:
-    st.info("Simulador Preventivo EMT activo. Usa los filtros de la barra lateral para modelar desvíos.")
+    st.markdown("### 📋 Análisis de Desvíos - Estilo de Movilidad Toyota (EMT)")
+    
+    # Renderizado del bloque explicativo por áreas del EMT en un recuadro dinámico
+    if penalidad_movilidad:
+        st.error("🚨 **Alerta EMT:** La penalización por Falta de Certificación de Estilo de Movilidad está restando **5 puntos** directos sobre los pilares comerciales.")
+    else:
+        st.success("🟢 **Estatus EMT:** Certificaciones de Estilo de Movilidad alineadas con los estándares vigentes de la red.")
+
+    # Estructura detallada del EMT por áreas operativas
+    df_emt = pd.DataFrame({
+        "Pilar EMT": ["Procesos de Célula de Movilidad", "Capacitación de Asesores UCT", "Gestión de Amenities & Espera", "Flota KINTO Certificada"],
+        "Área Responsable": ["Comercial / Ventas", "Recursos Humanos", "Posventa", "KINTO"],
+        "Nivel de Desvío": ["🟡 En Alerta", "🟢 Conforme", "🔴 Crítico", "🔴 Crítico"],
+        "Acción de Mitigación": ["Agilizar asignación de presupuestos fijos", "Mantener matriz de seguimiento al día", "Restaurar de inmediato máquina de café", "Liberar unidades retenidas por circuito administrativo"]
+    })
+    
+    st.dataframe(df_emt, use_container_width=True)
