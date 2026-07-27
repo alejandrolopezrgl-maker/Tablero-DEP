@@ -66,7 +66,7 @@ df_areas = pd.DataFrame({
 
 st.subheader("📉 Cumplimiento Real por Área Evaluada (Nueva Foto Consolidada)")
 
-# Buscador multiselección interactivo (Mejora: Si está vacío, asume que están todas seleccionadas)
+# Buscador multiselección interactivo
 filtros = st.multiselect(
     "🔍 Filtrar áreas específicas para enfocar el análisis:", 
     options=df_areas["Área"].unique(), 
@@ -78,12 +78,14 @@ filtros = st.multiselect(
 areas_activas = filtros if filtros else list(df_areas["Área"].unique())
 df_plot_areas = df_areas[df_areas["Área"].isin(areas_activas)]
 
-# --- CÁLCULO DE MÉTRICAS DINÁMICAS BASADAS EN TU FILTRO (La mejora solicitada) ---
+# --- CÁLCULO DE MÉTRICAS Y RANKING DINÁMICO (LA MEJORA LOGRADA) ---
 posventa_incluida = "Posventa" in areas_activas
 
 if posventa_incluida:
-    # Caso estándar: Posventa sostiene los números
+    # Caso real oficial
     score_global_calculado = 62.00 - puntos_a_restar_global
+    label_ranking = "Puesto 24 🏆"
+    delta_ranking = "Escaló desde el Puesto 26"
     label_posventa = "90.5%"
     delta_posventa = "Desempeño destacado en red"
     color_posventa = "normal"
@@ -98,16 +100,17 @@ if posventa_incluida:
         categoria_dinamica = "Categoría C"
         delta_color_cat = "inverse"
 else:
-    # Caso crítico: El usuario sacó a Posventa para golpear visualmente el tablero
-    # Calculamos el promedio de lo que queda en pantalla (Ventas, Kinto, etc.)
+    # Caso simulación de crisis: Sin el escudo de Posventa
     score_global_calculado = df_plot_areas["Cumplimiento %"].mean() - puntos_a_restar_global
+    label_ranking = "Puesto 39 🔻"
+    delta_ranking = "Retroceso crítico en simulación"
     label_posventa = "Excluido 🚫"
     delta_posventa = "Se quitó el pilar de apoyo"
     color_posventa = "inverse"
     categoria_dinamica = "Alerta Máxima 🛑"
     delta_color_cat = "inverse"
 
-# 5. CUADRO DE MANDO PRINCIPAL DINÁMICO (KPI CARDS REACCIONANDO AL BUSCADOR)
+# 5. CUADRO DE MANDO PRINCIPAL DINÁMICO (KPI CARDS INTEGRADOS)
 st.header("📌 Resumen Ejecutivo de Desvíos")
 col1, col2, col3, col4 = st.columns(4)
 
@@ -119,7 +122,7 @@ with col1:
         delta_color="normal" if (puntos_a_restar_global == 0 and posventa_incluida) else "inverse"
     )
 with col2:
-    st.metric(label="Ranking General Oficial", value="Puesto 24 🏆", delta="Posición real consolidada")
+    st.metric(label="Ranking General Oficial", value=label_ranking, delta=delta_ranking, delta_color="normal" if posventa_incluida else "inverse")
 with col3:
     st.metric(label="Pilar Posventa (Líder)", value=label_posventa, delta=delta_posventa, delta_color=color_posventa)
 with col4:
@@ -153,7 +156,7 @@ with col_right:
     st.markdown("""
     **Análisis de la Mejora Actual (Puesto 26 ➔ 24):**
     *   **Área Ventas (Subió a 40.7%)**: Las primeras entregas con presupuestos liberados para kits de seguridad de emergencia en Tartagal y Jujuy ayudaron a amortiguar la caída de las encuestas de satisfacción.
-    *   **Focos Críticos a Resolver**: Ventas Especiales (0.0%) y KINTO (35.8%) siguen congelados debido a retrasos en las entregas de flotas corporativas y la falta de amenities para clientes de movilidad.
+    *   **Focos Críticos a Resolver**: Ventas Especiales (0.0%) and KINTO (35.8%) siguen congelados debido a retrasos en las entregas de flotas corporativas y la falta de amenities para clientes de movilidad.
     """)
 
 st.divider()
@@ -181,7 +184,7 @@ elif pestaña == "Simulador Preventivo EMT":
     p_dig = 100 if "🟢" in estatus_digital else 0
     
     df_emt = pd.DataFrame()
-    df_emt["Macro-Capítulo EMT"] = ["A - Estructura", "B - Servicio", "C - Kinto", "D - Club Toyota", "E - TPA", "F - TFS", "G - Usados", "H - Convencional", "I - Servicios Conectados"]
+    df_emt["Macro-Capítulo EMT"] = ["A - Estructura", "B - Servicio", "C - Kinto", "D - Club Toyota", "E - TPA", "F - TFS", "G - Usados", "H - Convencional", "I - Services"]
     df_emt["Puntaje Máximo"] = [100, 100, 100, 100, 100, 100, 100, 100, 100]
     df_emt["Puntaje Simulado"] = [100, 100, p_kinto, 100, 100, 100, 100, p_dig, 100]
     df_emt["Estatus"] = ["🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if p_kinto > 0 else "🔴 Alerta", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme", "🟢 Conforme" if p_dig > 0 else "🔴 Alerta", "🟢 Conforme"]
