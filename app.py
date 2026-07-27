@@ -25,7 +25,7 @@ else:
 
 puntos_a_restar_global = 0
 if visitas_fieldman < 85:
-    st.sidebar.error("❌ Penalidad Posventa Activa (<85%).")
+    st.sidebar.error("❌ Penalidad Posventa Activa: Cumplimiento <85% genera castigo automático en Puntos Negativos del área.")
 if penalidad_fair_play:
     puntos_a_restar_global += 10
 if penalidad_movilidad:
@@ -39,10 +39,10 @@ if st.sidebar.button("🔄 Restablecer Valores Reales"):
 df_areas = pd.DataFrame({
     "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "General"],
     "Cumplimiento %": [40.7, 0.0, 90.5, 72.8, 35.8, 75.8, 75.0, 25.0, 44.2],
-    "Estado": ["🔴 Crítico", "🔴 Crítico", "🟢 Excelente", "🟡 Desviado", "🔴 Crítico", "🟡 En Alerta", "🟡 En Alerta", "🔴 Crítico", "🟡 Desviado"]
+    "Estado": ["🔴 Crítico", "🔴 Crítico (Nota 0)", "🟢 Excelente", "🟡 Desviado", "🔴 Crítico", "🟡 En Alerta", "🟡 En Alerta", "🔴 Crítico", "🟡 Desviado"]
 })
 
-filtros = st.multiselect("🔍 Filtrar áreas:", options=df_areas["Área"].unique(), default=[])
+filtros = st.multiselect("🔍 Filtrar áreas específicas para enfocar el análisis:", options=df_areas["Área"].unique(), default=[])
 areas_activas = filtros if filtros else list(df_areas["Área"].unique())
 df_plot_areas = df_areas[df_areas["Área"].isin(areas_activas)]
 posventa_incluida = "Posventa" in areas_activas
@@ -50,35 +50,55 @@ posventa_incluida = "Posventa" in areas_activas
 score_global = 62.00 - puntos_a_restar_global if posventa_incluida else df_plot_areas["Cumplimiento %"].mean() - puntos_a_restar_global
 
 col1, col2, col3, col4 = st.columns(4)
-with col1: st.metric("Cumplimiento DEP", f"{score_global:.1f}%")
-with col2: st.metric("Ranking Oficial", "Puesto 24 🏆" if posventa_incluida else "Puesto 39 🔻")
-with col3: st.metric("Pilar Posventa", "90.5%" if posventa_incluida else "Excluido 🚫")
-with col4: st.metric("Categoría", "Categoría C" if score_global < 80 else "Categoría B")
+with col1: st.metric("Cumplimiento General DEP", f"{score_global:.1f}%", delta=f"-{puntos_a_restar_global}% Penalidad" if puntos_a_restar_global > 0 else "Subió +0.8%")
+with col2: st.metric("Ranking General Oficial", "Puesto 24 🏆" if posventa_incluida else "Puesto 39 🔻", delta="Escaló desde el Puesto 26" if posventa_incluida else "Retroceso crítico en simulación")
+with col3: st.metric("Pilar Posventa (Líder)", "90.5%" if posventa_incluida else "Excluido 🚫", delta="Desempeño destacado en red" if posventa_incluida else "Se quitó el pilar de apoyo")
+with col4: st.metric("Estatus de Categoría", "Categoría C" if score_global < 80 else "Categoría B", delta="Objetivo Target: ≥90% para Cat. A")
 
 st.divider()
-st.plotly_chart(px.bar(df_plot_areas, x="Área", y="Cumplimiento %", color="Estado", text_auto=".1f", color_discrete_map={"🟢 Excelente": "#2ca02c", "🟡 Desviado": "#ff7f0e", "🟡 En Alerta": "#bcbd22", "🔴 Crítico": "#d62728"}), use_container_width=True)
+st.plotly_chart(px.bar(df_plot_areas, x="Área", y="Cumplimiento %", color="Estado", text_auto=".1f", color_discrete_map={"🟢 Excelente": "#2ca02c", "🟡 Desviado": "#ff7f0e", "🟡 En Alerta": "#bcbd22", "🔴 Crítico": "#d62728", "🔴 Crítico (Nota 0)": "#7f1d1d"}), use_container_width=True)
 
-# 4. MATRICES DE ACCIÓN Y QUEJAS
+# 4. DIAGNÓSTICO DE CAUSA RAÍZ REAL (RECUPERADO AL 100%)
 st.divider()
+st.subheader("🕵️ Análisis Operativo: Plan de Acción Comercial en Sucursales")
 c_left, c_right = st.columns(2)
 with c_left:
-    st.plotly_chart(px.pie(pd.DataFrame({"Motivo": ["Kit Seguridad", "Merch", "Café"], "Impacto": [36.0, 20.0, 16.0]}), values="Impacto", names="Motivo", title="Quejas"), use_container_width=True)
+    df_quejas = pd.DataFrame({
+        "Motivo de la Queja": ["Falta de Kit de Seguridad", "Falta de Presentes / Merch", "Falta de Máquina de Café"],
+        "Impacto %": [36.0, 20.0, 16.0]
+    })
+    st.plotly_chart(px.pie(df_quejas, values="Impacto %", names="Motivo de la Queja", color_discrete_sequence=px.colors.sequential.Reds_r, title="Distribución de Quejas de Clientes"), use_container_width=True)
 with c_right:
-    st.markdown("**Mejora:** Ventas subió a 40.7%. **Focos críticos:** Kinto y Especiales.")
+    st.markdown("""
+    **Análisis de la Mejora Actual (Puesto 26 ➔ 24):**
+    *   **Área Ventas (Subió a 40.7%)**: Las primeras entregas con presupuestos liberados para kits de seguridad de emergencia en Tartagal y Jujuy ayudaron a amortiguar la caída de las encuestas de satisfacción.
+    *   **Focos Críticos a Resolver**: Ventas Especiales (0.0%) y KINTO (35.8%) siguen congelados debido a retrasos en las entregas de flotas corporativas y la falta de amenities para clientes de movilidad.
+    """)
 
-st.dataframe(pd.DataFrame({"Sucursal": ["Salta-Jujuy-Tartagal", "Salta-Jujuy", "Salta-Jujuy-Tartagal"], "Sector": ["Comercial", "USI", "Posventa"], "Problema": ["Falta obsequio", "Falta stock", "Retiro café"], "Acción": ["Kits alternativos", "Presupuesto fijo", "Restaurar café"], "Responsable": ["Asesores UCT", "Gerencia Com.", "Resp. Posventa"], "Estatus": ["En Proceso", "Pendiente", "Restablecido"]}), use_container_width=True)
+# PLAN DE ACCIÓN COMPLETO SEMÁFORO
+st.subheader("📋 Plan de Acción Comercial - Seguimiento Operativo")
+plan_data = {
+    "Sucursal": ["Salta - Jujuy - Tartagal", "Salta - Jujuy", "Salta - Jujuy - Tartagal"],
+    "Sector": ["Comercial", "USI", "Posventa"],
+    "Problema Detected": ["Unidades retiradas sin obsequio de entrega", "Falta de stock y de aprobación de presupuestos", "Retiro de máquina de café en salas de espera"],
+    "Causa Raíz": ["Demoras en circuito administrative de aprobación", "Falta de fluidez y ausencia de presupuesto fijo", "Optimización de costos mal orientada"],
+    "Acción Correctiva Obligatoria": ["Consultar presupuesto de kits de seguridad alternativos", "Diseñar e implementar propuesta de presupuesto fijo", "Restaurar servicio de amenities and máquina de café"],
+    "Responsable": ["Asesores UCT / Resp. Comercial", "Gerencia Comercial", "Responsable Posventa"],
+    "Estatus Actual": ["En Proceso", "Pendiente", "Restablecido"]
+}
+st.dataframe(pd.DataFrame(plan_data), use_container_width=True)
 
 # 5. CONSOLIDADO POR PESTAÑAS Y SIMULADOR EMT COMPACTADO
 st.divider()
 st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
 
-pestaña = st.radio("Selecciona pestaña:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
+pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
 
 if pestaña == "Resumen por Categorías":
-    st.markdown("### 📊 Resumen por Grandes Grupos")
+    st.markdown("### 📊 Resumen consolidado por grandes grupos de auditoría")
     st.dataframe(df_areas, use_container_width=True)
 else:
-    st.markdown("### 🎯 Módulo de Preparación EMT")
+    st.markdown("### 🎯 Módulo de Preparación EMT: Modifica los selectores para evaluar el impacto")
     c_a, c_b, c_c = st.columns(3)
     with c_a: sim_est = st.selectbox("Área A - Estructura Central:", ["🟢 Conforme", "🔴 Alerta"], index=0)
     with c_b: sim_ser = st.selectbox("Área B - Servicio al Cliente:", ["🟢 Conforme", "🔴 Alerta"], index=0)
@@ -98,7 +118,7 @@ else:
 
     df_emt = pd.DataFrame({
         "Macro-Capítulo EMT": ["A-Estructura", "B-Servicio", "C-Kinto", "D-Club", "E-TPA", "F-TFS", "G-Usados", "H-Convencional", "I-Conectados"],
-        "Puntaje Maximo": [100] * 9,
+        "Puntaje Maximo": list(g_mx := (100 for _ in range(9))),
         "Puntaje Simulado": p_list,
         "Estado": ["🟢 Conforme" if x > 0 else "🔴 Alerta" for x in p_list]
     })
