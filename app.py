@@ -83,7 +83,7 @@ else:
     st.caption("Estructura oficial homologada sobre una base de 900 puntos máximos auditables.")
     
     # Matriz interactiva armada con los 9 capítulos del PDF oficiales de Toyota
-    base_emt_data = {
+     base_emt_data = {
         "Capítulo": [
             "A - Estructura Central", 
             "B - Servicio al Cliente", 
@@ -95,10 +95,10 @@ else:
             "H - Convencional", 
             "I - Servicios Conectados"
         ],
-        "Puntos Máximos":,
-        "Puntos Obtenidos (Simulados)": [100, 100, 100, 100, 100, 100, 100, 100, 100]
-
+        "Puntos Máximos": [100] * 9,
+        "Puntos Obtenidos (Simulados)": [100] * 9
     }
+   
 
     
     df_base_emt = pd.DataFrame(base_emt_data)
