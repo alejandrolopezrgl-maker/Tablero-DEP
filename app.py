@@ -163,23 +163,24 @@ elif pestaña == "Simulador Preventivo EMT":
     total_sim = p_a + p_b + p_c + p_d + p_e + p_f + p_g + p_h + p_i
     pct_emt = (total_sim / 900) * 100
     
-    # DATOS TOTALMENTE FIJOS INYECTADOS DIRECTAMENTE PARA EVITAR BLANCOS EN LA PRESENTACIÓN
-    datos_completos_emt = {
-        "Macro-Capítulo EMT": ["A - Estructura", "B - Servicio", "C - Kinto", "D - Club Toyota", "E - TPA", "F - TFS", "G - Usados", "H - Convencional", "I - Servicios Conectados"],
-        "Puntaje Máximo":,
-        "Puntaje Simulado": [p_a, p_b, p_c, p_d, p_e, p_f, p_g, p_h, p_i],
-        "Estatus": [
-            "🟢 Conforme" if p_a > 0 else "🔴 Alerta", "🟢 Conforme" if p_b > 0 else "🔴 Alerta",
-            "🟢 Conforme" if p_c > 0 else "🔴 Alerta", "🟢 Conforme" if p_d > 0 else "🔴 Alerta",
-            "🟢 Conforme" if p_e > 0 else "🔴 Alerta", "🟢 Conforme" if p_f > 0 else "🔴 Alerta",
-            "🟢 Conforme" if p_g > 0 else "🔴 Alerta", "🟢 Conforme" if p_h > 0 else "🔴 Alerta",
-            "🟢 Conforme" if p_i > 0 else "🔴 Alerta"
-        ]
-    }
+    # NUEVA ESTRUCTURA DE TABLA BLINDADA DE FORMA COLUMNA POR COLUMNA
+    df_emt = pd.DataFrame()
+    df_emt["Macro-Capítulo EMT"] = ["A - Estructura", "B - Servicio", "C - Kinto", "D - Club Toyota", "E - TPA", "F - TFS", "G - Usados", "H - Convencional", "I - Servicios Conectados"]
+    
+    # Inyección limpia de datos fijos e individuales para que nunca más falle el servidor
+    df_emt["Puntaje Máximo"] = [100, 100, 100, 100, 100, 100, 100, 100, 100]
+    df_emt["Puntaje Simulado"] = [p_a, p_b, p_c, p_d, p_e, p_f, p_g, p_h, p_i]
+    df_emt["Estatus"] = [
+        "🟢 Conforme" if p_a > 0 else "🔴 Alerta", "🟢 Conforme" if p_b > 0 else "🔴 Alerta",
+        "🟢 Conforme" if p_c > 0 else "🔴 Alerta", "🟢 Conforme" if p_d > 0 else "🔴 Alerta",
+        "🟢 Conforme" if p_e > 0 else "🔴 Alerta", "🟢 Conforme" if p_f > 0 else "🔴 Alerta",
+        "🟢 Conforme" if p_g > 0 else "🔴 Alerta", "🟢 Conforme" if p_h > 0 else "🔴 Alerta",
+        "🟢 Conforme" if p_i > 0 else "🔴 Alerta"
+    ]
     
     if pct_emt == 100:
         st.success(f"🏆 **Resultado EMT Simulado:** {total_sim}/900 puntos ({pct_emt:.1f}%) - Cumplimiento Óptimo.")
     else:
         st.warning(f"⚠️ **Resultado EMT Simulado:** {total_sim}/900 puntos ({pct_emt:.1f}%) - Desvíos operativos detectados.")
         
-    st.dataframe(pd.DataFrame(datos_completos_emt), use_container_width=True)
+    st.dataframe(df_emt, use_container_width=True)
