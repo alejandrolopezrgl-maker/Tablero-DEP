@@ -17,17 +17,15 @@ if "reestablecer" not in st.session_state:
 st.sidebar.header("🚨 Zona Roja: Penalidades Directas")
 st.sidebar.markdown("Filtros de control para simular el impacto en auditorías:")
 
-# Valores por defecto para la simulación o el reinicio
 default_fair_play = False
 default_movilidad = False
 default_fieldman = 78
 
-# Si el usuario presionó reestablecer, forzamos los valores reales oficiales
 if st.session_state.reestablecer:
     penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts directos)", value=default_fair_play, key="fp_real")
     penalidad_movilidad = st.sidebar.toggle("Falta Certificación Estilo Movilidad (-5 pts)", value=default_movilidad, key="mov_real")
     visitas_fieldman = st.sidebar.slider("% Cumplimiento Visitas Fieldman", 0, 100, default_fieldman, key="fm_real")
-    st.session_state.reestablecer = False  # Apagamos el gatillo
+    st.session_state.reestablecer = False  
 else:
     penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts directos)", value=default_fair_play)
     penalidad_movilidad = st.sidebar.toggle("Falta Certificación Estilo Movilidad (-5 pts)", value=default_movilidad)
@@ -59,47 +57,77 @@ if st.sidebar.button("🔄 Restablecer Valores Reales"):
     st.session_state.reestablecer = True
     st.rerun()
 
-# Valores base oficiales actualizados al nuevo reporte (Puesto 24)
-score_global_base = 62.00
-score_global_calculado = score_global_base - puntos_a_restar_global
-
-if score_global_calculado >= 90:
-    categoria_dinamica = "Categoría A"
-    delta_color_cat = "normal"
-elif score_global_calculado >= 80:
-    categoria_dinamica = "Categoría B"
-    delta_color_cat = "off"
-else:
-    categoria_dinamica = "Categoría C"
-    delta_color_cat = "inverse"
-
-# 4. CUADRO DE MANDO PRINCIPAL (MÉTRICAS OFICIALES NUEVAS)
-st.header("📌 Resumen Ejecutivo de Desvíos")
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    st.metric(label="Cumplimiento General DEP", value=f"{score_global_calculado:.1f}%", delta=f"-{puntos_a_restar_global}% Penalidad" if puntos_a_restar_global > 0 else "Subió +0.8%", delta_color="normal" if puntos_a_restar_global == 0 else "inverse")
-with col2:
-    st.metric(label="Ranking General Oficial", value="Puesto 24 🏆", delta="Escaló desde el Puesto 26")
-with col3:
-    st.metric(label="Pilar Posventa (Líder)", value="90.5%", delta="Desempeño destacado en red", delta_color="normal")
-with col4:
-    st.metric(label="Estatus de Categoría", value=categoria_dinamica, delta="Objetivo Target: ≥90% para Cat. A", delta_color=delta_color_cat)
-
-st.divider()
-
-# 5. GRÁFICO OFICIAL ACTUALIZADO POR ÁREA
-st.subheader("📉 Cumplimiento Real por Área Evaluada (Nueva Foto Consolidada)")
-
+# 4. DATOS BASE OFICIALES ACTUALIZADOS POR ÁREA
 df_areas = pd.DataFrame({
     "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "General"],
     "Cumplimiento %": [40.7, 0.0, 90.5, 59.1, 35.8, 75.8, 75.0, 25.0, 44.2],
     "Estado": ["🔴 Crítico", "🔴 Crítico (Nota 0)", "🟢 Excelente", "🟡 Desviado", "🔴 Crítico", "🟡 En Alerta", "🟡 En Alerta", "🔴 Crítico", "🟡 Desviado"]
 })
 
-filtros = st.multiselect("🔍 Filtrar áreas específicas para enfocar el análisis:", options=df_areas["Área"].unique(), default=[])
-df_plot_areas = df_areas[df_areas["Área"].isin(filtros)] if filtros else df_areas
+st.subheader("📉 Cumplimiento Real por Área Evaluada (Nueva Foto Consolidada)")
 
+# Buscador multiselección interactivo (Mejora: Si está vacío, asume que están todas seleccionadas)
+filtros = st.multiselect(
+    "🔍 Filtrar áreas específicas para enfocar el análisis:", 
+    options=df_areas["Área"].unique(), 
+    default=[],
+    placeholder="Muestra la radiografía completa si dejas vacío el buscador"
+)
+
+# Lógica dinámica: determinar cuáles áreas están activas en el análisis
+areas_activas = filtros if filtros else list(df_areas["Área"].unique())
+df_plot_areas = df_areas[df_areas["Área"].isin(areas_activas)]
+
+# --- CÁLCULO DE MÉTRICAS DINÁMICAS BASADAS EN TU FILTRO (La mejora solicitada) ---
+posventa_incluida = "Posventa" in areas_activas
+
+if posventa_incluida:
+    # Caso estándar: Posventa sostiene los números
+    score_global_calculado = 62.00 - puntos_a_restar_global
+    label_posventa = "90.5%"
+    delta_posventa = "Desempeño destacado en red"
+    color_posventa = "normal"
+    
+    if score_global_calculado >= 90:
+        categoria_dinamica = "Categoría A"
+        delta_color_cat = "normal"
+    elif score_global_calculado >= 80:
+        categoria_dinamica = "Categoría B"
+        delta_color_cat = "off"
+    else:
+        categoria_dinamica = "Categoría C"
+        delta_color_cat = "inverse"
+else:
+    # Caso crítico: El usuario sacó a Posventa para golpear visualmente el tablero
+    # Calculamos el promedio de lo que queda en pantalla (Ventas, Kinto, etc.)
+    score_global_calculado = df_plot_areas["Cumplimiento %"].mean() - puntos_a_restar_global
+    label_posventa = "Excluido 🚫"
+    delta_posventa = "Se quitó el pilar de apoyo"
+    color_posventa = "inverse"
+    categoria_dinamica = "Alerta Máxima 🛑"
+    delta_color_cat = "inverse"
+
+# 5. CUADRO DE MANDO PRINCIPAL DINÁMICO (KPI CARDS REACCIONANDO AL BUSCADOR)
+st.header("📌 Resumen Ejecutivo de Desvíos")
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.metric(
+        label="Cumplimiento General DEP", 
+        value=f"{score_global_calculado:.1f}%", 
+        delta=f"-{puntos_a_restar_global}% Penalidad" if puntos_a_restar_global > 0 else ("Pilar Posventa Excluido 🔻" if not posventa_incluida else "Subió +0.8%"), 
+        delta_color="normal" if (puntos_a_restar_global == 0 and posventa_incluida) else "inverse"
+    )
+with col2:
+    st.metric(label="Ranking General Oficial", value="Puesto 24 🏆", delta="Posición real consolidada")
+with col3:
+    st.metric(label="Pilar Posventa (Líder)", value=label_posventa, delta=delta_posventa, delta_color=color_posventa)
+with col4:
+    st.metric(label="Estatus de Categoría", value=categoria_dinamica, delta="Objetivo Target: ≥90% para Cat. A", delta_color=delta_color_cat)
+
+st.divider()
+
+# RENDERIZADO DEL GRÁFICO DE BARRAS REALES
 fig_areas = px.bar(
     df_plot_areas, x="Área", y="Cumplimiento %", color="Estado", text_auto=".1f",
     color_discrete_map={"🟢 Excelente": "#2ca02c", "🟡 Desviado": "#ff7f0e", "🟡 En Alerta": "#bcbd22", "🔴 Crítico": "#d62728", "🔴 Crítico (Nota 0)": "#7f1d1d"},
