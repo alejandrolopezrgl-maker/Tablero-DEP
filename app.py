@@ -161,7 +161,7 @@ st.dataframe(pd.DataFrame(plan_data), use_container_width=True)
 
 st.divider()
 
-# 8. CONSOLIDADO POR CATEGORÍAS Y SIMULADOR EMT RESUMIDO
+# 8. CONSOLIDADO POR CATEGORÍAS Y SIMULADOR EMT CON TABLA RESTAURADA
 st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
 
 pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
