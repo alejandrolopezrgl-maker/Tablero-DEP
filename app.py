@@ -9,13 +9,29 @@ st.set_page_config(page_title="DEP Autolux - Gestión de Desvíos", layout="wide
 st.title("📊 Tablero de Control de Desvíos DEP - Autolux")
 st.caption("Ecosistema Integrado a Junio 2026 | Sincronizado con Reporte Oficial (Puesto 24)")
 
-# 2. BARRA LATERAL (SIDEBAR): CONTROL DE RIESGOS Y PENALIDADES DIRECTAS
+# 2. CONTROL DE MEMORIA PARA EL BOTÓN DE REINICIO
+if "reestablecer" not in st.session_state:
+    st.session_state.reestablecer = False
+
+# 3. BARRA LATERAL (SIDEBAR): CONTROL DE RIESGOS Y PENALIDADES DIRECTAS
 st.sidebar.header("🚨 Zona Roja: Penalidades Directas")
 st.sidebar.markdown("Filtros de control para simular el impacto en auditorías:")
 
-penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts directos)", value=False)
-penalidad_movilidad = st.sidebar.toggle("Falta Certificación Estilo Movilidad (-5 pts)", value=False)
-visitas_fieldman = st.sidebar.slider("% Cumplimiento Visitas Fieldman", 0, 100, 78)
+# Valores por defecto para la simulación o el reinicio
+default_fair_play = False
+default_movilidad = False
+default_fieldman = 78
+
+# Si el usuario presionó reestablecer, forzamos los valores reales oficiales
+if st.session_state.reestablecer:
+    penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts directos)", value=default_fair_play, key="fp_real")
+    penalidad_movilidad = st.sidebar.toggle("Falta Certificación Estilo Movilidad (-5 pts)", value=default_movilidad, key="mov_real")
+    visitas_fieldman = st.sidebar.slider("% Cumplimiento Visitas Fieldman", 0, 100, default_fieldman, key="fm_real")
+    st.session_state.reestablecer = False  # Apagamos el gatillo
+else:
+    penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts directos)", value=default_fair_play)
+    penalidad_movilidad = st.sidebar.toggle("Falta Certificación Estilo Movilidad (-5 pts)", value=default_movilidad)
+    visitas_fieldman = st.sidebar.slider("% Cumplimiento Visitas Fieldman", 0, 100, default_fieldman)
 
 puntos_a_restar_global = 0
 penalizacion_posventa_activa = False
@@ -37,6 +53,12 @@ if penalidad_movilidad:
     st.sidebar.warning("⚠️ Penalidad Movilidad: -5 puntos directos por falta de certificación.")
     puntos_a_restar_global += 5
 
+# Botón estratégico de reinicio rápido en la barra lateral
+st.sidebar.divider()
+if st.sidebar.button("🔄 Restablecer Valores Reales"):
+    st.session_state.reestablecer = True
+    st.rerun()
+
 # Valores base oficiales actualizados al nuevo reporte (Puesto 24)
 score_global_base = 62.00
 score_global_calculado = score_global_base - puntos_a_restar_global
@@ -51,7 +73,7 @@ else:
     categoria_dinamica = "Categoría C"
     delta_color_cat = "inverse"
 
-# 3. CUADRO DE MANDO PRINCIPAL (MÉTRICAS OFICIALES NUEVAS)
+# 4. CUADRO DE MANDO PRINCIPAL (MÉTRICAS OFICIALES NUEVAS)
 st.header("📌 Resumen Ejecutivo de Desvíos")
 col1, col2, col3, col4 = st.columns(4)
 
@@ -66,7 +88,7 @@ with col4:
 
 st.divider()
 
-# 4. GRÁFICO OFICIAL ACTUALIZADO POR ÁREA
+# 5. GRÁFICO OFICIAL ACTUALIZADO POR ÁREA
 st.subheader("📉 Cumplimiento Real por Área Evaluada (Nueva Foto Consolidada)")
 
 df_areas = pd.DataFrame({
@@ -87,7 +109,7 @@ st.plotly_chart(fig_areas, use_container_width=True)
 
 st.divider()
 
-# 5. DIAGNÓSTICO FÍSICO DE CAUSA RAÍZ
+# 6. DIAGNÓSTICO FÍSICO DE CAUSA RAÍZ
 st.subheader("🕵️ Análisis Operativo: Plan de Acción Comercial en Sucursales")
 col_left, col_right = st.columns(2)
 
@@ -108,7 +130,7 @@ with col_right:
 
 st.divider()
 
-# 6. CONSOLIDADO POR CATEGORÍAS Y SIMULADOR EMT
+# 7. CONSOLIDADO POR CATEGORÍAS Y SIMULADOR EMT
 st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
 
 pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
