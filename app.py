@@ -73,33 +73,52 @@ st.dataframe(pd.DataFrame(plan_data), use_container_width=True)
 st.divider()
 # 8. CONSOLIDADO POR CATEGORÍAS Y SIMULADOR EMT
 st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
-pestaña = st.radio("Selecciona pestaña:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
+pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
 
 if pestaña == "Resumen por Categorías":
-    st.markdown("### Resumen consolidado por grupos")
+    st.markdown("### Resumen consolidado por grandes grupos de auditoría")
     st.dataframe(df_areas, use_container_width=True)
 else:
-    st.markdown("### 📋 Simulador Oficial EMT - TOYOTA (Target Septiembre)")
+    st.markdown("### 📋 Simulador Oficial EMT - Estilo de Movilidad TOYOTA (Target Septiembre)")
+    st.caption("Estructura oficial homologada sobre una base de 900 puntos máximos auditables.")
     
+    # Matriz interactiva armada con los 9 capítulos del PDF oficiales de Toyota
     base_emt_data = {
-        "Capítulo": ["A - Estructura Central", "B - Servicio al Cliente", "C - Kinto", "D - Club Toyota", "E - Toyota Plan de Ahorro", "F - Toyota Financial Services", "G - Usados", "H - Convencional", "I - Servicios Conectados"],
+        "Capítulo": [
+            "A - Estructura Central", 
+            "B - Servicio al Cliente", 
+            "C - Kinto", 
+            "D - Club Toyota", 
+            "E - Toyota Plan de Ahorro", 
+            "F - Toyota Financial Services", 
+            "G - Usados", 
+            "H - Convencional", 
+            "I - Servicios Conectados"
+        ],
         "Puntos Máximos":,
         "Puntos Obtenidos (Simulados)": [100, 100, 100, 100, 100, 100, 100, 100, 100]
     }
     
     df_base_emt = pd.DataFrame(base_emt_data)
+    
+    st.markdown("✏️ **Instrucción:** Modifica los valores de la columna **'Puntos Obtenidos (Simulados)'** para ensayar escenarios reales:")
+    
+    # Tabla editable interactiva
     df_editado_emt = st.data_editor(df_base_emt, disabled=["Capítulo", "Puntos Máximos"], use_container_width=True)
     
+    # Cálculos globales dinámicos
     suma_maxima = df_editado_emt["Puntos Máximos"].sum()
     suma_obtenida = df_editado_emt["Puntos Obtenidos (Simulados)"].sum()
     porcentaje_emt_final = (suma_obtenida / suma_maxima) * 100
     
     st.markdown("#### 🎯 Resultado Consolidado de la Simulación")
+    
     if porcentaje_emt_final == 100.0:
-        st.success(f"🏆 **Perfecto:** {suma_obtenida:.0f}/{suma_maxima:.0f} Puntos — **{porcentaje_emt_final:.1f}%**")
+        st.success(f"🏆 **Puntaje Perfecto:** {suma_obtenida:.0f} / {suma_maxima:.0f} Puntos Totales — **{porcentaje_emt_final:.1f}% de cumplimiento**. Escenario base ideal.")
     elif porcentaje_emt_final >= 90.0:
-        st.info(f"🟢 **Conforme:** {suma_obtenida:.0f}/{suma_maxima:.0f} Puntos — **{porcentaje_emt_final:.1f}%**")
+        st.info(f"🟢 **Zona Conforme:** {suma_obtenida:.0f} / {suma_maxima:.0f} Puntos Totales — **{porcentaje_emt_final:.1f}% de cumplimiento**. Perfil apto para aprobación.")
     elif porcentaje_emt_final >= 75.0:
-        st.warning(f"🟡 **Alerta:** {suma_obtenida:.0f}/{suma_maxima:.0f} Puntos — **{porcentaje_emt_final:.1f}%**")
+        st.warning(f"🟡 **Zona de Alerta:** {suma_obtenida:.0f} / {suma_maxima:.0f} Puntos Totales — **{porcentaje_emt_final:.1f}% de cumplimiento**. Se detectan desvíos operativos leves.")
     else:
-        st.error(f"🔴 **Crítico:** {suma_obtenida:.0f}/{suma_maxima:.0f} Puntos — **{porcentaje_emt_final:.1f}%**")
+        st.error(f"🔴 **Alerta Crítica:** {suma_obtenida:.0f} / {suma_maxima:.0f} Puntos Totales — **{porcentaje_emt_final:.1f}% de cumplimiento**. El concesionario requiere contramedidas urgentes.")
+
