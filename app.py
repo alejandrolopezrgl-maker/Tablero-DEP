@@ -125,7 +125,7 @@ st.plotly_chart(px.bar(df_plot_areas, x="Área", y="Cumplimiento %", color="Esta
 
 st.divider()
 
-# 6. RESTAURADO: DIAGNÓSTICO FÍSICO DE CAUSA RAÍZ (LA TORTA)
+# 6. DIAGNÓSTICO FÍSICO DE CAUSA RAÍZ
 st.subheader("🕵️ Análisis Operativo: Plan de Acción Comercial en Sucursales")
 col_left, col_right = st.columns(2)
 
@@ -146,13 +146,13 @@ with col_right:
 
 st.divider()
 
-# 7. RESTAURADO: MATRIZ DE PLAN DE ACCIÓN OPERATIVO VIGENTE (CUADRO SEMÁFORO)
+# 7. MATRIZ DE PLAN DE ACCIÓN OPERATIVO VIGENTE (CUADRO SEMÁFORO)
 st.subheader("📋 Plan de Acción Comercial - Seguimiento Operativo")
 plan_data = {
     "Sucursal": ["Salta - Jujuy - Tartagal", "Salta - Jujuy", "Salta - Jujuy - Tartagal"],
     "Sector": ["Comercial", "USI", "Posventa"],
-    "Problema Detectado": ["Unidades retiradas sin obsequio de entrega", "Falta de stock y de aprobación de presupuestos", "Retiro de máquina de café en salas de espera"],
-    "Causa Raíz": ["Demoras en circuito administrativo de aprobación", "Falta de fluidez y ausencia de presupuesto fijo", "Optimización de costos mal orientada"],
+    "Problema Detected": ["Unidades retiradas sin obsequio de entrega", "Falta de stock y de aprobación de presupuestos", "Retiro de máquina de café en salas de espera"],
+    "Causa Raíz": ["Demoras en circuito administrative de aprobación", "Falta de fluidez y ausencia de presupuesto fijo", "Optimización de costos mal orientada"],
     "Acción Correctiva Obligatoria": ["Consultar presupuesto de kits de seguridad alternativos", "Diseñar e implementar propuesta de presupuesto fijo", "Restaurar servicio de amenities y máquina de café"],
     "Responsable": ["Asesores UCT / Resp. Comercial", "Gerencia Comercial", "Responsable Posventa"],
     "Estatus Actual": ["En Proceso", "Pendiente", "Restablecido"]
@@ -161,7 +161,7 @@ st.dataframe(pd.DataFrame(plan_data), use_container_width=True)
 
 st.divider()
 
-# 8. CONSOLIDADO POR CATEGORÍAS Y SIMULADOR EMT AVANZADO
+# 8. CONSOLIDADO POR CATEGORÍAS Y SIMULADOR EMT RESUMIDO
 st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
 
 pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
@@ -190,3 +190,4 @@ elif pestaña == "Simulador Preventivo EMT":
     p_b = 100 if "🟢" in sim_servicio else 0
     p_c = 100 if "🟢" in sim_kinto else 0
     p_d = 100 if "🟢" in sim_club else 0
+    p_e = 100 if "🟢" in sim_tpa else 0
