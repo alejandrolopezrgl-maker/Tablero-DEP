@@ -57,10 +57,10 @@ if st.sidebar.button("🔄 Restablecer Valores Reales"):
     st.session_state.reestablecer = True
     st.rerun()
 
-# 4. DATOS BASE OFICIALES ACTUALIZADOS POR ÁREA
+# 4. DATOS BASE OFICIALES ACTUALIZADOS POR ÁREA (NOTA DE TPA CORREGIDA A 72.8%)
 df_areas = pd.DataFrame({
     "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "General"],
-    "Cumplimiento %": [40.7, 0.0, 90.5, 59.1, 35.8, 75.8, 75.0, 25.0, 44.2],
+    "Cumplimiento %": [40.7, 0.0, 90.5, 72.8, 35.8, 75.8, 75.0, 25.0, 44.2],
     "Estado": ["🔴 Crítico", "🔴 Crítico (Nota 0)", "🟢 Excelente", "🟡 Desviado", "🔴 Crítico", "🟡 En Alerta", "🟡 En Alerta", "🔴 Crítico", "🟡 Desviado"]
 })
 
@@ -167,44 +167,7 @@ st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
 pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
 
 if pestaña == "Resumen por Categorías":
-    st.dataframe(pd.DataFrame({"Categoría de Medición (Acumulado Junio)": ["Calidad", "Programas", "RRHH", "Facilities (Instalaciones)", "Targets (Metas)"], "Cumplimiento Oficial Autolux": ["69.2%", "76.8%", "87.0%", "40.0%", "55.1%"], "Ranking en la Red": ["Puesto 18", "Puesto 43", "Puesto 14", "Puesto 39", "Puesto 12"]}), use_container_width=True)
-
-elif pestaña == "Simulador Preventivo EMT":
-    st.info("🎯 **Módulo de Preparación EMT:** Modifica los selectores para evaluar el impacto regulatorio en cualquiera de las áreas clave:")
-    
-    col_s1, col_s2, col_s3 = st.columns(3)
-    with col_s1:
-        sim_kinto = st.selectbox("Área C - KINTO:", ["🟢 Conforme", "🔴 Desviado (-100 pts)"])
-        sim_tpa = st.selectbox("Área E - Plan de Ahorro:", ["🟢 Conforme", "🔴 Desviado (-100 pts)"])
-        sim_usados = st.selectbox("Área G - Usados:", ["🟢 Conforme", "🔴 Desviado (-100 pts)"])
-    with col_s2:
-        sim_servicio = st.selectbox("Área B - Servicio al Cliente:", ["🟢 Conforme", "🔴 Desviado (-100 pts)"])
-        sim_tfs = st.selectbox("Área F - Financiera (TFS):", ["🟢 Conforme", "🔴 Desviado (-100 pts)"])
-        sim_digital = st.selectbox("Área H - Convencional (Leads):", ["🟢 Conforme", "🔴 Desviado (-100 pts)"])
-    with col_s3:
-        sim_estructura = st.selectbox("Área A - Estructura Central:", ["🟢 Conforme", "🔴 Desviado (-100 pts)"])
-        sim_club = st.selectbox("Área D - Club Toyota:", ["🟢 Conforme", "🔴 Desviado (-100 pts)"])
-        sim_conectados = st.selectbox("Área I - Serv. Conectados:", ["🟢 Conforme", "🔴 Desviado (-100 pts)"])
-
-    p_a = 100 if "🟢" in sim_estructura else 0
-    p_b = 100 if "🟢" in sim_servicio else 0
-    p_c = 100 if "🟢" in sim_kinto else 0
-    p_d = 100 if "🟢" in sim_club else 0
-    p_e = 100 if "🟢" in sim_tpa else 0
-    p_f = 100 if "🟢" in sim_tfs else 0
-    p_g = 100 if "🟢" in sim_usados else 0
-    p_h = 100 if "🟢" in sim_digital else 0
-    p_i = 100 if "🟢" in sim_conectados else 0
-    
-    total_sim = p_a + p_b + p_c + p_d + p_e + p_f + p_g + p_h + p_i
-    pct_emt = (total_sim / 900) * 100
-    
-    df_emt = pd.DataFrame()
-    df_emt["Macro-Capítulo EMT"] = ["A-Estructura", "B-Servicio", "C-Kinto", "D-Club", "E-TPA", "F-TFS", "G-Usados", "H-Convencional", "I-Conectados"]
-    df_emt["Puntaje Maximo"] = 100
-    df_emt["Puntaje Simulado"] = [p_a, p_b, p_c, p_d, p_e, p_f, p_g, p_h, p_i]
-    df_emt["Estado"] = ["🟢 Conforme" if x > 0 else "🔴 Alerta" for x in [p_a, p_b, p_c, p_d, p_e, p_f, p_g, p_h, p_i]]
-    
-    st.metric(label="🏆 NOTA CONSOLIDADA DE AUDITORÍA EMT SIMULADA", value=f"{total_sim} / 900 Puntos", delta=f"{pct_emt:.1f}% de Cumplimiento")
-    st.dataframe(df_emt, use_container_width=True)
-
+    st.markdown("### Resumen consolidado por grandes grupos de auditoría")
+    st.dataframe(df_areas, use_container_width=True)
+else:
+    st.info("Simulador Preventivo EMT activo. Usa los filtros de la barra lateral para modelar desvíos.")
