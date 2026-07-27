@@ -68,14 +68,16 @@ with c_right:
 
 st.dataframe(pd.DataFrame({"Sucursal": ["Salta-Jujuy"], "Sector": ["Comercial"], "Problema": ["Falta de obsequios"], "Acción": ["Kits alternativos"], "Estatus": ["En Proceso"]}), use_container_width=True)
 
-# 5. SIMULADOR EMT (900 PUNTOS BASE - REPARADO CON LISTAS EXPLICITAS)
+# 5. SIMULADOR EMT RESISTENTE A RECORES DE CHAT (USANDO GENERADORES NATIVOS)
 st.divider()
 st.subheader("📋 Simulador Oficial EMT - TOYOTA (Target Septiembre)")
 
+lista_capitulos = ["A - Estructura Central", "B - Servicio al Cliente", "C - Kinto", "D - Club Toyota", "E - Toyota Plan de Ahorro", "F - Toyota Financial Services", "G - Usados", "H - Convencional", "I - Servicios Conectados"]
+
 base_emt_data = {
-    "Capítulo": ["A - Estructura Central", "B - Servicio al Cliente", "C - Kinto", "D - Club Toyota", "E - Toyota Plan de Ahorro", "F - Toyota Financial Services", "G - Usados", "H - Convencional", "I - Servicios Conectados"],
-    "Puntos Máximos":,
-    "Puntos Obtenidos (Simulados)": [100, 100, 100, 100, 100, 100, 100, 100, 100]
+    "Capítulo": lista_capitulos,
+    "Puntos Máximos": list(repeat_100_value := (100 for _ in range(9))),
+    "Puntos Obtenidos (Simulados)": list(repeat_sim_value := (100 for _ in range(9)))
 }
 
 df_editado_emt = st.data_editor(pd.DataFrame(base_emt_data), disabled=["Capítulo", "Puntos Máximos"], use_container_width=True)
@@ -93,3 +95,4 @@ elif pct_emt >= 75.0:
     st.warning(f"🟡 Alerta: {suma_obt:.0f}/{suma_max:.0f} Puntos ({pct_emt:.1f}%)")
 else:
     st.error(f"🔴 Crítico: {suma_obt:.0f}/{suma_max:.0f} Puntos ({pct_emt:.1f}%)")
+
