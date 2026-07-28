@@ -5,6 +5,7 @@ import io
 from openpyxl.styles import Font, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 
+# 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="DEP Autolux - Gestión de Desvíos", layout="wide", page_icon="🚗")
 st.title("📊 Tablero de Control de Desvíos DEP - Autolux")
 st.caption("Ecosistema Sincronizado con Reporte Oficial de TASA (Puesto 24 Cerrado)")
@@ -12,6 +13,7 @@ st.caption("Ecosistema Sincronizado con Reporte Oficial de TASA (Puesto 24 Cerra
 if "reestablecer" not in st.session_state:
     st.session_state.reestablecer = False
 
+# 2. BARRA LATERAL (SIDEBAR): SIMULADOR DE PENALIDADES DE CAMPO
 st.sidebar.header("🚨 Zona de Control DEP")
 if st.session_state.reestablecer:
     penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts)", value=False, key="fp_real")
@@ -108,7 +110,7 @@ with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
 
 st.download_button(label="📥 Descargar Plan de Acción Comercial (.xlsx)", data=buffer.getvalue(), file_name="Plan_de_Accion_Autolux.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-# 6. PESTAÑAS DE HOJAS DE DATOS (REPORTE COMPLETO EMT CON CONTROL ULTRA LIVIANO)
+# 6. PESTAÑAS DE HOJAS DE DATOS (DESGLOSE FINO DE ACU's DEL EMT)
 st.divider()
 st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
 pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
@@ -116,23 +118,38 @@ pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Cate
 if pestaña == "Resumen por Categorías":
     st.dataframe(df_areas[["Área", "Cumplimiento %", "Estado"]], use_container_width=True)
 else:
-    st.markdown("### 📋 Simulador Oficial EMT - Estilo de Movilidad TOYOTA (Target Septiembre)")
-    st.caption("Ajusta el puntaje total obtenido en la auditoría sobre la base de 900 puntos máximos oficiales:")
+    st.markdown("### 📋 Simulador Oficial EMT - Desglose por ACU's (Target Septiembre)")
+    st.caption("Ajustá el puntaje estimado para cada Macro-Capítulo (Base de 100 puntos máximos cada uno):")
     
-    # Barra de control ultra liviana de carga instantánea
-    puntaje_real_emt = st.slider("📊 Selecciona el Puntaje Total Obtenido:", min_value=0, max_value=900, value=900, step=5)
+    # Tres columnas de controles deslizantes para un diseño ágil y compacto
+    c_a, c_b, c_c = st.columns(3)
+    with c_a: acu_a = st.slider("A - Estructura Central:", 0, 100, 100, step=5)
+    with c_b: acu_b = st.slider("B - Servicio al Cliente:", 0, 100, 100, step=5)
+    with c_c: acu_c = st.slider("C - KINTO:", 0, 100, 100, step=5)
+        
+    c_d, c_e, c_f = st.columns(3)
+    with c_d: acu_d = st.slider("D - Club Toyota:", 0, 100, 100, step=5)
+    with c_e: acu_e = st.slider("E - Toyota Plan (TPA):", 0, 100, 100, step=5)
+    with c_f: acu_f = st.slider("F - Financial (TCFA):", 0, 100, 100, step=5)
+        
+    c_g, c_h, c_i = st.columns(3)
+    with c_g: acu_g = st.slider("G - Usados:", 0, 100, 100, step=5)
+    with c_h: acu_h = st.slider("H - Convencional (Ventas):", 0, 100, 100, step=5)
+    with c_i: acu_i = st.slider("I - Servicios Conectados:", 0, 100, 100, step=5)
+
+    # Suma matemática de las 9 ACU's
+    tot_sim = acu_a + acu_b + acu_c + acu_d + acu_e + acu_f + acu_g + acu_h + acu_i
+    pct_emt = (tot_sim / 900) * 100
+
+    st.divider()
+    st.metric(label="🏆 NOTA CONSOLIDADA DE AUDITORÍA EMT SIMULADA", value=f"{tot_sim} / 900 Puntos", delta=f"{pct_emt:.1f}% Cumplimiento")
     
-    pct_emt = (puntaje_real_emt / 900) * 100
-    
-    st.metric(label="🏆 NOTA CONSOLIDADA DE AUDITORÍA EMT SIMULADA", value=f"{puntaje_real_emt} / 900 Puntos", delta=f"{pct_emt:.1f}% Cumplimiento")
-    
-    # Gran recuadro de estado dinámico según los criterios de Toyota
     st.markdown("#### 🎯 Estatus de Aprobación de la Marca")
     if pct_emt == 100.0:
-        st.success(f"🏆 **Puntaje Perfecto:** {puntaje_real_emt} Puntos — **{pct_emt:.1f}%**. Escenario base ideal sin observaciones.")
+        st.success(f"🏆 **Puntaje Perfecto:** {tot_sim} Puntos — **{pct_emt:.1f}%**. Escenario base ideal sin observaciones.")
     elif pct_emt >= 90.0:
-        st.info(f"🟢 **Zona Conforme:** {puntaje_real_emt} Puntos — **{pct_emt:.1f}%**. Perfil apto para aprobación directa de TASA.")
+        st.info(f"🟢 **Zona Conforme:** {tot_sim} Puntos — **{pct_emt:.1f}%**. Perfil apto para aprobación directa de TASA.")
     elif pct_emt >= 75.0:
-        st.warning(f"🟡 **Zona de Alerta:** {puntaje_real_emt} Puntos — **{pct_emt:.1f}%**. Se detectan desvíos operativos leves a corregir.")
+        st.warning(f"🟡 **Zona de Alerta:** {tot_sim} Puntos — **{pct_emt:.1f}%**. Se detectan desvíos operativos leves a mitigar.")
     else:
-        st.error(f"🔴 **Alerta Crítica:** {puntaje_real_emt} Puntos — **{pct_emt:.1f}%**. El concesionario requiere contramedidas urgentes.")
+        st.error(f"🔴 **Alerta Crítica:** {tot_sim} Puntos — **{pct_emt:.1f}%**. El concesionario requiere contramedidas urgentes.")
