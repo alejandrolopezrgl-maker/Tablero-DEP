@@ -2,34 +2,38 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+# 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="DEP Autolux - Gestión de Desvíos", layout="wide", page_icon="🚗")
+
 st.title("📊 Tablero de Control de Desvíos DEP - Autolux")
-st.caption("Ecosistema Integrado a Junio 2026 | Sincronizado con Reporte Oficial de TASA (Puesto 24 Real)")
+st.caption("Ecosistema Integrado a Junio 2026 | Sincronizado con Reporte Oficial de TASA (Datos Validados)")
 
 if "reestablecer" not in st.session_state:
     st.session_state.reestablecer = False
 
+# 2. BARRA LATERAL (SIDEBAR): RIESGOS Y PENALIDADES DE CAMPO
 st.sidebar.header("🚨 Zona de Control DEP")
-tpa_simulado = st.sidebar.radio(
-    "📝 Estatus Reclamo TPA (7 días hábiles):",
-    options=["Nota Oficial CAC (52.9%)", "Nota Validada Planilla (72.8%)"],
-    index=0
-)
+st.sidebar.markdown("Filtros de control para simular riesgos operativos en auditorías:")
 
-st.sidebar.divider()
-st.sidebar.subheader("🚨 Riesgos y Penalidades de Campo")
+default_fair_play = False
+default_movilidad = False
+default_fieldman = 85
+
 if st.session_state.reestablecer:
-    penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts)", value=False, key="fp_real")
-    penalidad_movilidad = st.sidebar.toggle("Falta Certificación Movilidad (-5 pts)", value=False, key="mov_real")
-    visitas_fieldman = st.sidebar.slider("% Cumplimiento Compromisos Fieldman", 0, 100, 85, key="fm_real")
+    penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts)", value=default_fair_play, key="fp_real")
+    penalidad_movilidad = st.sidebar.toggle("Falta Certificación Movilidad (-5 pts)", value=default_movilidad, key="mov_real")
+    visitas_fieldman = st.sidebar.slider("% Cumplimiento Compromisos Fieldman", 0, 100, default_fieldman, key="fm_real")
     st.session_state.reestablecer = False  
 else:
-    penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts)", value=False)
-    penalidad_movilidad = st.sidebar.toggle("Falta Certificación Movilidad (-5 pts)", value=False)
-    visitas_fieldman = st.sidebar.slider("% Cumplimiento Compromisos Fieldman", 0, 100, 85)
+    penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts)", value=default_fair_play)
+    penalidad_movilidad = st.sidebar.toggle("Falta Certificación Movilidad (-5 pts)", value=default_movilidad)
+    visitas_fieldman = st.sidebar.slider("% Cumplimiento Compromisos Fieldman", 0, 100, default_fieldman)
 
 puntos_a_restar_global = 0
 castigo_posventa_fieldman = 0
+
+st.sidebar.divider()
+st.sidebar.subheader("Estatus de Alertas")
 
 if visitas_fieldman < 85:
     st.sidebar.error("❌ Penalidad Posventa Activa (-10.8% en el área).")
@@ -43,44 +47,57 @@ if st.sidebar.button("🔄 Restablecer Valores Reales"):
     st.session_state.reestablecer = True
     st.rerun()
 
+# 3. DATOS GENERALES OFICIALES DE TOYOTA (TPA CORREGIDO AL 72.8% REAL)
 base_ventas = 55.7 if not penalidad_movilidad else (55.7 - 5.0)
 base_posventa = 91.7 - castigo_posventa_fieldman
-base_tpa = 52.9 if tpa_simulado == "Nota Oficial CAC (52.9%)" else 72.8
 
 df_areas = pd.DataFrame({
     "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "General"],
-    "Cumplimiento %": [base_ventas, 49.0, base_posventa, base_tpa, 35.8, 75.8, 73.0, 25.0, 67.6],
-    "Estado": ["🔴 Crítico" if base_ventas < 60 else "🟡 En Alerta", "🔴 Crítico", "🟢 Excelente" if base_posventa >= 80 else "🟡 Desviado", "🟡 Desviado" if base_tpa < 80 else "🟢 Excelente", "🔴 Crítico", "🟡 En Alerta", "🟡 En Alerta", "🔴 Crítico", "🟡 Desviado"]
+    "Cumplimiento %": [base_ventas, 49.0, base_posventa, 72.8, 35.8, 75.8, 73.0, 25.0, 67.6],
+    "Estado": [
+        "🔴 Crítico" if base_ventas < 60 else "🟡 En Alerta",
+        "🔴 Crítico",
+        "🟢 Excelente" if base_posventa >= 80 else "🟡 Desviado",
+        "🟡 Desviado" if 72.8 < 80 else "🟢 Excelente",
+        "🔴 Crítico",
+        "🟡 En Alerta",
+        "🟡 En Alerta",
+        "🔴 Crítico",
+        "🟡 Desviado"
+    ]
 })
 
+# CÁLCULO PONDERADO REAL DEL CONCESIONARIO SEGÚN EL MANUAL OFICIAL
 pesos = {"Ventas": 0.22, "Ventas Especiales": 0.05, "Posventa": 0.27, "TPA": 0.09, "KINTO": 0.06, "Usados": 0.06, "TCFA": 0.04, "ESG": 0.01, "General": 0.20}
 df_areas["Peso"] = df_areas["Área"].map(pesos)
 df_areas["Puntaje Ponderado"] = (df_areas["Cumplimiento %"] / 100) * df_areas["Peso"]
 
 score_global_final = ((df_areas["Puntaje Ponderado"].sum() / df_areas["Peso"].sum()) * 100) - puntos_a_restar_global
 
+# ASIGNACIÓN DE CATEGORÍA Y RANKING REAL (PUESTO 21 GENERAL)
 if score_global_final >= 90:
     categoria_dinamica = "Categoría A"
     label_ranking = "Puesto 12 🏆"
 elif score_global_final >= 80:
     categoria_dinamica = "Categoría B"
     label_ranking = "Puesto 18 🟢"
-elif score_global_final >= 62.1:
+elif score_global_final >= 63.5:
     categoria_dinamica = "Categoría C"
-    label_ranking = "Puesto 24 🟡" if tpa_simulado == "Nota Oficial CAC (52.9%)" else "Puesto 21 📈"
+    label_ranking = "Puesto 21 📈"  # PUESTO REAL INTEGRANDO TU NOTA DE TPA
 else:
     categoria_dinamica = "Categoría D / E ⚠️"
     label_ranking = "Puesto 39 🔻"
 
-st.subheader("📉 Cumplimiento Real por Área Evaluada (Foto Dinámica Recalculada)")
+st.subheader("📉 Cumplimiento Real por Área Evaluada (Foto Oficial Consolidada)")
 filtros = st.multiselect("🔍 Filtrar áreas específicas:", options=df_areas["Área"].unique(), default=[])
 areas_activas = filtros if filtros else list(df_areas["Área"].unique())
 df_plot_areas = df_areas[df_areas["Área"].isin(areas_activas)]
 
+# 4. CUADRO DE MANDO PRINCIPAL
 st.header("📌 Resumen Ejecutivo de Desvíos Autolux")
 col1, col2, col3, col4 = st.columns(4)
-with col1: st.metric("Cumplimiento DEP", f"{score_global_final:.1f}%", delta="+1.8% Reclamo" if tpa_simulado == "Nota Validada Planilla (72.8%)" else None)
-with col2: st.metric("Ranking Simulado", label_ranking, delta="Subió 3 Puestos" if tpa_simulado == "Nota Validada Planilla (72.8%)" else None)
+with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
+with col2: st.metric("Ranking General Red", label_ranking, delta="Puesto 4 en TPA 🏆")
 with col3: st.metric("Pilar Posventa Real", f"{base_posventa:.1f}%", delta=f"-{castigo_posventa_fieldman:.1f}% Fieldman" if castigo_posventa_fieldman > 0 else "Líder")
 with col4: st.metric("Estatus de Categoría", categoria_dinamica)
 
