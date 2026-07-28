@@ -61,7 +61,7 @@ df_areas = pd.DataFrame({
 # FIJAMOS EL SCORE DE LA PLANILLA OFICIAL (62.0%) AFECTADO POR LOS BOTONES LATERALES
 score_global_final = 62.0 - puntos_a_restar_global
 if penalidad_movilidad:
-    score_global_final -= 1.1  # Impacto proporcional del 5% sobre el peso de Ventas
+    score_global_final -= 1.1
 
 st.subheader("📉 Cumplimiento Real por Área Evaluada (Foto Oficial Consolidada)")
 filtros = st.multiselect("🔍 Filtrar áreas específicas:", options=df_areas["Área"].unique(), default=[])
@@ -69,7 +69,7 @@ areas_activas = filtros if filtros else list(df_areas["Área"].unique())
 df_plot_areas = df_areas[df_areas["Área"].isin(areas_activas)]
 
 # AJUSTE ASOCIADO AL RANKING GENERAL SECO
-if score_global_final >= 62.0 and not penalidad_movilidad and castigo_posventa_fieldman == 0 and puntos_a_restar_global == 0:
+if score_global_final >= 61.9 and not penalidad_movilidad and castigo_posventa_fieldman == 0 and puntos_a_restar_global == 0:
     label_ranking = "Puesto 24 🏆"
     categoria_dinamica = "Categoría C"
 elif score_global_final < 60.0:
@@ -79,7 +79,7 @@ else:
     label_ranking = "Puesto 28 🟡"
     categoria_dinamica = "Categoría C"
 
-# 4. CUADRO DE MANDO PRINCIPAL SÉCURISADO CONTRA EL RECORTE DE MEMORIA
+# 4. CUADRO DE MANDO PRINCIPAL
 st.header("📌 Resumen Ejecutivo de Desvíos Autolux")
 col1, col2, col3, col4 = st.columns(4)
 with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
@@ -94,7 +94,11 @@ st.divider()
 st.subheader("🕵️ Análisis Operativo: Plan de Acción Comercial en Sucursales")
 col_left, col_right = st.columns(2)
 with col_left:
-    df_quejas = pd.DataFrame({"Motivo de la Queja": ["Falta de Kit de Seguridad", "Falta de Presentes / Merch", "Falta de Máquina de Café"], "Impacto %": [36.0, 20.0, 16.0]})
+    # Agregamos "Otros desvíos" para completar la base 100 y forzar porcentajes correctos
+    df_quejas = pd.DataFrame({
+        "Motivo de la Queja": ["Falta de Kit de Seguridad", "Falta de Presentes / Merch", "Falta de Máquina de Café", "Otros desvíos menores"],
+        "Impacto %": [36.0, 20.0, 16.0, 28.0]
+    })
     st.plotly_chart(px.pie(df_quejas, values="Impacto %", names="Motivo de la Queja", color_discrete_sequence=px.colors.sequential.Reds_r), use_container_width=True)
 with col_right:
     st.markdown("""
@@ -114,7 +118,38 @@ plan_data = {
 }
 st.dataframe(pd.DataFrame(plan_data), use_container_width=True)
 
+# 5. REINCORPORACIÓN DE LAS DOS PESTAÑAS (RESUMEN + SIMULADOR EMT CONECTADO)
 st.divider()
-st.subheader("📂 Consulta de Hojas de Datos (DEP)")
-st.markdown("### 📊 Resumen por Grandes Grupos Ponderados")
-st.dataframe(df_areas[["Área", "Cumplimiento %", "Estado"]], use_container_width=True)
+st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
+pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
+
+if pestaña == "Resumen por Categorías":
+    st.markdown("### 📊 Resumen por Grandes Grupos Ponderados")
+    st.dataframe(df_areas[["Área", "Cumplimiento %", "Estado"]], use_container_width=True)
+else:
+    st.markdown("### 🎯 Módulo de Preparación EMT - 900 Puntos")
+    c_a, c_b, c_c = st.columns(3)
+    with c_a: sim_est = st.selectbox("Área A - Estructura Central:", ["🟢 Conforme", "🔴 Alerta"])
+    with c_b: sim_ser = st.selectbox("Área B - Servicio al Cliente:", ["🟢 Conforme", "🔴 Alerta"])
+    with c_c: sim_kin = st.selectbox("Área C - KINTO:", ["🟢 Conforme", "🔴 Alerta"])
+    c_d, c_e, c_f = st.columns(3)
+    with c_d: sim_clb = st.selectbox("Área D - Club Toyota:", ["🟢 Conforme", "🔴 Alerta"])
+    with c_e: sim_tpa = st.selectbox("Área E - Toyota Plan (TPA):", ["🟢 Conforme", "🔴 Alerta"])
+    with c_f: sim_tfs = st.selectbox("Área F - Financial (TCFA):", ["🟢 Conforme", "🔴 Alerta"])
+    c_g, c_h, c_i = st.columns(3)
+    with c_g: sim_usd = st.selectbox("Área G - Usados:", ["🟢 Conforme", "🔴 Alerta"])
+    with c_h: sim_dig = st.selectbox("Área H - Convencional (Ventas):", ["🟢 Conforme", "🔴 Alerta"])
+    with c_i: sim_con = st.selectbox("Área I - Servicios Conectados:", ["🟢 Conforme", "🔴 Alerta"])
+
+    p_list = [100 if "🟢" in s else 0 for s in [sim_est, sim_ser, sim_kin, sim_clb, sim_tpa, sim_tfs, sim_usd, sim_dig, sim_con]]
+    tot_sim = sum(p_list)
+    pct_emt = (tot_sim / 900) * 100
+
+    df_emt = pd.DataFrame({
+        "Macro-Capítulo EMT": ["A-Estructura", "B-Servicio", "C-Kinto", "D-Club", "E-TPA", "F-TFS", "G-Usados", "H-Convencional", "I-Conectados"],
+        "Puntaje Maximo":,
+        "Puntaje Simulado": p_list,
+        "Estado": ["🟢 Conforme" if x > 0 else "🔴 Alerta" for x in p_list]
+    })
+    st.metric(label="🏆 NOTA CONSOLIDADA DE AUDITORÍA EMT SIMULADA", value=f"{tot_sim} / 900 Puntos", delta=f"{pct_emt:.1f}% Cumplimiento")
+    st.dataframe(df_emt, use_container_width=True)
