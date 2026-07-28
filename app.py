@@ -65,7 +65,15 @@ with col_left:
     fig_pie.update_traces(textinfo="percent", textposition="inside", textfont_size=14)
     st.plotly_chart(fig_pie, use_container_width=True)
 with col_right:
-    st.markdown("* **Área Ventas (55.7%)**: Kits en Tartagal y Jujuy contuvieron las encuestas.\n* **Focos Críticos**: Ventas Especiales (49.0%) y KINTO (35.8%) demorados por unidades corporativas.")
+    st.markdown("""
+    ### 📝 Diagnóstico de Desvíos por Canales
+    
+    A la izquierda se observa la ponderación exacta obtenida de las auditorías físicas de campo:
+    *   **Falta de Kit de Seguridad (36.0% de impacto)**: Representa el desvío más severo detectado en las entregas de Tartagal y Jujuy.
+    *   **Falta de Presentes / Merch (20.0% de impacto)**: Quejas de clientes por unidades retiradas sin obsequios comerciales.
+    *   **Falta de Máquina de Café (16.0% de impacto)**: Descontento focalizado en Posventa debido al retiro de amenities en salas de espera.
+    *   **Otros desvíos menores (28.0% de impacto)**: Acumulado de observaciones de infraestructura bajo plan de acción.
+    """)
 
 st.subheader("📋 Plan de Acción Comercial")
 plan_data = {
@@ -80,7 +88,6 @@ plan_data = {
 df_plan = pd.DataFrame(plan_data)
 st.dataframe(df_plan, use_container_width=True)
 
-# LÓGICA DE EXPORTACIÓN REPARADA MEDIANTE ENUMERACIÓN DIRECTA SOBRE LAS COLUMNAS
 buffer = io.BytesIO()
 with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
     df_plan.to_excel(writer, sheet_name='Plan de Accion', index=False)
@@ -99,9 +106,9 @@ with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
             cell.border = thin_border
             cell.font = Font(name='Arial', size=10)
             
-    # Reparación robusta indexando las columnas numéricamente por su posición
+    # Corrección limpia convirtiendo los datos a texto de manera estándar
     for col_num, col_name in enumerate(df_plan.columns, 1):
-        max_len = max(df_plan[col_name].astype(st.r).map(len).max(), len(col_name))
+        max_len = max(df_plan[col_name].astype(str).map(len).max(), len(col_name))
         col_letter = get_column_letter(col_num)
         worksheet.column_dimensions[col_letter].width = max(max_len + 3, 12)
 
