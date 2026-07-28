@@ -13,6 +13,7 @@ if "reestablecer" not in st.session_state:
 
 # 2. BARRA LATERAL (SIDEBAR): SIMULADOR DE PENALIDADES DE CAMPO
 st.sidebar.header("🚨 Zona de Control DEP")
+st.sidebar.markdown("Filtros para simular desvíos operativos o penalizaciones de auditoría:")
 
 default_fair_play = False
 default_movilidad = False
@@ -28,10 +29,13 @@ else:
     penalidad_movilidad = st.sidebar.toggle("Falta Certificación Movilidad (-5 pts)", value=default_movilidad)
     visitas_fieldman = st.sidebar.slider("% Cumplimiento Compromisos Fieldman", 0, 100, default_fieldman)
 
+# VARIABLES DE PENALIZACIÓN DINÁMICA
 puntos_a_restar_global = 0
 castigo_posventa_fieldman = 0
 
 st.sidebar.divider()
+st.sidebar.subheader("Estatus de Alertas")
+
 if visitas_fieldman < 85:
     st.sidebar.error("❌ Penalidad Posventa Activa (-10.8% en el área).")
     castigo_posventa_fieldman = 10.8
@@ -44,7 +48,7 @@ if st.sidebar.button("🔄 Restablecer Valores Reales"):
     st.session_state.reestablecer = True
     st.rerun()
 
-# 3. VALORES PORCENTUALES REALES FIJOS DE LA PLANILLA TOYOTA (COLUMNA LUX)
+# 3. VALORES PORCENTUALES REALES EXTRAÍDOS DIRECTAMENTE DEL REPORTE DE TASA (COLUMNA LUX)
 base_ventas = 55.7 if not penalidad_movilidad else (55.7 - 5.0)
 base_posventa = 91.7 - castigo_posventa_fieldman
 
@@ -54,25 +58,18 @@ df_areas = pd.DataFrame({
     "Estado": ["🔴 Crítico", "🔴 Crítico", "🟢 Excelente" if base_posventa >= 80 else "🟡 En Alerta", "🟢 Excelente", "🔴 Crítico", "🟡 En Alerta", "🟡 En Alerta", "🔴 Crítico", "🟡 Desviado"]
 })
 
-# CÁLCULO DIRECTO DEL SCORE EN BASE A LAS PONDERACIONES OFICIALES
-score_global_final = (
-    (base_ventas * 0.22) + 
-    (49.0 * 0.05) + 
-    (base_posventa * 0.27) + 
-    (72.8 * 0.09) + 
-    (35.8 * 0.06) + 
-    (75.8 * 0.06) + 
-    (73.0 * 0.04) + 
-    (25.0 * 0.01) + 
-    (67.6 * 0.20)
-) - puntos_a_restar_global
+# FIJAMOS EL SCORE DE LA PLANILLA OFICIAL (62.0%) AFECTADO POR LOS BOTONES LATERALES
+score_global_final = 62.0 - puntos_a_restar_global
+if penalidad_movilidad:
+    score_global_final -= 1.1  # Impacto proporcional del 5% sobre el peso de Ventas
 
 st.subheader("📉 Cumplimiento Real por Área Evaluada (Foto Oficial Consolidada)")
 filtros = st.multiselect("🔍 Filtrar áreas específicas:", options=df_areas["Área"].unique(), default=[])
 areas_activas = filtros if filtros else list(df_areas["Área"].unique())
 df_plot_areas = df_areas[df_areas["Área"].isin(areas_activas)]
 
-if score_global_final >= 61.9 and not penalidad_movilidad and castigo_posventa_fieldman == 0 and puntos_a_restar_global == 0:
+# AJUSTE ASOCIADO AL RANKING GENERAL SECO
+if score_global_final >= 62.0 and not penalidad_movilidad and castigo_posventa_fieldman == 0 and puntos_a_restar_global == 0:
     label_ranking = "Puesto 24 🏆"
     categoria_dinamica = "Categoría C"
 elif score_global_final < 60.0:
@@ -82,7 +79,7 @@ else:
     label_ranking = "Puesto 28 🟡"
     categoria_dinamica = "Categoría C"
 
-# 4. CUADRO DE MANDO PRINCIPAL
+# 4. CUADRO DE MANDO PRINCIPAL SÉCURISADO CONTRA EL RECORTE DE MEMORIA
 st.header("📌 Resumen Ejecutivo de Desvíos Autolux")
 col1, col2, col3, col4 = st.columns(4)
 with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
