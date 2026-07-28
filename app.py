@@ -93,12 +93,12 @@ else:
     label_ranking = "Puesto 28 🟡"
     categoria_dinamica = "Categoría C"
 
-# 4. CUADRO DE MANDO PRINCIPAL (CONEXIÓN FORZADA DE VARIABLE)
+# 4. CUADRO DE MANDO PRINCIPAL (CONEXIÓN LIMPIA DE VARIABLES REPARADA)
 st.header("📌 Resumen Ejecutivo de Desvíos Autolux")
 col1, col2, col3, col4 = st.columns(4)
 with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
 with col2: st.metric("Ranking General Red", label_ranking, delta="Puesto 4 en TPA 🏆")
-with col3: st.metric("Pilar Posventa Real", f"{df_areas.loc[df_areas['Área'] == 'Posventa', 'Cumplimiento %'].values:.1f}%")
+with col3: st.metric("Pilar Posventa Real", f"{base_posventa / 27.0 * 100:.1f}%")
 with col4: st.metric("Estatus de Categoría", categoria_dinamica)
 
 st.divider()
@@ -113,7 +113,7 @@ with col_left:
 with col_right:
     st.markdown("""
     *   **Área Ventas (55.7%)**: Acciones de mitigación con kits de seguridad en Tartagal y Jujuy contuvieron las encuestas.
-    *   **Focos Críticos Reales**: Ventas Especiales (49.0%) y KINTO (35.8%) penalizados por demoras de unidades corporativas.
+    *   **Focos Críticos Reales**: Ventas Especiales (49.0%) and KINTO (35.8%) penalizados por demoras de unidades corporativas.
     """)
 
 st.subheader("📋 Plan de Acción Comercial")
