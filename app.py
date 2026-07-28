@@ -59,7 +59,6 @@ df_areas = pd.DataFrame({
 })
 
 # CÁLCULO CONTROLADO DEL SCORE GLOBAL EN BASE A LOS PESOS OFICIALES DE TOYOTA
-# Ponderaciones: Ventas(22%), Especiales(5%), Posventa(27%), TPA(9%), Kinto(6%), Usados(6%), TCFA(4%), ESG(1%), General(20%)
 contribucion_base = (
     (base_ventas * 0.22) + 
     (49.0 * 0.05) + 
@@ -150,9 +149,10 @@ else:
     tot_sim = sum(p_list)
     pct_emt = (tot_sim / 900) * 100
 
+    # Solución definitiva limpia usando multiplicadores simples sin operadores conflictivos
     df_emt = pd.DataFrame({
         "Macro-Capítulo EMT": ["A-Estructura", "B-Servicio", "C-Kinto", "D-Club", "E-TPA", "F-TFS", "G-Usados", "H-Convencional", "I-Conectados"],
-        "Puntaje Maximo": list(g_mx := (100 for _ in range(9))),
+        "Puntaje Maximo": [100] * 9,
         "Puntaje Simulado": p_list,
         "Estado": ["🟢 Conforme" if x > 0 else "🔴 Alerta" for x in p_list]
     })
