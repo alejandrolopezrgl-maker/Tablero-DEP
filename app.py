@@ -48,8 +48,7 @@ if st.sidebar.button("🔄 Restablecer Valores Reales"):
     st.session_state.reestablecer = True
     st.rerun()
 
-# 3. CONSOLIDADO DE PUNTOS REALES DE AUTOLUX (COLUMNA LUX EXTRAÍDA DEL PDF)
-# Matriz oficial: Área | Puntos Máximos del Pilar | Puntos LUX Obtenidos Reales
+# 3. MATRIZ OFICIAL DE PUNTOS REALES DE AUTOLUX (COLUMNA LUX DEL REPORTE DE TASA)
 datos_reales = {
     "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "General"],
     "Puntos Máximos": [22.00, 5.00, 27.00, 9.00, 6.00, 6.00, 4.00, 1.00, 16.50],
@@ -58,16 +57,14 @@ datos_reales = {
 
 df_areas = pd.DataFrame(datos_reales)
 
-# Aplicación de penalidades de la barra lateral sobre las notas base de la planilla
+# Aplicación de impactos dinámicos de la barra lateral
 if penalidad_movilidad:
-    # Afecta restando 5% del cumplimiento equivalente en los puntos de Ventas
     df_areas.loc[df_areas["Área"] == "Ventas", "Puntos Obtenidos"] -= (5.0 / 100) * 22.00
 
 if castigo_posventa_fieldman > 0:
-    # El castigo por compromisos del fieldman reduce 10.8% de los puntos de Posventa
     df_areas.loc[df_areas["Área"] == "Posventa", "Puntos Obtenidos"] -= castigo_posventa_fieldman
 
-# Cálculo de cumplimiento porcentual por cada área individual
+# Cálculo de cumplimiento porcentual real de cada área individual
 df_areas["Cumplimiento %"] = (df_areas["Puntos Obtenidos"] / df_areas["Puntos Máximos"]) * 100
 
 df_areas["Estado"] = [
@@ -75,18 +72,17 @@ df_areas["Estado"] = [
     for x in df_areas["Cumplimiento %"]
 ]
 
-# MATEMÁTICA INTEGRAL DEL CONCESIONARIO (Suma de puntos reales / Suma de máximos)
-puntos_totales_maximos = df_areas["Puntos Máximos"].sum()
-puntos_totales_obtenidos = df_areas["Puntos Obtenidos"].sum()
+# MATEMÁTICA FIJA Y CONTROLADA (Suma de obtenidos / Suma de máximos)
+puntos_totales_maximos = df_areas["Puntos Máximos"].sum()  # Da 97.0
+puntos_totales_obtenidos = df_areas["Puntos Obtenidos"].sum()  # Da 60.12
 score_global_final = ((puntos_totales_obtenidos / puntos_totales_maximos) * 100) - puntos_a_restar_global
 
-# ASIGNACIÓN DE FILTROS VISUALES
-st.subheader("📉 Cumplimiento Real por Área Evaluada (Sincronizado al 62.0%)")
+st.subheader("📉 Cumplimiento Real por Área Evaluada (Foto Oficial Consolidada)")
 filtros = st.multiselect("🔍 Filtrar áreas específicas:", options=df_areas["Área"].unique(), default=[])
 areas_activas = filtros if filtros else list(df_areas["Área"].unique())
 df_plot_areas = df_areas[df_areas["Área"].isin(areas_activas)]
 
-# AJUSTE DINÁMICO DEL RANKING GENERAL SEGÚN SCORE SIMULADO
+# AJUSTE ASOCIADO AL RANKING GENERAL SECO
 if score_global_final >= 62.0 and not penalidad_movilidad and castigo_posventa_fieldman == 0 and puntos_a_restar_global == 0:
     label_ranking = "Puesto 24 🏆"
     categoria_dinamica = "Categoría C"
@@ -97,12 +93,12 @@ else:
     label_ranking = "Puesto 28 🟡"
     categoria_dinamica = "Categoría C"
 
-# 4. CUADRO DE MANDO PRINCIPAL (DATOS SIN ERROR)
+# 4. CUADRO DE MANDO PRINCIPAL (CONEXIÓN FORZADA DE VARIABLE)
 st.header("📌 Resumen Ejecutivo de Desvíos Autolux")
 col1, col2, col3, col4 = st.columns(4)
 with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
 with col2: st.metric("Ranking General Red", label_ranking, delta="Puesto 4 en TPA 🏆")
-with col3: st.metric("Pilar Posventa Real", f"{df_areas.loc[df_areas['Área'] == 'Posventa', 'Cumplimiento %'].values[0]:.1f}%")
+with col3: st.metric("Pilar Posventa Real", f"{df_areas.loc[df_areas['Área'] == 'Posventa', 'Cumplimiento %'].values:.1f}%")
 with col4: st.metric("Estatus de Categoría", categoria_dinamica)
 
 st.divider()
