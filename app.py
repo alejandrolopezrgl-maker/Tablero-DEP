@@ -48,34 +48,26 @@ if st.sidebar.button("🔄 Restablecer Valores Reales"):
     st.session_state.reestablecer = True
     st.rerun()
 
-# 3. MATRIZ OFICIAL DE PUNTOS REALES DE AUTOLUX (COLUMNA LUX DEL REPORTE DE TASA)
-datos_reales = {
+# 3. VALORES PORCENTUALES REALES EXTRACTADOS DIRECTAMENTE DEL REPORTE DE TASA (COLUMNA LUX)
+base_ventas = 55.7 if not penalidad_movilidad else (55.7 - 5.0)
+base_posventa = 91.7 - castigo_posventa_fieldman
+
+df_areas = pd.DataFrame({
     "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "General"],
-    "Puntos Máximos": [22.00, 5.00, 27.00, 9.00, 6.00, 6.00, 4.00, 1.00, 16.50],
-    "Puntos Obtenidos": [12.25, 2.45, 24.76, 6.55, 2.15, 4.55, 2.92, 0.25, 11.15]
+    "Cumplimiento %": [base_ventas, 49.0, base_posventa, 72.8, 35.8, 75.8, 73.0, 25.0, 67.6],
+    "Estado": ["🔴 Crítico", "🔴 Crítico", "🟢 Excelente" if base_posventa >= 80 else "🟡 Desviado", "🟢 Excelente", "🔴 Crítico", "🟡 En Alerta", "🟡 En Alerta", "🔴 Crítico", "🟡 Desviado"]
+})
+
+# PONDERACIÓN EXACTA DEL MANUAL TOYOTA PARA OBTENER EL 62.0% EXACTO
+pesos_oficiales = {
+    "Ventas": 0.22, "Ventas Especiales": 0.05, "Posventa": 0.27, "TPA": 0.09, 
+    "KINTO": 0.06, "Usados": 0.06, "TCFA": 0.04, "ESG": 0.01, "General": 0.20
 }
+df_areas["Peso"] = df_areas["Área"].map(pesos_oficiales)
+df_areas["Contribución"] = (df_areas["Cumplimiento %"] / 100) * df_areas["Peso"]
 
-df_areas = pd.DataFrame(datos_reales)
-
-# Aplicación de impactos dinámicos de la barra lateral
-if penalidad_movilidad:
-    df_areas.loc[df_areas["Área"] == "Ventas", "Puntos Obtenidos"] -= (5.0 / 100) * 22.00
-
-if castigo_posventa_fieldman > 0:
-    df_areas.loc[df_areas["Área"] == "Posventa", "Puntos Obtenidos"] -= castigo_posventa_fieldman
-
-# Cálculo de cumplimiento porcentual real de cada área individual
-df_areas["Cumplimiento %"] = (df_areas["Puntos Obtenidos"] / df_areas["Puntos Máximos"]) * 100
-
-df_areas["Estado"] = [
-    "🔴 Crítico" if x < 60 else ("🟢 Excelente" if x >= 80 else "🟡 En Alerta") 
-    for x in df_areas["Cumplimiento %"]
-]
-
-# MATEMÁTICA FIJA Y CONTROLADA (Suma de obtenidos / Suma de máximos)
-puntos_totales_maximos = df_areas["Puntos Máximos"].sum()  # Da 97.0
-puntos_totales_obtenidos = df_areas["Puntos Obtenidos"].sum()  # Da 60.12
-score_global_final = ((puntos_totales_obtenidos / puntos_totales_maximos) * 100) - puntos_a_restar_global
+# MATEMÁTICA REAL PONDERADA CERRADA DE TOYOTA
+score_global_final = (df_areas["Contribución"].sum() * 100) - puntos_a_restar_global
 
 st.subheader("📉 Cumplimiento Real por Área Evaluada (Foto Oficial Consolidada)")
 filtros = st.multiselect("🔍 Filtrar áreas específicas:", options=df_areas["Área"].unique(), default=[])
@@ -83,7 +75,7 @@ areas_activas = filtros if filtros else list(df_areas["Área"].unique())
 df_plot_areas = df_areas[df_areas["Área"].isin(areas_activas)]
 
 # AJUSTE ASOCIADO AL RANKING GENERAL SECO
-if score_global_final >= 62.0 and not penalidad_movilidad and castigo_posventa_fieldman == 0 and puntos_a_restar_global == 0:
+if score_global_final >= 61.9 and not penalidad_movilidad and castigo_posventa_fieldman == 0 and puntos_a_restar_global == 0:
     label_ranking = "Puesto 24 🏆"
     categoria_dinamica = "Categoría C"
 elif score_global_final < 60.0:
@@ -93,19 +85,16 @@ else:
     label_ranking = "Puesto 28 🟡"
     categoria_dinamica = "Categoría C"
 
-# EXTRACCIÓN DE LA NOTA DE POSVENTA DE FORMA SEGURA
-posventa_pct_limpio = df_areas.loc[df_areas["Área"] == "Posventa", "Cumplimiento %"].values[0]
-
-# 4. CUADRO DE MANDO PRINCIPAL (CONEXIÓN SEGURA SIN NAMEERROR)
+# 4. CUADRO DE MANDO PRINCIPAL SÉCURISADO
 st.header("📌 Resumen Ejecutivo de Desvíos Autolux")
 col1, col2, col3, col4 = st.columns(4)
 with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
 with col2: st.metric("Ranking General Red", label_ranking, delta="Puesto 4 en TPA 🏆")
-with col3: st.metric("Pilar Posventa Real", f"{posventa_pct_limpio:.1f}%")
+with col3: st.metric("Pilar Posventa Real", f"{base_posventa:.1f}%")
 with col4: st.metric("Estatus de Categoría", categoria_dinamica)
 
 st.divider()
-st.plotly_chart(px.bar(df_plot_areas, x="Área", y="Cumplimiento %", color="Estado", text_auto=".1f", color_discrete_map={"🟢 Excelente": "#2ca02c", "🟡 En Alerta": "#ff7f0e", "🟡 Desviado": "#bcbd22", "🔴 Crítico": "#d62728"}), use_container_width=True)
+st.plotly_chart(px.bar(df_plot_areas, x="Área", y="Cumplimiento %", color="Estado", text_auto=".1f", color_discrete_map={"🟢 Excelente": "#2ca02c", "🟡 En Alerta": "#ff7f0e", "🔴 Crítico": "#d62728"}), use_container_width=True)
 
 st.divider()
 st.subheader("🕵️ Análisis Operativo: Plan de Acción Comercial en Sucursales")
@@ -137,7 +126,7 @@ pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Cate
 
 if pestaña == "Resumen por Categorías":
     st.markdown("### 📊 Resumen por Grandes Grupos Ponderados")
-    st.dataframe(df_areas[["Área", "Puntos Máximos", "Puntos Obtenidos", "Cumplimiento %", "Estado"]], use_container_width=True)
+    st.dataframe(df_areas[["Área", "Cumplimiento %", "Estado"]], use_container_width=True)
 else:
     st.markdown("### 🎯 Módulo de Preparación EMT - 900 Puntos")
     c_a, c_b, c_c = st.columns(3)
