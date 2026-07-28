@@ -101,7 +101,6 @@ with col_left:
         "Impacto %": [36.0, 20.0, 16.0, 28.0]
     })
     
-    # Generamos la torta forzando etiquetas externas legibles de un solo vistazo
     fig_pie = px.pie(
         df_quejas, 
         values="Impacto %", 
@@ -120,9 +119,9 @@ with col_right:
     
     A la izquierda se observa la ponderación exacta obtenida de las auditorías físicas de campo:
     *   **Falta de Kit de Seguridad (36.0% de impacto)**: Representa el desvío más severo detectado en las entregas de Tartagal y Jujuy.
-    *   **Falta de Presentes / Merch (20.0% de impacto)**: Quejas reiteradas de clientes por unidades retiradas sin obsequios comerciales de cortesía.
-    *   **Falta de Máquina de Café (16.0% de impacto)**: Descontento focalizado en el área de Posventa debido al retiro temporal de amenities en salas de espera.
-    *   **Otros desvíos menores (28.0% de impacto)**: Acumulado de observaciones de infraestructura menores bajo plan de acción.
+    *   **Falta de Presentes / Merch (20.0% de impacto)**: Quejas de clientes por unidades retiradas sin obsequios comerciales.
+    *   **Falta de Máquina de Café (16.0% de impacto)**: Descontento focalizado en Posventa debido al retiro de amenities en salas de espera.
+    *   **Otros desvíos menores (28.0% de impacto)**: Acumulado de observaciones de infraestructura bajo plan de acción.
     """)
 
 st.subheader("📋 Plan de Acción Comercial")
@@ -164,11 +163,14 @@ else:
     tot_sim = sum(p_list)
     pct_emt = (tot_sim / 900) * 100
 
+    # Lógica segura con listas planas e independientes libre de SyntaxError
     df_emt = pd.DataFrame({
         "Macro-Capítulo EMT": ["A-Estructura", "B-Servicio", "C-Kinto", "D-Club", "E-TPA", "F-TFS", "G-Usados", "H-Convencional", "I-Conectados"],
-        "Puntaje Maximo": * 9,
         "Puntaje Simulado": p_list,
         "Estado": ["🟢 Conforme" if x > 0 else "🔴 Alerta" for x in p_list]
     })
+    df_emt["Puntaje Maximo"] = 100
+    df_emt = df_emt[["Macro-Capítulo EMT", "Puntaje Maximo", "Puntaje Simulado", "Estado"]]
+    
     st.metric(label="🏆 NOTA CONSOLIDADA DE AUDITORÍA EMT SIMULADA", value=f"{tot_sim} / 900 Puntos", delta=f"{pct_emt:.1f}% Cumplimiento")
     st.dataframe(df_emt, use_container_width=True)
