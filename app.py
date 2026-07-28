@@ -67,12 +67,9 @@ with col_left:
 with col_right:
     st.markdown("""
     ### 📝 Diagnóstico de Desvíos por Canales
-    
-    A la izquierda se observa la ponderación exacta obtenida de las auditorías físicas de campo:
-    *   **Falta de Kit de Seguridad (36.0% de impacto)**: Representa el desvío más severo detectado en las entregas de Tartagal y Jujuy.
-    *   **Falta de Presentes / Merch (20.0% de impacto)**: Quejas de clientes por unidades retiradas sin obsequios comerciales.
-    *   **Falta de Máquina de Café (16.0% de impacto)**: Descontento focalizado en Posventa debido al retiro de amenities en salas de espera.
-    *   **Otros desvíos menores (28.0% de impacto)**: Acumulado de observaciones de infraestructura bajo plan de acción.
+    *   **Falta de Kit de Seguridad (36.0%)**: Desvío más severo detectado en Tartagal y Jujuy.
+    *   **Falta de Presentes / Merch (20.0%)**: Quejas por unidades retiradas sin obsequios.
+    *   **Falta de Máquina de Café (16.0%)**: Descontento focalizado en salas de espera de Posventa.
     """)
 
 st.subheader("📋 Plan de Acción Comercial")
@@ -105,41 +102,37 @@ with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
         for cell in row:
             cell.border = thin_border
             cell.font = Font(name='Arial', size=10)
-            
-    # Corrección limpia convirtiendo los datos a texto de manera estándar
     for col_num, col_name in enumerate(df_plan.columns, 1):
         max_len = max(df_plan[col_name].astype(str).map(len).max(), len(col_name))
-        col_letter = get_column_letter(col_num)
-        worksheet.column_dimensions[col_letter].width = max(max_len + 3, 12)
+        worksheet.column_dimensions[get_column_letter(col_num)].width = max(max_len + 3, 12)
 
 st.download_button(label="📥 Descargar Plan de Acción Comercial (.xlsx)", data=buffer.getvalue(), file_name="Plan_de_Accion_Autolux.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
+# 6. PESTAÑAS DE HOJAS DE DATOS (REPORTE COMPLETO EMT CON CONTROL ULTRA LIVIANO)
 st.divider()
 st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
-pestaña = st.radio("Selecciona pestaña:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
+pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
 
 if pestaña == "Resumen por Categorías":
     st.dataframe(df_areas[["Área", "Cumplimiento %", "Estado"]], use_container_width=True)
 else:
-    st.markdown("### 🎯 Módulo de Preparación EMT - 900 Puntos")
-    c_a, c_b, c_c = st.columns(3)
-    with c_a: sim_est = st.selectbox("Área A - Estructura Central:", ["🟢 Conforme", "🔴 Alerta"])
-    with c_b: sim_ser = st.selectbox("Área B - Servicio al Cliente:", ["🟢 Conforme", "🔴 Alerta"])
-    with c_c: sim_kin = st.selectbox("Área C - KINTO:", ["🟢 Conforme", "🔴 Alerta"])
-    c_d, c_e, c_f = st.columns(3)
-    with c_d: sim_clb = st.selectbox("Área D - Club Toyota:", ["🟢 Conforme", "🔴 Alerta"])
-    with c_e: sim_tpa = st.selectbox("Área E - Toyota Plan (TPA):", ["🟢 Conforme", "🔴 Alerta"])
-    with c_f: sim_tfs = st.selectbox("Área F - Financial (TCFA):", ["🟢 Conforme", "🔴 Alerta"])
-    c_g, c_h, c_i = st.columns(3)
-    with c_g: sim_usd = st.selectbox("Área G - Usados:", ["🟢 Conforme", "🔴 Alerta"])
-    with c_h: sim_dig = st.selectbox("Área H - Convencional (Ventas):", ["🟢 Conforme", "🔴 Alerta"])
-    with c_i: sim_con = st.selectbox("Área I - Servicios Conectados:", ["🟢 Conforme", "🔴 Alerta"])
-
-    p_list = [100 if "🟢" in s else 0 for s in [sim_est, sim_ser, sim_kin, sim_clb, sim_tpa, sim_tfs, sim_usd, sim_dig, sim_con]]
-    tot_sim = sum(p_list)
+    st.markdown("### 📋 Simulador Oficial EMT - Estilo de Movilidad TOYOTA (Target Septiembre)")
+    st.caption("Ajusta el puntaje total obtenido en la auditoría sobre la base de 900 puntos máximos oficiales:")
     
-    df_emt = pd.DataFrame({"Macro-Capítulo EMT": ["A-Estructura", "B-Servicio", "C-Kinto", "D-Club", "E-TPA", "F-TFS", "G-Usados", "H-Convencional", "I-Conectados"], "Puntaje Simulado": p_list, "Estado": ["🟢 Conforme" if x > 0 else "🔴 Alerta" for x in p_list]})
-    df_emt["Puntaje Maximo"] = 100
-    df_emt = df_emt[["Macro-Capítulo EMT", "Puntaje Maximo", "Puntaje Simulado", "Estado"]]
-    st.metric(label="🏆 NOTA CONSOLIDADA DE AUDITORÍA EMT SIMULADA", value=f"{tot_sim} / 900 Puntos", delta=f"{(tot_sim / 900) * 100:.1f}% Cumplimiento")
-    st.dataframe(df_emt, use_container_width=True)
+    # Barra de control ultra liviana de carga instantánea
+    puntaje_real_emt = st.slider("📊 Selecciona el Puntaje Total Obtenido:", min_value=0, max_value=900, value=900, step=5)
+    
+    pct_emt = (puntaje_real_emt / 900) * 100
+    
+    st.metric(label="🏆 NOTA CONSOLIDADA DE AUDITORÍA EMT SIMULADA", value=f"{puntaje_real_emt} / 900 Puntos", delta=f"{pct_emt:.1f}% Cumplimiento")
+    
+    # Gran recuadro de estado dinámico según los criterios de Toyota
+    st.markdown("#### 🎯 Estatus de Aprobación de la Marca")
+    if pct_emt == 100.0:
+        st.success(f"🏆 **Puntaje Perfecto:** {puntaje_real_emt} Puntos — **{pct_emt:.1f}%**. Escenario base ideal sin observaciones.")
+    elif pct_emt >= 90.0:
+        st.info(f"🟢 **Zona Conforme:** {puntaje_real_emt} Puntos — **{pct_emt:.1f}%**. Perfil apto para aprobación directa de TASA.")
+    elif pct_emt >= 75.0:
+        st.warning(f"🟡 **Zona de Alerta:** {puntaje_real_emt} Puntos — **{pct_emt:.1f}%**. Se detectan desvíos operativos leves a corregir.")
+    else:
+        st.error(f"🔴 **Alerta Crítica:** {puntaje_real_emt} Puntos — **{pct_emt:.1f}%**. El concesionario requiere contramedidas urgentes.")
