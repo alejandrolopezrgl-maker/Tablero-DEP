@@ -96,9 +96,15 @@ st.subheader("🕵️ Análisis Operativo: Plan de Acción Comercial en Sucursal
 col_left, col_right = st.columns(2)
 
 with col_left:
+    # Agregamos los porcentajes directamente a las etiquetas de la leyenda para que no se corten
     df_quejas = pd.DataFrame({
-        "Motivo de la Queja": ["Falta de Kit de Seguridad", "Falta de Presentes / Merch", "Falta de Máquina de Café", "Otros desvíos menores"],
-        "Impacto %": [36.0, 20.0, 16.0, 28.0]
+        "Motivo de la Queja": [
+            "Falta de Kit de Seguridad (36%)", 
+            "Otros desvíos menores (28%)", 
+            "Falta de Presentes / Merch (20%)", 
+            "Falta de Máquina de Café (16%)"
+        ],
+        "Impacto %": [36.0, 28.0, 20.0, 16.0]
     })
     
     fig_pie = px.pie(
@@ -106,10 +112,11 @@ with col_left:
         values="Impacto %", 
         names="Motivo de la Queja", 
         color_discrete_sequence=px.colors.sequential.Reds_r,
-        title="Distribución de Quejas (Explicación Visual)"
+        title="Distribución de Quejas"
     )
-    fig_pie.update_traces(textinfo="percent+label", textposition="outside")
-    fig_pie.update_layout(showlegend=True, legend=dict(orientation="v", yanchor="top", y=1, xanchor="left", x=1.05))
+    # Configuramos para mostrar únicamente los porcentajes adentro de la torta de forma prolija
+    fig_pie.update_traces(textinfo="percent", textposition="inside", textfont_size=14)
+    fig_pie.update_layout(showlegend=True, legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.02))
     
     st.plotly_chart(fig_pie, use_container_width=True)
 
@@ -163,7 +170,6 @@ else:
     tot_sim = sum(p_list)
     pct_emt = (tot_sim / 900) * 100
 
-    # Lógica segura con listas planas e independientes libre de SyntaxError
     df_emt = pd.DataFrame({
         "Macro-Capítulo EMT": ["A-Estructura", "B-Servicio", "C-Kinto", "D-Club", "E-TPA", "F-TFS", "G-Usados", "H-Convencional", "I-Conectados"],
         "Puntaje Simulado": p_list,
