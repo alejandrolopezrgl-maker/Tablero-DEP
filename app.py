@@ -90,19 +90,39 @@ with col4: st.metric("Estatus de Categoría", categoria_dinamica)
 st.divider()
 st.plotly_chart(px.bar(df_plot_areas, x="Área", y="Cumplimiento %", color="Estado", text_auto=".1f", color_discrete_map={"🟢 Excelente": "#2ca02c", "🟡 En Alerta": "#ff7f0e", "🔴 Crítico": "#d62728"}), use_container_width=True)
 
+# 5. DIAGNÓSTICO DE CAUSA RAÍZ CON EXPLICACIÓN VISUAL INTEGRADA
 st.divider()
 st.subheader("🕵️ Análisis Operativo: Plan de Acción Comercial en Sucursales")
 col_left, col_right = st.columns(2)
+
 with col_left:
     df_quejas = pd.DataFrame({
         "Motivo de la Queja": ["Falta de Kit de Seguridad", "Falta de Presentes / Merch", "Falta de Máquina de Café", "Otros desvíos menores"],
         "Impacto %": [36.0, 20.0, 16.0, 28.0]
     })
-    st.plotly_chart(px.pie(df_quejas, values="Impacto %", names="Motivo de la Queja", color_discrete_sequence=px.colors.sequential.Reds_r), use_container_width=True)
+    
+    # Generamos la torta forzando etiquetas externas legibles de un solo vistazo
+    fig_pie = px.pie(
+        df_quejas, 
+        values="Impacto %", 
+        names="Motivo de la Queja", 
+        color_discrete_sequence=px.colors.sequential.Reds_r,
+        title="Distribución de Quejas (Explicación Visual)"
+    )
+    fig_pie.update_traces(textinfo="percent+label", textposition="outside")
+    fig_pie.update_layout(showlegend=True, legend=dict(orientation="v", yanchor="top", y=1, xanchor="left", x=1.05))
+    
+    st.plotly_chart(fig_pie, use_container_width=True)
+
 with col_right:
     st.markdown("""
-    *   **Área Ventas (55.7%)**: Acciones de mitigación con kits de seguridad en Tartagal y Jujuy contuvieron las encuestas.
-    *   **Focos Críticos Reales**: Ventas Especiales (49.0%) y KINTO (35.8%) penalizados por demoras de unidades corporativas.
+    ### 📝 Diagnóstico de Desvíos por Canales
+    
+    A la izquierda se observa la ponderación exacta obtenida de las auditorías físicas de campo:
+    *   **Falta de Kit de Seguridad (36.0% de impacto)**: Representa el desvío más severo detectado en las entregas de Tartagal y Jujuy.
+    *   **Falta de Presentes / Merch (20.0% de impacto)**: Quejas reiteradas de clientes por unidades retiradas sin obsequios comerciales de cortesía.
+    *   **Falta de Máquina de Café (16.0% de impacto)**: Descontento focalizado en el área de Posventa debido al retiro temporal de amenities en salas de espera.
+    *   **Otros desvíos menores (28.0% de impacto)**: Acumulado de observaciones de infraestructura menores bajo plan de acción.
     """)
 
 st.subheader("📋 Plan de Acción Comercial")
@@ -117,7 +137,7 @@ plan_data = {
 }
 st.dataframe(pd.DataFrame(plan_data), use_container_width=True)
 
-# 5. REINCORPORACIÓN DE LAS DOS PESTAÑAS (RESUMEN + SIMULADOR EMT SEGURO)
+# 6. PESTAÑAS DE HOJAS DE DATOS (REPORTE COMPLETO EMT)
 st.divider()
 st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
 pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
@@ -144,10 +164,9 @@ else:
     tot_sim = sum(p_list)
     pct_emt = (tot_sim / 900) * 100
 
-    # Lógica blindada contra recortes del chat usando listas multiplicadas limpias
     df_emt = pd.DataFrame({
         "Macro-Capítulo EMT": ["A-Estructura", "B-Servicio", "C-Kinto", "D-Club", "E-TPA", "F-TFS", "G-Usados", "H-Convencional", "I-Conectados"],
-        "Puntaje Maximo": [100] * 9,
+        "Puntaje Maximo": * 9,
         "Puntaje Simulado": p_list,
         "Estado": ["🟢 Conforme" if x > 0 else "🔴 Alerta" for x in p_list]
     })
