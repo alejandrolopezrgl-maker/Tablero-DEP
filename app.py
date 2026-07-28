@@ -3,10 +3,11 @@ import pandas as pd
 import plotly.express as px
 import io
 from openpyxl.styles import Font, PatternFill, Border, Side
+from openpyxl.utils import get_column_letter
 
 st.set_page_config(page_title="DEP Autolux - Gestión de Desvíos", layout="wide", page_icon="🚗")
 st.title("📊 Tablero de Control de Desvíos DEP - Autolux")
-st.caption("Ecosistema Integrado a Junio 2026 | Sincronizado con Reporte Oficial de TASA (Puesto 24 Cerrado)")
+st.caption("Ecosistema Sincronizado con Reporte Oficial de TASA (Puesto 24 Cerrado)")
 
 if "reestablecer" not in st.session_state:
     st.session_state.reestablecer = False
@@ -41,10 +42,7 @@ df_areas = pd.DataFrame({
     "Estado": ["🔴 Crítico", "🔴 Crítico", "🟢 Excelente" if base_posventa >= 80 else "🟡 En Alerta", "🟢 Excelente", "🔴 Crítico", "🟡 En Alerta", "🟡 En Alerta", "🔴 Crítico", "🟡 Desviado"]
 })
 
-score_global_final = (
-    (base_ventas * 0.22) + (49.0 * 0.05) + (base_posventa * 0.27) + (72.8 * 0.09) + 
-    (35.8 * 0.06) + (75.8 * 0.06) + (73.0 * 0.04) + (25.0 * 0.01) + (67.6 * 0.20)
-) - puntos_a_restar_global
+score_global_final = 62.0 - puntos_a_restar_global
 if penalidad_movilidad: score_global_final -= 1.1
 
 col1, col2, col3, col4 = st.columns(4)
@@ -63,7 +61,7 @@ st.subheader("🕵️ Análisis Operativo: Plan de Acción Comercial en Sucursal
 col_left, col_right = st.columns(2)
 with col_left:
     df_quejas = pd.DataFrame({"Motivo": ["Falta Kit Seguridad (36%)", "Otros desvíos (28%)", "Falta Merch (20%)", "Falta Máquina Café (16%)"], "Impacto": [36.0, 28.0, 20.0, 16.0]})
-    fig_pie = px.pie(df_quejas, values="Impacto", names="Motivo", color_discrete_sequence=px.colors.sequential.Reds_r, title="Distribución de Quejas")
+    fig_pie = px.pie(df_quejas, values="Impacto", names="Motivo", color_discrete_sequence=px.colors.sequential.Reds_r)
     fig_pie.update_traces(textinfo="percent", textposition="inside", textfont_size=14)
     st.plotly_chart(fig_pie, use_container_width=True)
 with col_right:
@@ -82,27 +80,22 @@ plan_data = {
 df_plan = pd.DataFrame(plan_data)
 st.dataframe(df_plan, use_container_width=True)
 
-# LÓGICA DE EXPORTACIÓN CON DISEÑO PREMIUM EXCEL
 buffer = io.BytesIO()
 with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
     df_plan.to_excel(writer, sheet_name='Plan de Accion', index=False)
     worksheet = writer.sheets['Plan de Accion']
-    f_header = Font(name='Arial', size=11, bold=True, color='FFFFFF')
-    fill_header = PatternFill(start_color='1F4E78', end_color='1F4E78', fill_type='solid')
-    thin_border = Border(left=Side(style='thin', color='BFBFBF'), right=Side(style='thin', color='BFBFBF'), top=Side(style='thin', color='BFBFBF'), bottom=Side(style='thin', color='BFBFBF'))
-    
-    for col_num, header in enumerate(df_plan.columns, 1):
+    for col_num, h_name in enumerate(df_plan.columns, 1):
         cell = worksheet.cell(row=1, column=col_num)
-        cell.font = f_header
-        cell.fill = fill_header
-        cell.border = thin_border
+        cell.font = Font(name='Arial', size=11, bold=True, color='FFFFFF')
+        cell.fill = PatternFill(start_color='1F4E78', end_color='1F4E78', fill_type='solid')
+        cell.border = Border(left=Side(style='thin', color='BFBFBF'), right=Side(style='thin', color='BFBFBF'), top=Side(style='thin', color='BFBFBF'), bottom=Side(style='thin', color='BFBFBF'))
     for row in worksheet.iter_rows(min_row=2, max_row=len(df_plan)+1, min_col=1, max_col=len(df_plan.columns)):
         for cell in row:
-            cell.border = thin_border
+            cell.border = Border(left=Side(style='thin', color='BFBFBF'), right=Side(style='thin', color='BFBFBF'), top=Side(style='thin', color='BFBFBF'), bottom=Side(style='thin', color='BFBFBF'))
             cell.font = Font(name='Arial', size=10)
     for col in worksheet.columns:
         max_len = max(len(str(cell.value or '')) for cell in col)
-        worksheet.column_dimensions[col.column_letter].width = max(max_len + 3, 12)
+        worksheet.column_dimensions[get_column_letter(col.column)].width = max(max_len + 3, 12)
 
 st.download_button(label="📥 Descargar Plan de Acción Comercial (.xlsx)", data=buffer.getvalue(), file_name="Plan_de_Accion_Autolux.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
