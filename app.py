@@ -96,7 +96,6 @@ st.subheader("🕵️ Análisis Operativo: Plan de Acción Comercial en Sucursal
 col_left, col_right = st.columns(2)
 
 with col_left:
-    # Agregamos los porcentajes directamente a las etiquetas de la leyenda para que no se corten
     df_quejas = pd.DataFrame({
         "Motivo de la Queja": [
             "Falta de Kit de Seguridad (36%)", 
@@ -114,7 +113,6 @@ with col_left:
         color_discrete_sequence=px.colors.sequential.Reds_r,
         title="Distribución de Quejas"
     )
-    # Configuramos para mostrar únicamente los porcentajes adentro de la torta de forma prolija
     fig_pie.update_traces(textinfo="percent", textposition="inside", textfont_size=14)
     fig_pie.update_layout(showlegend=True, legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.02))
     
@@ -141,7 +139,18 @@ plan_data = {
     "Responsable": ["Asesores UCT", "Gerencia Comercial", "Responsable Posventa"],
     "Estatus Actual": ["En Proceso", "Pendiente", "Restablecido"]
 }
-st.dataframe(pd.DataFrame(plan_data), use_container_width=True)
+df_plan = pd.DataFrame(plan_data)
+st.dataframe(df_plan, use_container_width=True)
+
+# BOTÓN DE DESCARGA PARA EXCEL INTEGRADO NATIVAMENTE
+csv_data = df_plan.to_csv(index=False).encode('utf-8')
+st.download_button(
+    label="📥 Descargar Plan de Acción para Excel",
+    data=csv_data,
+    file_name="Plan_de_Accion_Autolux.csv",
+    mime="text/csv",
+    help="Haz clic aquí para exportar de forma inmediata esta tabla en un archivo compatible con Microsoft Excel."
+)
 
 # 6. PESTAÑAS DE HOJAS DE DATOS (REPORTE COMPLETO EMT)
 st.divider()
