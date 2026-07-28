@@ -94,7 +94,6 @@ st.divider()
 st.subheader("🕵️ Análisis Operativo: Plan de Acción Comercial en Sucursales")
 col_left, col_right = st.columns(2)
 with col_left:
-    # Agregamos "Otros desvíos" para completar la base 100 y forzar porcentajes correctos
     df_quejas = pd.DataFrame({
         "Motivo de la Queja": ["Falta de Kit de Seguridad", "Falta de Presentes / Merch", "Falta de Máquina de Café", "Otros desvíos menores"],
         "Impacto %": [36.0, 20.0, 16.0, 28.0]
@@ -118,7 +117,7 @@ plan_data = {
 }
 st.dataframe(pd.DataFrame(plan_data), use_container_width=True)
 
-# 5. REINCORPORACIÓN DE LAS DOS PESTAÑAS (RESUMEN + SIMULADOR EMT CONECTADO)
+# 5. REINCORPORACIÓN DE LAS DOS PESTAÑAS (RESUMEN + SIMULADOR EMT SEGURO)
 st.divider()
 st.subheader("📂 Consulta de Hojas de Datos (DEP & Auditoría EMT)")
 pestaña = st.radio("Selecciona la pestaña a inspeccionar:", ["Resumen por Categorías", "Simulador Preventivo EMT"], horizontal=True)
@@ -145,9 +144,10 @@ else:
     tot_sim = sum(p_list)
     pct_emt = (tot_sim / 900) * 100
 
+    # Lógica blindada contra recortes del chat usando listas multiplicadas limpias
     df_emt = pd.DataFrame({
         "Macro-Capítulo EMT": ["A-Estructura", "B-Servicio", "C-Kinto", "D-Club", "E-TPA", "F-TFS", "G-Usados", "H-Convencional", "I-Conectados"],
-        "Puntaje Maximo":,
+        "Puntaje Maximo": [100] * 9,
         "Puntaje Simulado": p_list,
         "Estado": ["🟢 Conforme" if x > 0 else "🔴 Alerta" for x in p_list]
     })
