@@ -48,26 +48,30 @@ if st.sidebar.button("🔄 Restablecer Valores Reales"):
     st.session_state.reestablecer = True
     st.rerun()
 
-# 3. VALORES PORCENTUALES REALES EXTRACTADOS DIRECTAMENTE DEL REPORTE DE TASA (COLUMNA LUX)
+# 3. VALORES PORCENTUALES REALES EXTRAÍDOS DIRECTAMENTE DEL REPORTE DE TASA (COLUMNA LUX)
 base_ventas = 55.7 if not penalidad_movilidad else (55.7 - 5.0)
 base_posventa = 91.7 - castigo_posventa_fieldman
 
 df_areas = pd.DataFrame({
     "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "General"],
     "Cumplimiento %": [base_ventas, 49.0, base_posventa, 72.8, 35.8, 75.8, 73.0, 25.0, 67.6],
-    "Estado": ["🔴 Crítico", "🔴 Crítico", "🟢 Excelente" if base_posventa >= 80 else "🟡 Desviado", "🟢 Excelente", "🔴 Crítico", "🟡 En Alerta", "🟡 En Alerta", "🔴 Crítico", "🟡 Desviado"]
+    "Estado": ["🔴 Crítico", "🔴 Crítico", "🟢 Excelente" if base_posventa >= 80 else "🟡 En Alerta", "🟢 Excelente", "🔴 Crítico", "🟡 En Alerta", "🟡 En Alerta", "🔴 Crítico", "🟡 Desviado"]
 })
 
-# PONDERACIÓN EXACTA DEL MANUAL TOYOTA PARA OBTENER EL 62.0% EXACTO
-pesos_oficiales = {
-    "Ventas": 0.22, "Ventas Especiales": 0.05, "Posventa": 0.27, "TPA": 0.09, 
-    "KINTO": 0.06, "Usados": 0.06, "TCFA": 0.04, "ESG": 0.01, "General": 0.20
-}
-df_areas["Peso"] = df_areas["Área"].map(pesos_oficiales)
-df_areas["Contribución"] = (df_areas["Cumplimiento %"] / 100) * df_areas["Peso"]
-
-# MATEMÁTICA REAL PONDERADA CERRADA DE TOYOTA
-score_global_final = (df_areas["Contribución"].sum() * 100) - puntos_a_restar_global
+# CÁLCULO CONTROLADO DEL SCORE GLOBAL EN BASE A LOS PESOS OFICIALES DE TOYOTA
+# Ponderaciones: Ventas(22%), Especiales(5%), Posventa(27%), TPA(9%), Kinto(6%), Usados(6%), TCFA(4%), ESG(1%), General(20%)
+contribucion_base = (
+    (base_ventas * 0.22) + 
+    (49.0 * 0.05) + 
+    (base_posventa * 0.27) + 
+    (72.8 * 0.09) + 
+    (35.8 * 0.06) + 
+    (75.8 * 0.06) + 
+    (73.0 * 0.04) + 
+    (25.0 * 0.01) + 
+    (67.6 * 0.20)
+)
+score_global_final = contribucion_base - puntos_a_restar_global
 
 st.subheader("📉 Cumplimiento Real por Área Evaluada (Foto Oficial Consolidada)")
 filtros = st.multiselect("🔍 Filtrar áreas específicas:", options=df_areas["Área"].unique(), default=[])
@@ -85,7 +89,7 @@ else:
     label_ranking = "Puesto 28 🟡"
     categoria_dinamica = "Categoría C"
 
-# 4. CUADRO DE MANDO PRINCIPAL SÉCURISADO
+# 4. CUADRO DE MANDO PRINCIPAL INYECTADO SIN ERRORES DE CACHÉ
 st.header("📌 Resumen Ejecutivo de Desvíos Autolux")
 col1, col2, col3, col4 = st.columns(4)
 with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
