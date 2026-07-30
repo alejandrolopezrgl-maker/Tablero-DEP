@@ -17,6 +17,7 @@ if "reestablecer" not in st.session_state:
 st.sidebar.header("🚨 Zona de Control de Riesgos")
 if st.session_state.reestablecer:
     penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts Global)", value=False, key="fp_real")
+    penalidad_movilidad = st.sidebar.toggle("Falta Certificación EMT (-5.0 pts Calidad)", value=False, key="mov_real")
     visitas_fieldman = st.sidebar.slider("% Cumplimiento Compromisos Fieldman", 0, 100, 85, key="fm_real")
     st.sidebar.markdown("---")
     st.sidebar.markdown("✏️ **Auditoría Interna EMT (Score Real)**")
@@ -24,19 +25,18 @@ if st.session_state.reestablecer:
     st.session_state.reestablecer = False  
 else:
     penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts Global)", value=False)
+    penalidad_movilidad = st.sidebar.toggle("Falta Certificación EMT (-5.0 pts Calidad)", value=False)
     visitas_fieldman = st.sidebar.slider("% Cumplimiento Compromisos Fieldman", 0, 100, 85)
     st.sidebar.markdown("---")
     st.sidebar.markdown("✏️ **Auditoría Interna EMT (Score Real)**")
     score_emt = st.sidebar.slider("Puntos Obtenidos (Base 900 pts)", 0, 900, 900)
 
-# Lógica e Impacto de Penalidades según Manual 2026 y PDF de Movilidad
+# Lógica de Impacto de Penalidades según Manual de TASA
 puntos_a_restar_global = 10.0 if penalidad_fair_play else 0.0
 castigo_posventa_fieldman = 3.4 if visitas_fieldman < 85 else 0.0
 
-# Cálculo dinámico del porcentaje de efectividad de la auditoría EMT
+# Cálculo dinámico de efectividad EMT
 efectividad_emt = (score_emt / 900.0) * 100.0
-penalidad_movilidad = efectividad_emt < 80.0  # Falla si cae por debajo del estándar mínimo admisible
-
 if penalidad_movilidad:
     st.sidebar.error(f"❌ EMT Fuera de Norma ({efectividad_emt:.1f}%): Penalidad Activa (-5.0 pts en Calidad).")
     base_calidad_lux = 55.7 - 5.0
@@ -53,14 +53,14 @@ if st.sidebar.button("🔄 Restablecer Valores Oficiales de Junio"):
     st.session_state.reestablecer = True
     st.rerun()
 
-# 3. BASE DE DATOS MATRICIAL: AUTOLUX VS PUESTO 5 (KANSAI) Y PUESTO 10 (AMIUN)
+# 3. BASE DE DATOS MATRICIAL: AJUSTADA A SÁBANA OFICIAL (LUX VS PUESTO 5 DPQ VS PUESTO 10 GON)
 base_targets_lux = 55.1 - castigo_posventa_fieldman
 
 data_transversal = {
     "Pilar Operativo (TASA)": ["Calidad", "Programas", "Recursos Humanos", "Facilities", "Targets"],
     "Autolux (LUX) - Puesto 24": [base_calidad_lux, 97.3, 91.9, 82.0, base_targets_lux],
-    "Kansai (KAI) - Puesto 5": [72.4, 97.3, 82.9, 82.0, 55.1],
-    "Amiun (AMN) - Puesto 10": [74.8, 97.3, 88.7, 82.0, 58.1]
+    "DPQ - Puesto 5": [72.3, 97.3, 85.0, 82.0, 68.5],
+    "GON - Puesto 10": [68.0, 97.3, 88.5, 82.0, 65.2]
 }
 df_bench = pd.DataFrame(data_transversal)
 
@@ -68,6 +68,14 @@ df_bench = pd.DataFrame(data_transversal)
 pesos = {"Calidad": 22.0, "Programas": 8.8, "Recursos Humanos": 12.1, "Facilities": 7.5, "Targets": 44.5}
 score_ponderado_lux = sum((df_bench.at[i, "Autolux (LUX) - Puesto 24"] / 100.0) * pesos[df_bench.at[i, "Pilar Operativo (TASA)"]] for i in range(len(df_bench)))
 score_global_final = score_ponderado_lux - puntos_a_restar_global
+
+# Cálculo dinámico del ranking móvil basado en la escala real
+if score_global_final >= 62.0:
+    puesto_calculado = int(24 - ((score_global_final - 62.0) / (72.3 - 62.0)) * (24 - 5))
+    puesto_calculado = max(1, puesto_calculado)
+else:
+    puesto_calculado = int(24 + ((62.0 - score_global_final) / 5.0) * 10)
+    puesto_calculado = min(43, puesto_calculado)
 
 # 4. CAPA DE PRESENTACIÓN EN PESTAÑAS (TABS)
 tab_dashboard, tab_plan = st.tabs(["📊 Dashboard del Dealer", "📋 Plan de Acción & Descarga"])
@@ -77,8 +85,8 @@ with tab_dashboard:
     col1, col2, col3, col4 = st.columns(4)
     with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
     with col2: 
-        puesto_ranking = "Puesto 24 🏆" if score_global_final >= 62.0 else "Puesto 38 🟡"
-        st.metric("Ranking General Red", puesto_ranking, delta="Brecha contra el Top 10 Red")
+        status_icono = "🏆" if puesto_calculado <= 24 else "🚨"
+        st.metric("Ranking General Red", f"Puesto {puesto_calculado} {status_icono}", delta="Brecha móvil real")
     with col3: st.metric("Eficiencia en Programas", f"{df_bench.at[1, 'Autolux (LUX) - Puesto 24']:.1f}%", delta="Colíderes de la Red TASA")
     with col4: 
         if score_global_final >= 90.0 and base_calidad_lux >= 70.0: categoria = "Categoría A 🥇"
@@ -88,15 +96,28 @@ with tab_dashboard:
         else: categoria = "Categoría E 🚨"
         st.metric("Estatus de Categoría", categoria)
 
-    # 6. VISUALIZACIÓN GRÁFICA COMPARATIVA CONTRA PUESTOS 5 Y 10
-    st.subheader("🏁 Benchmarking de Desempeño: Autolux vs Competidores Clave del Top 10")
-    st.markdown("Comparación de efectividad por pilares para identificar las brechas específicas que separan a Autolux de los líderes consolidados de la red.")
+    # MAPA CENTRAL DE CATEGORÍAS OPERATIVAS (ACU) SEGÚN AUDITORÍA
+    st.divider()
+    st.subheader("🗂️ Estructura Central de Capítulos Operativos (ACU - 900 pts)")
+    st.markdown("Distribución modular de las auditorías semestrales Toyota 'Best in Town' integradas en el ecosistema:")
+    
+    col_acu1, col_acu2, col_acu3 = st.columns(3)
+    with col_acu1:
+        st.info("**Bloque Central e Infraestructura**\n*   **A:** Estructura Central (100 pts)\n*   **B:** Servicio al Cliente (100 pts)\n*   **D:** Club Toyota (100 pts)")
+    with col_acu2:
+        st.success("**Bloque Corporativo y Canales**\n*   **C:** Kinto Movilidad (100 pts)\n*   **E:** Toyota Plan de Ahorro (100 pts)\n*   **G:** Vehículos Usados (100 pts)")
+    with col_acu3:
+        st.warning("**Bloque de Operación y Ventas**\n*   **H:** Canal Convencional (100 pts)\n*   **F:** Toyota Financial Services (100 pts)\n*   **I:** Servicios Conectados (100 pts)")
+
+    # 6. VISUALIZACIÓN GRÁFICA COMPARATIVA ACTUALIZADA
+    st.subheader("🏁 Benchmarking de Desempeño: Autolux vs Líderes de la Red (DPQ y GON)")
+    st.markdown("Comparación de efectividad por pilares para identificar las brechas operativas directas contra el Puesto 5 y el Puesto 10 de la red.")
     
     df_melted = df_bench.melt(id_vars=["Pilar Operativo (TASA)"], var_name="Concesionario", value_name="Efectividad %")
     fig_bench = px.bar(
         df_melted, x="Pilar Operativo (TASA)", y="Efectividad %", color="Concesionario",
         barmode="group", text_auto=".1f", title="Análisis de Brecha Operativa Cruzada (Cierre Junio)",
-        color_discrete_map={"Autolux (LUX) - Puesto 24": "#d62728", "Kansai (KAI) - Puesto 5": "#1f77b4", "Amiun (AMN) - Puesto 10": "#7f7f7f"}
+        color_discrete_map={"Autolux (LUX) - Puesto 24": "#d62728", "DPQ - Puesto 5": "#1f77b4", "GON - Puesto 10": "#7f7f7f"}
     )
     st.plotly_chart(fig_bench, use_container_width=True)
 
@@ -115,9 +136,9 @@ with tab_dashboard:
     with col_right:
         st.markdown("""
         ### 📝 Puntos Clínicos a Revertir Urgente
-        *   **Brecha en Calidad (-19.1% vs AMN)**: El pilar Calidad es donde se encuentra la mayor distancia competitiva. El puesto 10 (`AMN`) tracciona un **74.8%** frente a nuestro **55.7%**, arrastrado por el indicador de Salesforce.
-        *   **Paridad en Programas y Facilities**: En infraestructura corporativa y cumplimiento de auditorías de mantenimiento/5S, Autolux se encuentra empatado en la cima con el Puesto 5 y el Puesto 10.
-        *   **Oportunidad en Targets (-3.0% vs AMN)**: La brecha en el pilar comercial es pequeña. Con ajustar las entregas físicas y los cierres operativos en los plazos de gracia, podemos superar la performance de volumen.
+        *   **Brecha en Calidad (-16.6% vs DPQ)**: El pilar Calidad sigue mostrando el mayor desvío competitivo. El puesto 5 (`DPQ`) tracciona un **72.3%** frente a nuestro **55.7%**.
+        *   **Ventaja en Recursos Humanos (+6.9% vs DPQ)**: Autolux supera al Puesto 5 de la red en retención y planes de capacitación interna.
+        *   **Oportunidad en Targets (-13.4% vs DPQ)**: El área comercial es clave. `DPQ` alcanza un **68.5%** en patentamientos; traccionar este pilar es lo que más nos acercará al Top 10.
         """)
 with tab_plan:
     st.subheader("📋 Plan de Acción Operativo Homologado")
