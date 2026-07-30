@@ -61,11 +61,13 @@ tab_dashboard, tab_plan = st.tabs(["📊 Dashboard del Dealer", "📋 Plan de Ac
 with tab_dashboard:
     # 5. PANEL EJECUTIVO DE MÉTRICAS (KPI CARDS)
     col1, col2, col3, col4 = st.columns(4)
-    with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
+    with col1: 
+        st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
     with col2: 
         puesto_ranking = "Puesto 24 🏆" if score_global_final >= 62.0 else "Puesto 38 🟡"
         st.metric("Ranking General Red", puesto_ranking, delta="Brecha contra el Top 10 Red")
-    with col3: st.metric("Eficiencia en Programas", f"{df_bench.at[1, 'Autolux (LUX) - Puesto 24']:.1f}%", delta="Colíderes de la Red TASA")
+    with col3: 
+        st.metric("Eficiencia en Programas", f"{df_bench.at[1, 'Autolux (LUX) - Puesto 24']:.1f}%", delta="Colíderes de la Red TASA")
     with col4: 
         if score_global_final >= 90.0 and base_calidad_lux >= 70.0: categoria = "Categoría A 🥇"
         elif score_global_final >= 80.0 and base_calidad_lux >= 60.0: categoria = "Categoría B 🥈"
@@ -74,8 +76,10 @@ with tab_dashboard:
         else: categoria = "Categoría E 🚨"
         st.metric("Estatus de Categoría", categoria)
 
-    # 6. VISUALIZACIÓN GRÁFICA COMPARATIVA
+    # 6. VISUALIZACIÓN GRÁFICA COMPARATIVA CONTRA PUESTOS 5 Y 10
     st.subheader("🏁 Benchmarking de Desempeño: Autolux vs Competidores Clave del Top 10")
+    st.markdown("Comparación de efectividad por pilares para identificar las brechas específicas que separan a Autolux de los líderes consolidados de la red.")
+    
     df_melted = df_bench.melt(id_vars=["Pilar Operativo (TASA)"], var_name="Concesionario", value_name="Efectividad %")
     fig_bench = px.bar(
         df_melted, x="Pilar Operativo (TASA)", y="Efectividad %", color="Concesionario",
@@ -99,9 +103,9 @@ with tab_dashboard:
     with col_right:
         st.markdown("""
         ### 📝 Puntos Clínicos a Revertir Urgente
-        * **Brecha en Calidad (-19.1% vs AMN)**: El puesto 10 (`AMN`) tracciona un **74.8%** frente a nuestro **55.7%**, arrastrado por Salesforce.
-        * **Paridad en Programas y Facilities**: Autolux se encuentra empatado en la cima con el Puesto 5 y el Puesto 10.
-        * **Oportunidad en Targets (-3.0% vs AMN)**: La brecha comercial es muy pequeña y totalmente reversible.
+        *   **Brecha en Calidad (-19.1% vs AMN)**: El pilar Calidad es donde se encuentra la mayor distancia competitiva. El puesto 10 (`AMN`) tracciona un **74.8%** frente a nuestro **55.7%**, arrastrado por el indicador de Salesforce.
+        *   **Paridad en Programas y Facilities**: En infraestructura corporativa y cumplimiento de auditorías de mantenimiento/5S, Autolux se encuentra empatado en la cima con el Puesto 5 y el Puesto 10.
+        *   **Oportunidad en Targets (-3.0% vs AMN)**: La brecha en el pilar comercial es pequeña. Con ajustar las entregas físicas y los cierres operativos en los plazos de gracia, podemos superar la performance de volumen.
         """)
 with tab_plan:
     st.subheader("📋 Plan de Acción Operativo Homologado")
@@ -138,21 +142,28 @@ with tab_plan:
         font_body = Font(name='Arial', size=10, bold=False)
         border_thin = Border(left=Side(style='thin', color='DDDDDD'), right=Side(style='thin', color='DDDDDD'), top=Side(style='thin', color='DDDDDD'), bottom=Side(style='thin', color='DDDDDD'))
         
+        # Aplicar estilos a encabezados
         for col_idx in range(1, len(df_plan.columns) + 1):
             cell = worksheet.cell(row=1, column=col_idx)
             cell.fill = fill_header
             cell.font = font_header
             cell.border = border_thin
         
+        # Aplicar estilos al cuerpo de la tabla
         for row_idx in range(2, len(df_plan) + 2):
             for col_idx in range(1, len(df_plan.columns) + 1):
                 cell = worksheet.cell(row=row_idx, column=col_idx)
                 cell.font = font_body
                 cell.border = border_thin
                 
-        for col in worksheet.columns:
-            max_len = max(len(str(cell.value or '')) for cell in col)
-            col_letter = get_column_letter(col.column)
+        # Autoajuste de ancho de columnas corregido sin errores de atributos
+        for col_idx in range(1, len(df_plan.columns) + 1):
+            col_letter = get_column_letter(col_idx)
+            max_len = 0
+            for row_idx in range(1, len(df_plan) + 2):
+                val = worksheet.cell(row=row_idx, column=col_idx).value
+                if val:
+                    max_len = max(max_len, len(str(val)))
             worksheet.column_dimensions[col_letter].width = max(max_len + 3, 12)
 
     st.download_button(
