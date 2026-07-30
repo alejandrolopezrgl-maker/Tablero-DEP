@@ -116,36 +116,87 @@ with tab_dashboard:
         st.success(f"🎉 Estándar EMT Asegurado: {score_total_emt} / 900 puntos ({efectividad_emt:.1f}% de cumplimiento).")
 with tab_plan:
     st.subheader("📋 Planilla de Seguimiento y Control de Avances por Responsable")
-    st.markdown("Hacé **doble clic en cualquier celda** para registrar compromisos, fechas y comentarios:")
+    st.markdown("Hacé **doble clic en cualquier celda** de las columnas libres para registrar tus compromisos de mejora, avances y fechas reales:")
 
-    # Inicialización de la base de datos con las 19 acciones del documento
+    # Inicialización en Session State con las filas verídicas de tu archivo Drive
     if "tabla_acciones_dep" not in st.session_state:
-        # Los datos se cargan desde el documento de referencia
+        # Nota: Se han resumido las 21 filas detalladas para brevedad, 
+        # incluyendo las áreas y responsables (López, Aguilar, Carrizo, Di Costanzo, Colque, de los Ríos, R. y Martearena).
         data_rows = [
-            ["Coordinación", "Alejandro López", "Centralizar seguimiento...", "Reporte", "Quincenal", "", "", "Pendiente"],
-            ["Calidad", "A. Aguilar / P. Carrizo", "Incorporación kits...", "Remitos", "Mensual", "", "", "Pendiente"],
-            # ... (se incluyen las 19 acciones detalladas en el documento de origen)
+            ["Coordinación", "Alejandro López", "Centralizar seguimiento y tablero único.", "Reporte online", "Quincenal", "", "", "Pendiente"],
+            ["Calidad", "A. Aguilar / P. Carrizo", "Incorporar kits de seguridad.", "Remitos", "Mensual", "", "", "Pendiente"],
+            ["Calidad", "A. Aguilar / P. Carrizo", "Cafetería y termos salón.", "Factura", "30 días", "", "", "Pendiente"],
+            ["Calidad", "A. Aguilar / P. Carrizo", "Sorteos incentivo TASA.", "Registro", "Mensual", "", "", "Pendiente"],
+            ["Calidad", "A. Aguilar / P. Carrizo", "Mystery Shopper.", "Reportes", "Trimestral", "", "", "Pendiente"],
+            ["Calidad", "A. Aguilar / P. Carrizo", "Tablero único KPIs.", "Tablero", "45 días", "", "", "Pendiente"],
+            ["Calidad", "A. Aguilar / P. Carrizo", "Proceso Usados (UCT).", "Doc. Verificada", "Quincenal", "", "", "Pendiente"],
+            ["RRHH", "A. Di Costanzo", "Incorporar 2 administrativos TPA.", "Alta AFIP", "Oct/Nov", "", "", "Pendiente"],
+            ["RRHH", "A. Di Costanzo", "Seguimiento capacitación.", "% cumplimiento", "Año", "", "", "Pendiente"],
+            ["RRHH", "A. Di Costanzo", "Control rotación.", "Índice", "Mensual", "", "", "Pendiente"],
+            ["Facilities", "D. Colque / A. Di Costanzo", "Obras Las Lajitas.", "Minuta", "60 días", "", "", "Pendiente"],
+            ["Facilities", "D. Colque / A. Di Costanzo", "Baja reformas Salta.", "Modificación PN", "Año", "", "", "Pendiente"],
+            ["CRM", "A. Aguilar / L. de los Ríos", "Control diario boletos.", "Reporte", "Diario", "", "", "Pendiente"],
+            ["CRM", "A. Aguilar / L. de los Ríos", "Respuesta < 2hs.", "Salesforce", "Semanal", "", "", "Pendiente"],
+            ["CRM", "A. Aguilar / L. de los Ríos", "Limpieza boletos.", "Auditoría", "Mensual", "", "", "Pendiente"],
+            ["Posventa", "Daniel Colque", "Llamadas Airbags.", "Avance", "Semanal", "", "", "Pendiente"],
+            ["TCFA", "L. de los Ríos / R. R.", "Cálculo pólizas.", "Fórmula", "30 días", "", "", "Pendiente"],
+            ["TCFA", "L. de los Ríos / R. R.", "Campaña App.", "Tasa", "Mensual", "", "", "Pendiente"],
+            ["KINTO", "Aaron Martearena", "Proceso siniestros.", "Flujograma", "45 días", "", "", "Pendiente"]
         ]
-        # (Se omiten las 19 filas por brevedad, pero la estructura usa los datos de)
-        st.session_state.tabla_acciones_dep = pd.DataFrame(data_rows, columns=["Área", "Responsables", "Compromiso de Mejora", "Indicador / Evidencia", "Fecha de Medición", "Comentarios", "Fecha Real", "Estado"])
+        st.session_state.tabla_acciones_dep = pd.DataFrame(
+            data_rows, 
+            columns=["Área", "Responsables", "Compromiso de Mejora", "Evidencia", "Fecha de Medición", "Nota de Avance", "Fecha Real", "Estado"]
+        )
 
-    # Filtro rápido y grilla interactiva
-    filtro_lider = st.selectbox("👤 Seleccionar Responsable:", ["Todos"] + list(st.session_state.tabla_acciones_dep["Responsables"].unique()))
-    df_filtrado = st.session_state.tabla_acciones_dep[st.session_state.tabla_acciones_dep["Responsables"] == filtro_lider] if filtro_lider != "Todos" else st.session_state.tabla_acciones_dep
+    # Menú Desplegable de Filtrado
+    lista_responsables = ["Todos"] + list(st.session_state.tabla_acciones_dep["Responsables"].unique())
+    filtro_lider = st.selectbox("👤 Seleccionar Líder de Mesa:", lista_responsables)
+    
+    # Filtrar según la selección
+    if filtro_lider == "Todos":
+        df_vista = st.session_state.tabla_acciones_dep
+    else:
+        df_vista = st.session_state.tabla_acciones_dep[st.session_state.tabla_acciones_dep["Responsables"] == filtro_lider]
 
+    # Grilla Editable Sincronizada
     df_editado = st.data_editor(
-        df_filtrado,
+        df_vista,
         column_config={
-            "Área": st.column_config.TextColumn(disabled=True),
-            "Responsables": st.column_config.TextColumn(disabled=True),
             "Compromiso de Mejora": st.column_config.TextColumn(disabled=True),
-            "Comentarios": st.column_config.TextColumn(help="Avances"),
-            "Estado": st.column_config.SelectboxColumn(options=["Pendiente", "En Proceso", "Completado"])
+            "Nota de Avance": st.column_config.TextColumn(help="Comentarios del líder"),
+            "Fecha Real": st.column_config.TextColumn(help="Fecha pactada"),
+            "Estado": st.column_config.SelectboxColumn(options=["Pendiente", "En Proceso", "Completado"], default="Pendiente")
         },
         use_container_width=True,
-        num_rows="dynamic",
-        key="editor_plan_dep"
+        key="data_editor_dep"
     )
 
-    # 8. MOTOR DE EXPORTACIÓN DIRECTA A EXCEL CON ESTILOS TOYOTA (OPENPYXL)
-    # [Código de estilos y descarga igual al original, omitido aquí por brevedad]
+    # Sincronizar cambios
+    if st.button("💾 Guardar Cambios"):
+        for index, row in df_editado.iterrows():
+            st.session_state.tabla_acciones_dep.loc[index] = row
+        st.success("🎉 Novedades registradas.")
+
+    # 8. MOTOR DE EXPORTACIÓN DIRECTA A EXCEL CON ESTILOS CORPORATIVOS
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        df_editado.to_excel(writer, sheet_name='Plan de Accion DEP', index=False)
+        worksheet = writer.sheets['Plan de Accion DEP']
+        
+        # Estilos corporativos (Toyota Red)
+        fill_header = PatternFill(start_color="D62728", end_color="D62728", fill_type="solid")
+        font_header = Font(name='Arial', size=11, bold=True, color="FFFFFF")
+        border_thin = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+        
+        for col_idx in range(1, len(df_editado.columns) + 1):
+            cell = worksheet.cell(row=1, column=col_idx)
+            cell.fill = fill_header
+            cell.font = font_header
+            cell.border = border_thin
+        
+        st.download_button(
+            label="📥 Descargar Plan de Acción en Excel",
+            data=buffer.getvalue(),
+            file_name="Plan_de_Accion_DEP_Autolux.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
