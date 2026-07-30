@@ -6,28 +6,43 @@ from openpyxl.styles import Font, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 
 # 1. CONFIGURACIÓN DE LA PÁGINA
-st.set_page_config(page_title="DEP Autolux - Benchmarking Red", layout="wide", page_icon="🚗")
+st.set_page_config(page_title="DEP Autolux - Gestión Integral", layout="wide", page_icon="🚗")
 st.title("🚗 Tablero de Control y Dashboard Evolutivo DEP - Autolux")
 st.caption("Ecosistema Sincronizado - Datos Oficiales de la Red TASA (Cierre Acumulado a Junio)")
 
 if "reestablecer" not in st.session_state:
     st.session_state.reestablecer = False
 
-# 2. BARRA LATERAL: SIMULADOR DE PENALIDADES DE CAMPO
+# 2. BARRA LATERAL: CONTROL DE RIESGOS Y MICRO-SIMULADOR EMT (900 PUNTOS TOYOTA)
 st.sidebar.header("🚨 Zona de Control de Riesgos")
 if st.session_state.reestablecer:
     penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts Global)", value=False, key="fp_real")
-    penalidad_movilidad = st.sidebar.toggle("Falta Certificación Movilidad (-5 pts Ventas)", value=False, key="mov_real")
     visitas_fieldman = st.sidebar.slider("% Cumplimiento Compromisos Fieldman", 0, 100, 85, key="fm_real")
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("✏️ **Auditoría Interna EMT (Score Real)**")
+    score_emt = st.sidebar.slider("Puntos Obtenidos (Base 900 pts)", 0, 900, 900, key="emt_real")
     st.session_state.reestablecer = False  
 else:
     penalidad_fair_play = st.sidebar.toggle("Fair Play Detectado (-10 pts Global)", value=False)
-    penalidad_movilidad = st.sidebar.toggle("Falta Certificación Movilidad (-5 pts Ventas)", value=False)
     visitas_fieldman = st.sidebar.slider("% Cumplimiento Compromisos Fieldman", 0, 100, 85)
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("✏️ **Auditoría Interna EMT (Score Real)**")
+    score_emt = st.sidebar.slider("Puntos Obtenidos (Base 900 pts)", 0, 900, 900)
 
-# Variables dinámicas de penalización según el manual de TASA
+# Lógica e Impacto de Penalidades según Manual 2026 y PDF de Movilidad
 puntos_a_restar_global = 10.0 if penalidad_fair_play else 0.0
 castigo_posventa_fieldman = 3.4 if visitas_fieldman < 85 else 0.0
+
+# Cálculo dinámico del porcentaje de efectividad de la auditoría EMT
+efectividad_emt = (score_emt / 900.0) * 100.0
+penalidad_movilidad = efectividad_emt < 80.0  # Falla si cae por debajo del estándar mínimo admisible
+
+if penalidad_movilidad:
+    st.sidebar.error(f"❌ EMT Fuera de Norma ({efectividad_emt:.1f}%): Penalidad Activa (-5.0 pts en Calidad).")
+    base_calidad_lux = 55.7 - 5.0
+else:
+    st.sidebar.success(f"🟢 EMT Aprobado ({efectividad_emt:.1f}%): Proceso de Movilidad Validado.")
+    base_calidad_lux = 55.7
 
 if visitas_fieldman < 85: 
     st.sidebar.error("❌ Penalidad Ítem 3.5.7.a Activa (-40% Puntos Negativos en Posventa).")
@@ -39,7 +54,6 @@ if st.sidebar.button("🔄 Restablecer Valores Oficiales de Junio"):
     st.rerun()
 
 # 3. BASE DE DATOS MATRICIAL: AUTOLUX VS PUESTO 5 (KANSAI) Y PUESTO 10 (AMIUN)
-base_calidad_lux = 55.7 if not penalidad_movilidad else (55.7 - 5.0)
 base_targets_lux = 55.1 - castigo_posventa_fieldman
 
 data_transversal = {
@@ -61,13 +75,11 @@ tab_dashboard, tab_plan = st.tabs(["📊 Dashboard del Dealer", "📋 Plan de Ac
 with tab_dashboard:
     # 5. PANEL EJECUTIVO DE MÉTRICAS (KPI CARDS)
     col1, col2, col3, col4 = st.columns(4)
-    with col1: 
-        st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
+    with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
     with col2: 
         puesto_ranking = "Puesto 24 🏆" if score_global_final >= 62.0 else "Puesto 38 🟡"
         st.metric("Ranking General Red", puesto_ranking, delta="Brecha contra el Top 10 Red")
-    with col3: 
-        st.metric("Eficiencia en Programas", f"{df_bench.at[1, 'Autolux (LUX) - Puesto 24']:.1f}%", delta="Colíderes de la Red TASA")
+    with col3: st.metric("Eficiencia en Programas", f"{df_bench.at[1, 'Autolux (LUX) - Puesto 24']:.1f}%", delta="Colíderes de la Red TASA")
     with col4: 
         if score_global_final >= 90.0 and base_calidad_lux >= 70.0: categoria = "Categoría A 🥇"
         elif score_global_final >= 80.0 and base_calidad_lux >= 60.0: categoria = "Categoría B 🥈"
