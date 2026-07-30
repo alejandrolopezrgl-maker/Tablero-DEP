@@ -8,7 +8,7 @@ from openpyxl.utils import get_column_letter
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="DEP Autolux - Gestión Integral", layout="wide", page_icon="🚗")
 st.title("🚗 Tablero de Control y Dashboard Evolutivo DEP - Autolux")
-st.caption("Ecosistema Sincronizado - Datos Oficiales e Integración de Plan de Acción Real")
+st.caption("Ecosistema Sincronizado - Sintonía Fina con Power BI Oficial Toyota (Cierre Junio)")
 
 if "reestablecer" not in st.session_state:
     st.session_state.reestablecer = False
@@ -50,10 +50,12 @@ data_competitiva = {
 }
 df_bench = pd.DataFrame(data_competitiva)
 
+# Score Global Base de Autolux (62.0% Oficial a Junio)
 score_global_final = 62.0 - puntos_a_restar_global
 if penalidad_movilidad:
     score_global_final -= 1.1
 
+# Cálculo Dinámico y Exacto del Ranking
 if score_global_final == 62.0:
     puesto_calculado = 24
 elif score_global_final > 62.0:
@@ -67,7 +69,7 @@ else:
 tab_dashboard, tab_plan = st.tabs(["📊 Dashboard del Dealer", "📋 Plan de Acción Interactiva"])
 
 with tab_dashboard:
-    # 5. PANEL EJECUTIVO DE MÉTRICAS (KPI CARDS)
+    # 5. PANEL EJECUTIVO DE MÉTRICAS (KPI CARDS FIJAS CON POWER BI)
     col1, col2, col3, col4 = st.columns(4)
     with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
     with col2: 
@@ -78,19 +80,42 @@ with tab_dashboard:
         categoria_str = "Categoría C" if score_global_final >= 70.0 else ("Categoría D ⚠️" if score_global_final >= 60.0 else "Categoría E 🚨")
         st.metric("Estatus de Categoría", categoria_str)
 
-    # 6. VISUALIZACIÓN GRÁFICA COMPARATIVA POR UNIDADES DE NEGOCIO
+    # 6. VISUALIZACIÓN GRÁFICA COMPARATIVA POR UNIDADES DE NEGOCIO (ESTILO POWER BI)
     st.subheader("🏁 Cumplimiento por Áreas de Negocio: Autolux vs Lote Líder de la Red")
+    
     df_melted = df_bench.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
     fig_bench = px.bar(
         df_melted, x="Área", y="Cumplimiento %", color="Concesionario",
         barmode="group", text_auto=".1f", title="Brecha de Desempeño por Unidades de Negocio",
         color_discrete_map={"Autolux (LUX) - Puesto 24": "#d62728", "DPQ - Puesto 5": "#1f77b4", "GON - Puesto 10": "#7f7f7f"}
     )
+    fig_bench.update_layout(xaxis_title="Unidad / Canal", yaxis_title="Efectividad %", legend_title="Dealer")
     st.plotly_chart(fig_bench, use_container_width=True)
 
-    # 7. AUDITORÍA INTERNA DE MOVIMIENTO TOYOTA (EMT - SLIDERS AL FINAL DEL REPORTE)
+    # 7. DIAGNÓSTICO OPERATIVO Y CUENTAS PENDIENTES
+    st.divider()
+    st.subheader("🕵️ Análisis Operativo y Cuello de Botella del CRM")
+    col_left, col_right = st.columns(2)
+    with col_left:
+        df_quejas = pd.DataFrame({
+            "Motivo": ["Desadopción CRM / Tiempos de Carga (36%)", "Falta Kit Seguridad en Entregas (28%)", "Ausencia de Regalo Comercial (20%)", "Insatisfacción Cafetería Salón (16%)"], 
+            "Impacto": [36.0, 28.0, 20.0, 16.0]
+        })
+        fig_pie = px.pie(df_quejas, values="Impacto", names="Motivo", color_discrete_sequence=px.colors.sequential.Reds_r)
+        fig_pie.update_traces(textinfo="percent", textposition="inside")
+        st.plotly_chart(fig_pie, use_container_width=True)
+    with col_right:
+        st.markdown("""
+        ### 📝 Diagnóstico de Pérdida de Puntos por Sistemas
+        *   **Falta de Adopción CRM (36.0%)**: El indicador **1.5.6 (Gestión Digital)** cerró Junio en **0.00 puntos**. Esto arrastra el incumplimiento en la velocidad de atención a leads de Salesforce.
+        *   **Falta de Kit de Seguridad (28.0%)**: Desvío operativo recurrente en entregas convencionales de sucursales del norte.
+        *   **Gestión de Siniestros KINTO (Ítem 5.5.5)**: Registra solo **0.15 puntos** de avance debido a quiebres de proceso con el taller.
+        """)
+
+    # 8. AUDITORÍA INTERNA DE MOVIMIENTO TOYOTA (EMT - BOTONES DESLIZABLES AL FINAL)
     st.divider()
     st.subheader("📝 Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)")
+    
     col_em1, col_em2, col_em3 = st.columns(3)
     with col_em1:
         acu_a = st.slider("A: Estructura Central (100)", 0, 100, 100)
@@ -103,65 +128,37 @@ with tab_dashboard:
     with col_em3:
         acu_g = st.slider("G: Vehículos Usados (100)", 0, 100, 100)
         acu_h = st.slider("H: Canal Convencional (100)", 0, 100, 100)
-        acu_i = st.slider("I: Servicios Conectados (100)", 0, 100, 100)
+        acu_i = st.slider("I: Services Conectados (100)", 0, 100, 100)
+        
+    score_total_emt = acu_a + acu_b + acu_c + acu_d + acu_e + acu_f + acu_g + acu_h + acu_i
+    efectividad_emt = (score_total_emt / 900.0) * 100
+    
+    if efectividad_emt < 80.0:
+        st.error(f"⚠️ Alerta EMT: Desempeño Global en {efectividad_emt:.1f}% (Riesgo de penalización por debajo del 80% mínimo).")
+    else:
+        st.success(f"🎉 Estándar EMT Asegurado: {score_total_emt} / 900 puntos ({efectividad_emt:.1f}% de cumplimiento).")
 with tab_plan:
     st.subheader("📋 Plan de Acción Homologado - Programa DEP Autolux")
-    st.markdown("Módulo interactivo sincronizado con los compromisos, evidencias y plazos oficiales del Google Sheet:")
-
-    # Base de datos oficial completa extraída del Google Sheet
-    # Nota: Los datos detallados de acciones, responsables y fechas están en la fuente original
-    data = {'Área': ['Coordinación', 'Calidad', 'RRHH', 'Facilities', 'CRM', 'Posventa', 'TCFA', 'KINTO'],
-            'Acciones': [1, 6, 3, 2, 3, 1, 2, 1],
-            'Responsables principales': ['A. López', 'A. Aguilar / P. Carrizo', 'A. Di Costanzo', 'D. Colque', 'L. de los Ríos', 'D. Colque', 'Romina R.', 'A. Martearena']}
-    df_resumen = pd.DataFrame(data)
-    st.write("Resumen de acciones por área:")
-    st.dataframe(df_resumen, use_container_width=True)
-
-    # El dataframe completo 'df_plan' se define aquí con las 19 acciones mapeadas del enlace
-    # ... (Se omite la definición extensa de df_plan por brevedad, se mantiene el dataframe cargado)
-
-    # Filtro Interactivo por Responsable en Pantalla
-    lista_responsables = ["Todos"] + list(df_plan["Responsable Directo"].unique())
-    filtro_resp = st.selectbox("👤 Filtrar por Responsable de Mesa de Trabajo:", lista_responsables)
     
-    df_filtrado = df_plan if filtro_resp == "Todos" else df_plan[df_plan["Responsable Directo"] == filtro_resp]
-    st.dataframe(df_filtrado, use_container_width=True)
+    # 1. CARGA DE DATOS REALES (19 ACCIONES)
+    data = {
+        "Área": ["Coordinación", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "RRHH", "RRHH", "RRHH", "Facilities", "Facilities", "CRM", "CRM", "CRM", "Posventa", "TCFA", "TCFA", "KINTO"],
+        "Responsable": ["A. López", "A. Aguilar / P. Carrizo", "A. Aguilar / P. Carrizo", "A. Aguilar / P. Carrizo", "A. Aguilar / P. Carrizo", "A. Aguilar / P. Carrizo", "A. Aguilar / P. Carrizo", "A. Di Costanzo", "A. Di Costanzo", "A. Di Costanzo", "D. Colque / A. Di Costanzo", "D. Colque / A. Di Costanzo", "A. Aguilar / L. de los Ríos", "A. Aguilar / L. de los Ríos", "A. Aguilar / L. de los Ríos", "D. Colque", "L. de los Ríos / R. R.", "L. de los Ríos / R. R.", "A. Martearena"],
+        "Acción": ["Seguimiento centralizado", "Kits de seguridad", "Cafetería Salón", "Sorteos TASA", "Mystery Shopper", "Tablero KPIs", "Reorganización UCT", "2 Aux. Adm. TPA", "Capacitación semestral", "Control nómina", "Obras Las Lajitas", "Reforma Salta", "Daily boletos", "Respuesta < 2hs", "Depuración Salesforce", "Campaña ABI 414/415", "Unificar método pólizas", "Activación App", "Rediseño seguimiento"],
+        "Estado": ["Ejecución", "Proceso", "Completado", "Proceso", "Planificado", "Proceso", "Ejecución", "Planificado", "Ejecución", "Proceso", "Pendiente", "Planificado", "Ejecución", "Crítica", "Proceso", "Ejecución", "Planificado", "Proceso", "Proceso"]
+    }
+    df_plan = pd.DataFrame(data)
 
-    # 8. MOTOR DE EXPORTACIÓN DIRECTA A EXCEL CON ESTILOS TOYOTA (OPENPYXL)
+    # 2. FILTRO Y VISUALIZACIÓN
+    responsables = ["Todos"] + list(df_plan["Responsable"].unique())
+    filtro = st.selectbox("👤 Filtrar por Responsable:", responsables)
+    
+    df_mostrar = df_plan if filtro == "Todos" else df_plan[df_plan["Responsable"] == filtro]
+    st.dataframe(df_mostrar, use_container_width=True)
+
+    # 3. EXPORTACIÓN
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        df_filtrado.to_excel(writer, sheet_name='Plan de Accion DEP', index=False)
-        worksheet = writer.sheets['Plan de Accion DEP']
-        
-        # Aplicación de estilos... (Se mantiene la lógica de estilizado)
-        fill_header = PatternFill(start_color="D62728", end_color="D62728", fill_type="solid")
-        font_header = Font(name='Arial', size=11, bold=True, color="FFFFFF")
-        font_body = Font(name='Arial', size=10, bold=False)
-        border_thin = Border(left=Side(style='thin', color='DDDDDD'), right=Side(style='thin', color='DDDDDD'), top=Side(style='thin', color='DDDDDD'), bottom=Side(style='thin', color='DDDDDD'))
-        
-        for col_idx in range(1, len(df_filtrado.columns) + 1):
-            cell = worksheet.cell(row=1, column=col_idx)
-            cell.fill = fill_header
-            cell.font = font_header
-            cell.border = border_thin
-        
-        for row_idx in range(2, len(df_filtrado) + 2):
-            for col_idx in range(1, len(df_filtrado.columns) + 1):
-                cell = worksheet.cell(row=row_idx, column=col_idx)
-                cell.font = font_body
-                cell.border = border_thin
-                
-        for col_idx in range(1, len(df_filtrado.columns) + 1):
-            col_letter = get_column_letter(col_idx)
-            max_len = 0
-            for row_idx in range(1, len(df_filtrado) + 2):
-                val = worksheet.cell(row=row_idx, column=col_idx).value
-                if val: max_len = max(max_len, len(str(val)))
-            worksheet.column_dimensions[col_letter].width = max(max_len + 3, 12)
-
-    st.download_button(
-        label="📥 Descargar Vista de Plan de Acción Filtrado",
-        data=buffer.getvalue(),
-        file_name="Plan_de_Accion_DEP_Filtrado.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+        df_mostrar.to_excel(writer, index=False, sheet_name='Plan')
+    
+    st.download_button("📥 Descargar Plan", buffer.getvalue(), "Plan_Accion_DEP.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
