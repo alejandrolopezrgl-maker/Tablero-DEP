@@ -115,27 +115,61 @@ with tab_dashboard:
     else:
         st.success(f"🎉 Estándar EMT Asegurado: {score_total_emt} / 900 puntos ({efectividad_emt:.1f}% de cumplimiento).")
 with tab_plan:
-    st.subheader("📋 Planilla de Seguimiento y Control de Avances por Responsable")
+    st.subheader("📋 Planilla de Seguimiento y Control de Avances")
     
-    # Inicialización de las 19 filas de acciones (resumido aquí por brevedad, usar el código completo funcional)
     if "tabla_acciones_dep" not in st.session_state:
-        # Se incluye la lógica con las 19 filas, responsables y metas tal como se solicitó.
+        # Definición de las 19 filas de acciones (datos completos)
         data_rows = [
-            ["Coordinación", "Alejandro López", "Centralizar seguimiento...", "Reporte...", "Quincenal", "", "", "Pendiente"],
-            ["Calidad", "A. Aguilar / P. Carrizo", "Incorporar kits...", "Remitos...", "Mensual", "", "", "Pendiente"],
-            # ... (se incluyen todas las 19 filas del plan original)
-            ["KINTO", "Aaron Martearena", "Rediseñar el proceso 'One'...", "Flujograma...", "45 días", "", "", "Pendiente"]
+            ["Coordinación", "Alejandro López", "Centralizar seguimiento y tablero único.", "Reporte de avances", "Quincenal", "", "", "Pendiente"],
+            ["Calidad", "A. Aguilar / P. Carrizo", "Incorporar kits de seguridad en entregas.", "Remitos", "Mensual", "", "", "Pendiente"],
+            ["Calidad", "A. Aguilar / P. Carrizo", "Instalación de cafetería/termos.", "Fotos", "30 días", "", "", "Pendiente"],
+            ["Calidad", "A. Aguilar / P. Carrizo", "Sorteos para encuestas TASA.", "Score TASA", "Mensual", "", "", "Pendiente"],
+            ["Calidad", "A. Aguilar / P. Carrizo", "Mystery Shopper.", "Reporte", "Trimestral", "", "", "Pendiente"],
+            ["Calidad", "A. Aguilar / P. Carrizo", "Tablero KPIs calidad.", "Tablero operativo", "45 días", "", "", "Pendiente"],
+            ["Calidad", "A. Aguilar / P. Carrizo", "Proceso Usados Certificados.", "Documentación", "Quincenal", "", "", "Pendiente"],
+            ["RRHH", "A. Di Costanzo / RRHH", "Incorporar 2 administrativos TPA.", "Alta AFIP", "Oct/Nov", "", "", "Pendiente"],
+            ["RRHH", "A. Di Costanzo / RRHH", "Plan capacitación semestral.", "% cumplimiento", "Cierre Año", "", "", "Pendiente"],
+            ["RRHH", "A. Di Costanzo / RRHH", "Estabilizar nómina.", "Índice rotación", "Mensual", "", "", "Pendiente"],
+            ["Facilities", "D. Colque / A. Di Costanzo", "Obras Las Lajitas (fieldman).", "Minuta", "60 días", "", "", "Pendiente"],
+            ["Facilities", "D. Colque / A. Di Costanzo", "Baja PN reformas Salta.", "Plan modificado", "Cierre Año", "", "", "Pendiente"],
+            ["CRM", "A. Aguilar / L. de los Ríos", "Control diario boletos.", "Reporte", "Diario", "", "", "Pendiente"],
+            ["CRM", "A. Aguilar / L. de los Ríos", "Respuesta < 2 horas.", "Dashboard", "Semanal", "", "", "Pendiente"],
+            ["CRM", "A. Aguilar / L. de los Ríos", "Limpieza Salesforce.", "Auditoría", "Mensual", "", "", "Pendiente"],
+            ["Posventa", "Daniel Colque", "Campaña Airbags (ABI 414/415).", "% avance", "Semanal", "", "", "Pendiente"],
+            ["TCFA", "L. de los Ríos / Romina R.", "Cálculo crecimiento pólizas.", "Fórmula validada", "30 días", "", "", "Pendiente"],
+            ["TCFA", "L. de los Ríos / Romina R.", "Activación App.", "Tasa activación", "Mensual", "", "", "Pendiente"],
+            ["KINTO", "Aaron Martearena", "Proceso siniestros 'One'.", "Flujograma", "45 días", "", "", "Pendiente"]
         ]
-        # ... (código para DataFrame y st.data_editor)
+        st.session_state.tabla_acciones_dep = pd.DataFrame(
+            data_rows, 
+            columns=["Área", "Responsables", "Acción", "Evidencia", "Fecha", "Comentarios", "Fecha Real", "Estado"]
+        )
 
-    # ... (lógica de filtrado y edición, idéntica al código anterior)
+    # Editor y Filtro
+    filtro_lider = st.selectbox("👤 Filtrar por Responsable:", ["Todos"] + sorted(list(st.session_state.tabla_acciones_dep["Responsables"].unique())))
+    df_vista = st.session_state.tabla_acciones_dep
+    if filtro_lider != "Todos": df_vista = df_vista[df_vista["Responsables"] == filtro_lider]
 
-    # 3. MOTOR DE EXPORTACIÓN EXCEL
-    # ... (código de generación del archivo Excel con formato solicitado)
-
-    st.download_button(
-        label="📥 Descargar Plan de Acción Completo en Excel",
-        data=excel_data,
-        file_name="Plan_de_Accion_DEP_Autolux_2026.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    df_editado = st.data_editor(
+        df_vista,
+        column_config={
+            "Área": st.column_config.TextColumn(disabled=True),
+            "Responsables": st.column_config.TextColumn(disabled=True),
+            "Estado": st.column_config.SelectboxColumn(options=["Pendiente", "En Proceso", "Completado"], default="Pendiente")
+        },
+        use_container_width=True, key="data_editor_final"
     )
+
+    if st.button("💾 Guardar Cambios"):
+        st.session_state.tabla_acciones_dep.update(df_editado)
+        st.success("🎉 Cambios guardados.")
+
+    # Excel Generator
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        st.session_state.tabla_acciones_dep.to_excel(writer, index=False)
+        # Formato estilizado (Azul/Blanco)
+        ws = writer.sheets['Sheet1']
+        for cell in ws[1]: cell.fill = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid"); cell.font = Font(color="FFFFFF", bold=True)
+
+    st.download_button("📥 Descargar Excel", buffer.getvalue(), "Plan_Accion_DEP.xlsx", "application/vnd.ms-excel")
