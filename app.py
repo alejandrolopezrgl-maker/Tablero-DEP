@@ -65,18 +65,14 @@ else:
     puesto_calculado = int(24 + ((62.0 - score_global_final) / 5.0) * 10)
     puesto_calculado = min(43, puesto_calculado)
 
-# 4. CAPA DE ENRUTAMIENTO POR PESTAÑAS (3 TABS)
+# 4. CAPA DE ENRUTAMIENTO POR PESTAÑAS (3 TABS DEFINIDOS)
 tab_dashboard, tab_calidad, tab_plan = st.tabs(["📊 Dashboard del Dealer", "🕵️ Análisis Clínico de Calidad (CSI/NPS)", "📋 Plan de Acción Interactiva"])
 with tab_dashboard:
-    # 5. PANEL EJECUTIVO DE MÉTRICAS (CATEGORIZACIÓN REAL ACTUALIZADA)
-    col1, col2, col3, col4 = st.columns(4)
+    # 5. PANEL EJECUTIVO DE MÉTRICAS SANEADO
+    col1, col2, col3 = st.columns(3)
     with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
     with col2: st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🏆" if puesto_calculado <= 24 else f"Puesto {puesto_calculado} 🚨", delta="Puesto 4 en TPA Red 🏆")
     with col3: st.metric("Pilar Posventa Real", f"{base_posventa_lux:.1f}%")
-    with col4: 
-        # LÓGICA RECTIFICADA: Eliminación directa de Categoría C según directiva del manual
-        categoria_str = "Categoría D" if score_global_final >= 60.0 else "Categoría E 🚨"
-        st.metric("Estatus de Categoría", categoria_str)
 
     # 6. VISUALIZACIÓN GRÁFICA COMPARATIVA POR UNIDADES DE NEGOCIO (ESTILO POWER BI)
     st.subheader("🏁 Cumplimiento por Áreas de Negocio: Autolux vs Lote Líder de la Red")
@@ -114,21 +110,22 @@ with tab_calidad:
     
     col_pie_left, col_pie_right = st.columns([1.2, 1.0])
     with col_pie_left:
+        # DATASET TOTALIZADO AL 100% REAL CON APERTURA DE DESVÍOS EN TALLER
         df_quejas_sincronizado = pd.DataFrame({
             "Factor de Desvío": [
                 "Falta de Kit de Seguridad (36%)", 
                 "Falta de Presentes / Merchandising (20%)", 
                 "Falta de Máquina de Café (16%)",
-                "Desadopción CRM / Leads Ventas (15%)",
-                "Seguimiento Post-Entrega / SSI (13%)"
+                "Seguimiento Post-Entrega / SSI (13%)",
+                "Procesos Operativos de Taller / CSI (15%)"
             ], 
-            "Impacto %": [36.0, 20.0, 16.0, 15.0, 13.0]
+            "Impacto %": [36.0, 20.0, 16.0, 13.0, 15.0]
         })
         
         fig_pie_oficial = px.pie(
             df_quejas_sincronizado, values="Impacto %", names="Factor de Desvío",
-            color_discrete_sequence=["#1F4E78", "#5B9BD5", "#A5D6A7", "#FFB74D", "#E57373"],
-            title="Estructura Completa de Impactos en Encuestas de Calidad (Base 100%)"
+            color_discrete_sequence=["#1F4E78", "#5B9BD5", "#A5D6A7", "#E57373", "#90A4AE"], # Gris azulado para el taller
+            title="Estructura de Impactos en Encuestas de Calidad (Base 100%)"
         )
         
         fig_pie_oficial.update_layout(
@@ -139,14 +136,14 @@ with tab_calidad:
         st.plotly_chart(fig_pie_oficial, use_container_width=True)
         
     with col_pie_right:
-        st.info("💡 **Diagnóstico Raíz**: La caída no se asocia al producto o al vehículo, sino a una marcada percepción de *'pérdida de beneficios'* y desvíos en el seguimiento y los plazos de respuesta digitales de los asesores comerciales.")
+        st.info("💡 **Diagnóstico Raíz**: La caída se asocia a una percepción de *'pérdida de beneficios'* materiales en showroom y desvíos blandos en la atención y plazos de Posventa. (El desvío de leads fue derivado al pilar Ventas).")
         st.markdown("""
-        ### 📋 Desglose Técnico de Desvíos Observados:
-        *   **Falta de Kit de Seguridad (36%)**: Los clientes manifiestan descontento severo porque el kit pasó a ser arancelado o no viene como 'obsequio' de cortesía por defecto al retirar la unidad.
-        *   **Falta de Presentes / Detalles de Marketing (20%)**: Menciones críticas asociadas a la falta de recuerdos o atenciones especiales (ej. llaveros, matafuegos o primer servicio gratis) tras concretar una inversión 0km.
-        *   **Falta de Máquina de Café (16%)**: Verbatines de Posventa. Califican de 'miserable' el retiro de la expendedora gratuita y la instalación de terminales chicas o heladeras cerradas con llave.
-        *   **Desadopción CRM y Tiempos de Leads (15%)**: Desvío del indicador **1.5.6**. El equipo de asesores demora más de 2 horas en procesar los prospectos digitales asignados en Salesforce.
-        *   **Seguimiento Post-Entrega SSI (13%)**: Ausencia de llamados comerciales programados dentro de las 48 horas posteriores a la entrega física de la unidad, lo que afecta las encuestas de satisfacción.
+        ### 📋 Desglose Técnico de Desvíos de Calidad Observados:
+        *   **Falta de Kit de Seguridad (36%)**: Los clientes manifiestan descontento severo porque el kit pasó a ser arancelado o no viene como 'obsequio' de cortesía corporativa al retirar el vehículo.
+        *   **Falta de Presentes / Detalles de Marketing (20%)**: Menciones críticas asociadas a la falta de recuerdos o atenciones tradicionales (ej. llaveros o matafuegos) tras concretar una inversión 0km.
+        *   **Falta de Máquina de Café (16%)**: Verbatines de Posventa. Califican de 'miserable' el retiro de la expendedora gratuita y la instalación de terminales chicas.
+        *   **Seguimiento Post-Entrega SSI (13%)**: Ausencia de llamados comerciales de cortesía programados dentro de las 48 horas posteriores a la entrega física de la unidad.
+        *   **Procesos Operativos de Taller / CSI (15%)**: Foco de fricción en la atención dura del taller. Concentrado en **demoras en la promesa de entrega (5%)**, **falta de claridad al explicar la factura (4%)**, **trato frío en recepción (3%)** y **detalles de limpieza al devolver la unidad (3%)**.
         """)
 
     st.divider()
@@ -200,9 +197,9 @@ with tab_plan:
 
     if st.button("💾 Guardar Cambios"):
         for idx, row in df_editado.iterrows(): st.session_state.db_final_dep_v400.loc[idx] = row
-        st.success("🎉 Novedades y compromisos guardados en la sesión.")
+        st.success("🎉 Novedades guardadas en la sesión.")
 
-    # MOTOR DE EXPORTACIÓN CON ENCABEZADOS EN AZUL INSTITUCIONAL Y FONDOS BLANCOS
+    # MOTOR DE EXPORTACIÓN EXCEL AZUL/BLANCO
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
         st.session_state.db_final_dep_v400.to_excel(writer, sheet_name='Plan de Accion DEP', index=False)
