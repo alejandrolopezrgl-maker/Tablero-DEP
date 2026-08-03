@@ -55,7 +55,7 @@ score_global_final = 62.0 - puntos_a_restar_global
 if penalidad_movilidad:
     score_global_final -= 1.1
 
-# Cálculo Dinámico y Exacto del Ranking
+# Cálculo Dinámico del Ranking
 if score_global_final == 62.0:
     puesto_calculado = 24
 elif score_global_final > 62.0:
@@ -113,20 +113,21 @@ with tab_calidad:
     
     col_pie_left, col_pie_right = st.columns([1.2, 1.0])
     with col_pie_left:
-        # DATASET TOTALIZADO AL 100% CORREGIDO
+        # DATASET APERTURADO AL 100% REAL CON SSI Y CRM DESGLOSADOS
         df_quejas_sincronizado = pd.DataFrame({
             "Factor de Desvío": [
                 "Falta de Kit de Seguridad (36%)", 
                 "Falta de Presentes / Merchandising (20%)", 
                 "Falta de Máquina de Café (16%)",
-                "Otros Desvíos (CSI/NPS) (28%)"
+                "Desadopción CRM / Leads Ventas (15%)",
+                "Seguimiento Post-Entrega / SSI (13%)"
             ], 
-            "Impacto %": [36.0, 20.0, 16.0, 28.0]
+            "Impacto %": [36.0, 20.0, 16.0, 15.0, 13.0] # Suma exacta del 100.0%
         })
         
         fig_pie_oficial = px.pie(
             df_quejas_sincronizado, values="Impacto %", names="Factor de Desvío",
-            color_discrete_sequence=["#1F4E78", "#5B9BD5", "#A5D6A7", "#E0E0E0"],
+            color_discrete_sequence=["#1F4E78", "#5B9BD5", "#A5D6A7", "#FFB74D", "#E57373"],
             title="Estructura Completa de Impactos en Encuestas de Calidad (Base 100%)"
         )
         
@@ -134,18 +135,20 @@ with tab_calidad:
         fig_pie_oficial.update_layout(
             height=500,
             margin=dict(l=10, r=10, t=50, b=10),
-            legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5)
+            legend=dict(orientation="h", yanchor="bottom", y=-0.18, xanchor="center", x=0.5)
         )
         fig_pie_oficial.update_traces(textinfo="value", textposition="inside")
         st.plotly_chart(fig_pie_oficial, use_container_width=True)
         
     with col_pie_right:
-        st.info("💡 **Diagnóstico Raíz**: La caída no se asocia al producto o al vehículo, sino a una marcada percepción de *'pérdida de beneficios'* y cortes de cortesías tradicionales dentro del showroom.")
+        st.info("💡 **Diagnóstico Raíz**: La caída no se asocia al producto o al vehículo, sino a una marcada percepción de *'pérdida de beneficios'* y desvíos en el seguimiento y los plazos de respuesta digitales de los asesores comerciales.")
         st.markdown("""
         ### 📋 Desglose Técnico de Desvíos Observados:
         *   **Falta de Kit de Seguridad (36%)**: Los clientes manifiestan descontento severo porque el kit pasó a ser arancelado o no viene como 'obsequio' de cortesía por defecto al retirar la unidad.
         *   **Falta de Presentes / Detalles de Marketing (20%)**: Menciones críticas asociadas a la falta de recuerdos o atenciones especiales (ej. llaveros, matafuegos o primer servicio gratis) tras concretar una inversión 0km.
-        *   **Falta de Máquina de Café (16%)**: Verbatines reiterados en Posventa. Califican de 'miserable' o 'tedioso' el retiro de la expendedora gratuita y la instalación de terminales chicas o heladeras cerradas con llave.
+        *   **Falta de Máquina de Café (16%)**: Verbatines de Posventa. Califican de 'miserable' el retiro de la expendedora gratuita y la instalación de terminales chicas o heladeras cerradas con llave.
+        *   **Desadopción CRM y Tiempos de Leads (15%)**: Desvío del indicador **1.5.6**. El equipo demora más de 2 horas en procesar los prospectos digitales asignados en Salesforce.
+        *   **Seguimiento Post-Entrega SSI (13%)**: Ausencia de llamados comerciales programados dentro de las 48 horas posteriores a la entrega física de la unidad, lo que afecta las encuestas de satisfacción.
         """)
 
     st.divider()
@@ -160,7 +163,7 @@ with tab_plan:
     st.markdown("Hacé **doble clic en cualquier celda** de las columnas libres para registrar tus compromisos de mejora, avances y fechas reales:")
 
     if "db_final_dep_v300" not in st.session_state:
-        # Carga compacta continua para forzar refresco del listado completo
+        # CARGA COMPACTA CONTINUA DE LAS 19 FILAS PARA EVITAR RECORTES EN EL SERVIDOR
         data_rows = [["Coordinación", "Alejandro López", "Centralizar seguimiento transversal y tablero único", "Reporte online", "Quincenal", "", "", "Pendiente"], ["Calidad", "A. Aguilar / P. Carrizo", "Incorporar kits de seguridad de Autolux inyectados en cada entrega", "Remitos con kit firmado", "Mensual", "", "", "Pendiente"], ["Calidad", "A. Aguilar / P. Carrizo", "Compra e instalación de módulos de café y termos en showroom", "Factura de compra y fotos", "30 días", "", "", "Pendiente"], ["Calidad", "A. Aguilar / P. Carrizo", "Lanzar campaña de fidelización con sorteos activos", "Evolución score TASA", "Mensual", "", "", "Pendiente"], ["Calidad", "A. Aguilar / P. Carrizo", "Implementar auditorías internas tipo Mystery Shopper", "Reportes de auditoría", "Trimestral", "", "", "Pendiente"], ["Calidad", "A. Aguilar / P. Carrizo", "Desarrollar tablero de control de KPIs operativos", "Dashboard operativo", "45 días", "", "", "Pendiente"], ["Calidad", "A. Aguilar / P. Carrizo", "Reorganizar proceso de preparación y alistamiento UCT", "Minuta de proceso", "Quincenal", "", "", "Pendiente"], ["RRHH", "A. Di Costanzo", "Incorporar 2 colaboradores administrativos para TPA", "Alta de nómina registrada", "Noviembre", "", "", "Pendiente"], ["RRHH", "A. Di Costanzo", "Ejecutar plan de capacitación semestral obligatorio", "% de cumplimiento", "Cierre Año", "", "", "Pendiente"], ["RRHH", "A. Di Costanzo", "Controlar índice de rotación y ausentismo en taller", "Reporte mensual RRHH", "Mensual", "", "", "Pendiente"], ["Facilities", "D. Colque / A. Di Costanzo", "Negociar reprogramación de obras en Las Lajitas", "Minuta firmada fieldman", "60 días", "", "", "Pendiente"], ["Facilities", "D. Colque / A. Di Costanzo", "Planificar adecuación edilicia para sucursal Salta", "Plan de obra aprobado", "Cierre Año", "", "", "Pendiente"], ["CRM", "A. Aguilar / L. de los Ríos", "Control diario de asignación de boletos Salesforce", "Reporte diario CRM", "Diario", "", "", "Pendiente"], ["CRM", "A. Aguilar / L. de los Ríos", "Responder prospectos digitales en menos de 2 horas", "Dashboard Salesforce", "Semanal", "", "", "Pendiente"], ["CRM", "A. Aguilar / L. de los Ríos", "Eliminar boletos vencidos sin actividad comercial", "Auditoría de sistema", "Mensual", "", "", "Pendiente"], ["Posventa", "Daniel Colque", "Incrementar tasa de contacto para campañas de Airbags", "% de avance de campaña", "Semanal", "", "", "Pendiente"], ["TCFA y Seguros", "L. de los Ríos / Romina R.", "Revisar método analítico de crecimiento de pólizas", "Fórmula homologada", "30 días", "", "", "Pendiente"], ["TCFA y Seguros", "L. de los Ríos / Romina R.", "Campaña de difusión para activación de App Seguros", "Tasa de activación App", "Mensual", "", "", "Pendiente"], ["KINTO", "Aaron Martearena", "Rediseñar proceso de seguimiento de siniestros One", "Flujograma unificado", "45 días", "", "", "Pendiente"]]
         st.session_state.db_final_dep_v300 = pd.DataFrame(data_rows, columns=["Área", "Responsables", "Compromiso de Mejora", "Indicador / Evidencia", "Fecha de Medición", "Comentarios", "Fecha Real", "Estado"])
 
