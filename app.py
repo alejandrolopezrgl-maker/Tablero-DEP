@@ -55,7 +55,7 @@ score_global_final = 62.0 - puntos_a_restar_global
 if penalidad_movilidad:
     score_global_final -= 1.1
 
-# Cálculo Dinámico y Exacto del Ranking para simulación móvil
+# Cálculo Dinámico y Exacto del Ranking
 if score_global_final == 62.0:
     puesto_calculado = 24
 elif score_global_final > 62.0:
@@ -65,7 +65,7 @@ else:
     puesto_calculado = int(24 + ((62.0 - score_global_final) / 5.0) * 10)
     puesto_calculado = min(43, puesto_calculado)
 
-# 4. CAPA DE ENRUTAMIENTO POR PESTAÑAS (3 TABS DEFINIDOS)
+# 4. CAPA DE ENRUTAMIENTO POR PESTAÑAS (3 TABS)
 tab_dashboard, tab_calidad, tab_plan = st.tabs(["📊 Dashboard del Dealer", "🕵️ Análisis Clínico de Calidad (CSI/NPS)", "📋 Plan de Acción Interactiva"])
 with tab_dashboard:
     # 5. PANEL EJECUTIVO DE MÉTRICAS (KPI CARDS)
@@ -111,11 +111,10 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico sobre Desvíos de Calidad y Experiencia del Cliente")
     st.markdown("Análisis pormenorizado de los factores físicos e intangibles que impulsaron la caída en Calidad del **Puesto 8 al 39**.")
     
-    col_pie_left, col_pie_right = st.columns([4, 6])
+    col_pie_left, col_pie_right = st.columns([1.2, 1.0])
     with col_pie_left:
-        # Gráfico de torta exacto según página 14 del nuevo informe de desvíos
         df_quejas_oficial = pd.DataFrame({
-            "Factor de Desvío": ["Falta de Kit de Seguridad", "Falta de Presentes / Merchandising", "Falta de Máquina de Café"], 
+            "Factor de Desvío": ["Falta de Kit de Seguridad (36%)", "Falta de Presentes / Merchandising (20%)", "Falta de Máquina de Café (16%)"], 
             "Impacto %": [36.0, 20.0, 16.0]
         })
         fig_pie_oficial = px.pie(
@@ -123,7 +122,14 @@ with tab_calidad:
             color_discrete_sequence=["#1F4E78", "#5B9BD5", "#A5D6A7"],
             title="Distribución de Quejas Físicas (72% del Total)"
         )
-        fig_pie_oficial.update_traces(textinfo="percent+label", textposition="inside")
+        
+        # AJUSTES ESTRATÉGICOS PARA MAXIMIZAR EL DIÁMETRO DE LA TORTA
+        fig_pie_oficial.update_layout(
+            height=500,
+            margin=dict(l=10, r=10, t=50, b=10),
+            legend=dict(orientation="h", yanchor="bottom", y=-0.12, xanchor="center", x=0.5)
+        )
+        fig_pie_oficial.update_traces(textinfo="percent", textposition="inside")
         st.plotly_chart(fig_pie_oficial, use_container_width=True)
         
     with col_pie_right:
@@ -144,35 +150,16 @@ with tab_calidad:
         st.error("**Foco Espera & Taller (CSI)**\n* *'SACARON LA MÁQUINA DE CAFÉ DEL LUGAR DE ESPERA, UNA ACTITUD TOTALMENTE MISERABLE.'*\n* *'Hay que esperar dos horas... ahora hay una máquina muy chica que nadie sabe usar, es tedioso, por el precio deberían dar como antes.'*")
 with tab_plan:
     st.subheader("📋 Planilla de Seguimiento y Control de Avances por Responsable")
-    st.markdown("Hacé **doble clic en cualquier celda** de las columnas libres para registrar comentarios y fechas reales:")
+    st.markdown("Hacé **doble clic en cualquier celda** de las columnas libres para registrar tus compromisos de mejora, avances y fechas reales:")
 
-    if "db_final_dep_v100" not in st.session_state:
-        data_rows = [
-            ["Coordinación", "Alejandro López", "Centralizar seguimiento transversal y tablero único", "Reporte online", "Quincenal", "", "", "Pendiente"],
-            ["Calidad", "A. Aguilar / P. Carrizo", "Incorporar kits de seguridad de Autolux en cada entrega", "Remitos con kit firmado", "Mensual", "", "", "Pendiente"],
-            ["Calidad", "A. Aguilar / P. Carrizo", "Compra e instalación de módulos de café y termos", "Factura de compra y fotos", "30 días", "", "", "Pendiente"],
-            ["Calidad", "A. Aguilar / P. Carrizo", "Lanzar campaña de fidelización con sorteos activos", "Evolución score TASA", "Mensual", "", "", "Pendiente"],
-            ["Calidad", "A. Aguilar / P. Carrizo", "Implementar auditorías internas tipo Mystery Shopper", "Reportes de auditoría", "Trimestral", "", "", "Pendiente"],
-            ["Calidad", "A. Aguilar / P. Carrizo", "Desarrollar tablero de control de KPIs operativos", "Dashboard operativo", "45 días", "", "", "Pendiente"],
-            ["Calidad", "A. Aguilar / P. Carrizo", "Reorganizar proceso de preparación y alistamiento UCT", "Minuta de proceso", "Quincenal", "", "", "Pendiente"],
-            ["RRHH", "A. Di Costanzo", "Incorporar 2 colaboradores administrativos para TPA", "Alta de nómina registrada", "Noviembre", "", "", "Pendiente"],
-            ["RRHH", "A. Di Costanzo", "Ejecutar plan de capacitación semestral obligatorio", "% de cumplimiento", "Cierre Año", "", "", "Pendiente"],
-            ["RRHH", "A. Di Costanzo", "Controlar índice de rotación y ausentismo en taller", "Reporte mensual RRHH", "Mensual", "", "", "Pendiente"],
-            ["Facilities", "D. Colque / A. Di Costanzo", "Negociar reprogramación de obras en Las Lajitas", "Minuta firmada fieldman", "60 días", "", "", "Pendiente"],
-            ["Facilities", "D. Colque / A. Di Costanzo", "Planificar adecuación edilicia para sucursal Salta", "Plan de obra aprobado", "Cierre Año", "", "", "Pendiente"],
-            ["CRM", "A. Aguilar / L. de los Ríos", "Control diario de asignación de boletos Salesforce", "Reporte diario CRM", "Diario", "", "", "Pendiente"],
-            ["CRM", "A. Aguilar / L. de los Ríos", "Responder prospectos digitales en menos de 2 horas", "Dashboard Salesforce", "Semanal", "", "", "Pendiente"],
-            ["CRM", "A. Aguilar / L. de los Ríos", "Eliminar boletos vencidos sin actividad comercial", "Auditoría de sistema", "Mensual", "", "", "Pendiente"],
-            ["Posventa", "Daniel Colque", "Incrementar tasa de contacto para campañas de Airbags", "% de avance de campaña", "Semanal", "", "", "Pendiente"],
-            ["TCFA y Seguros", "L. de los Ríos / Romina R.", "Revisar método analítico de crecimiento de pólizas", "Fórmula homologada", "30 días", "", "", "Pendiente"],
-            ["TCFA y Seguros", "L. de los Ríos / Romina R.", "Campaña de difusión para activación de App Seguros", "Tasa de activación App", "Mensual", "", "", "Pendiente"],
-            ["KINTO", "Aaron Martearena", "Rediseñar proceso de seguimiento de siniestros One", "Flujograma unificado", "45 días", "", "", "Pendiente"]
-        ]
-        st.session_state.db_final_dep_v100 = pd.DataFrame(data_rows, columns=["Área", "Responsables", "Compromiso de Mejora", "Indicador / Evidencia", "Fecha de Medición", "Comentarios", "Fecha Real", "Estado"])
+    if "db_final_dep_v200" not in st.session_state:
+        # CARGA COMPACTA CONTINUA DE LAS 19 FILAS PARA EVITAR RECORTES EN EL SERVIDOR
+        data_rows = [["Coordinación", "Alejandro López", "Centralizar seguimiento transversal y tablero único", "Reporte online", "Quincenal", "", "", "Pendiente"], ["Calidad", "A. Aguilar / P. Carrizo", "Incorporar kits de seguridad de Autolux inyectados en cada entrega", "Remitos con kit firmado", "Mensual", "", "", "Pendiente"], ["Calidad", "A. Aguilar / P. Carrizo", "Compra e instalación de módulos de café y termos en showroom", "Factura de compra y fotos", "30 días", "", "", "Pendiente"], ["Calidad", "A. Aguilar / P. Carrizo", "Lanzar campaña de fidelización con sorteos activos", "Evolución score TASA", "Mensual", "", "", "Pendiente"], ["Calidad", "A. Aguilar / P. Carrizo", "Implementar auditorías internas tipo Mystery Shopper", "Reportes de auditoría", "Trimestral", "", "", "Pendiente"], ["Calidad", "A. Aguilar / P. Carrizo", "Desarrollar tablero de control de KPIs operativos", "Dashboard operativo", "45 días", "", "", "Pendiente"], ["Calidad", "A. Aguilar / P. Carrizo", "Reorganizar proceso de preparación y alistamiento UCT", "Minuta de proceso", "Quincenal", "", "", "Pendiente"], ["RRHH", "A. Di Costanzo", "Incorporar 2 colaboradores administrativos para TPA", "Alta de nómina registrada", "Noviembre", "", "", "Pendiente"], ["RRHH", "A. Di Costanzo", "Ejecutar plan de capacitación semestral obligatorio", "% de cumplimiento", "Cierre Año", "", "", "Pendiente"], ["RRHH", "A. Di Costanzo", "Controlar índice de rotación y ausentismo en taller", "Reporte mensual RRHH", "Mensual", "", "", "Pendiente"], ["Facilities", "D. Colque / A. Di Costanzo", "Negociar reprogramación de obras en Las Lajitas", "Minuta firmada fieldman", "60 días", "", "", "Pendiente"], ["Facilities", "D. Colque / A. Di Costanzo", "Planificar adecuación edilicia para sucursal Salta", "Plan de obra aprobado", "Cierre Año", "", "", "Pendiente"], ["CRM", "A. Aguilar / L. de los Ríos", "Control diario de asignación de boletos Salesforce", "Reporte diario CRM", "Diario", "", "", "Pendiente"], ["CRM", "A. Aguilar / L. de los Ríos", "Responder prospectos digitales en menos de 2 horas", "Dashboard Salesforce", "Semanal", "", "", "Pendiente"], ["CRM", "A. Aguilar / L. de los Ríos", "Eliminar boletos vencidos sin actividad comercial", "Auditoría de sistema", "Mensual", "", "", "Pendiente"], ["Posventa", "Daniel Colque", "Incrementar tasa de contacto para campañas de Airbags", "% de avance de campaña", "Semanal", "", "", "Pendiente"], ["TCFA y Seguros", "L. de los Ríos / Romina R.", "Revisar método analítico de crecimiento de pólizas", "Fórmula homologada", "30 días", "", "", "Pendiente"], ["TCFA y Seguros", "L. de los Ríos / Romina R.", "Campaña de difusión para activación de App Seguros", "Tasa de activación App", "Mensual", "", "", "Pendiente"], ["KINTO", "Aaron Martearena", "Rediseñar proceso de seguimiento de siniestros One", "Flujograma unificado", "45 días", "", "", "Pendiente"]]
+        st.session_state.db_final_dep_v200 = pd.DataFrame(data_rows, columns=["Área", "Responsables", "Compromiso de Mejora", "Indicador / Evidencia", "Fecha de Medición", "Comentarios", "Fecha Real", "Estado"])
 
-    lista_responsables = ["Todos"] + sorted(list(st.session_state.db_final_dep_v100["Responsables"].unique()))
+    lista_responsables = ["Todos"] + sorted(list(st.session_state.db_final_dep_v200["Responsables"].unique()))
     filtro_lider = st.selectbox("👤 Filtrar por Responsable de Mesa:", lista_responsables)
-    df_vista = st.session_state.db_final_dep_v100 if filtro_lider == "Todos" else st.session_state.db_final_dep_v100[st.session_state.db_final_dep_v100["Responsables"] == filtro_lider]
+    df_vista = st.session_state.db_final_dep_v200 if filtro_lider == "Todos" else st.session_state.db_final_dep_v200[st.session_state.db_final_dep_v200["Responsables"] == filtro_lider]
 
     df_editado = st.data_editor(
         df_vista,
@@ -181,33 +168,35 @@ with tab_plan:
             "Compromiso de Mejora": st.column_config.TextColumn(disabled=True), "Indicador / Evidencia": st.column_config.TextColumn(disabled=True),
             "Fecha de Medición": st.column_config.TextColumn(disabled=True), "Estado": st.column_config.SelectboxColumn(options=["Pendiente", "En Proceso", "Completado"], default="Pendiente")
         },
-        use_container_width=True, key="editor_dep_definitivo_v100"
+        use_container_width=True, key="editor_dep_definitivo_v200"
     )
 
     if st.button("💾 Guardar Cambios"):
-        for idx, row in df_editado.iterrows(): st.session_state.db_final_dep_v100.loc[idx] = row
-        st.success("🎉 Novedades guardadas.")
+        for idx, row in df_editado.iterrows(): st.session_state.db_final_dep_v200.loc[idx] = row
+        st.success("🎉 Novedades y compromisos guardados en la sesión.")
 
+    # MOTOR DE EXPORTACIÓN CON ENCABEZADOS EN AZUL INSTITUCIONAL Y FONDOS BLANCOS
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        st.session_state.db_final_dep_v100.to_excel(writer, sheet_name='Plan de Accion DEP', index=False)
+        st.session_state.db_final_dep_v200.to_excel(writer, sheet_name='Plan de Accion DEP', index=False)
         worksheet = writer.sheets['Plan de Accion DEP']
+        
         fill_blue_header = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
         font_white_header = Font(name='Arial', size=11, bold=True, color="FFFFFF")
         font_body = Font(name='Arial', size=10, bold=False, color="000000")
         border_thin = Border(left=Side(style='thin', color='DDDDDD'), right=Side(style='thin', color='DDDDDD'), top=Side(style='thin', color='DDDDDD'), bottom=Side(style='thin', color='DDDDDD'))
         
-        for col_idx in range(1, len(st.session_state.db_final_dep_v100.columns) + 1):
+        for col_idx in range(1, len(st.session_state.db_final_dep_v200.columns) + 1):
             cell = worksheet.cell(row=1, column=col_idx)
             cell.fill = fill_blue_header; cell.font = font_white_header; cell.border = border_thin
             
-        for row_idx in range(2, len(st.session_state.db_final_dep_v100) + 2):
-            for col_idx in range(1, len(st.session_state.db_final_dep_v100.columns) + 1):
+        for row_idx in range(2, len(st.session_state.db_final_dep_v200) + 2):
+            for col_idx in range(1, len(st.session_state.db_final_dep_v200.columns) + 1):
                 cell = worksheet.cell(row=row_idx, column=col_idx); cell.font = font_body; cell.border = border_thin
                 
-        for col_idx in range(1, len(st.session_state.db_final_dep_v100.columns) + 1):
+        for col_idx in range(1, len(st.session_state.db_final_dep_v200.columns) + 1):
             col_letter = get_column_letter(col_idx); max_len = 0
-            for row_idx in range(1, len(st.session_state.db_final_dep_v100) + 2):
+            for row_idx in range(1, len(st.session_state.db_final_dep_v200) + 2):
                 val = worksheet.cell(row=row_idx, column=col_idx).value
                 if val: max_len = max(max_len, len(str(val)))
             worksheet.column_dimensions[col_letter].width = max(max_len + 3, 12)
