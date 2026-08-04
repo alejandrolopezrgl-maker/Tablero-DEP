@@ -68,7 +68,7 @@ else:
 # 4. CAPA DE ENRUTAMIENTO POR PESTAÑAS (3 TABS DEFINIDOS)
 tab_dashboard, tab_calidad, tab_plan = st.tabs(["📊 Dashboard del Dealer", "🕵️ Análisis Clínico de Calidad (CSI/NPS)", "📋 Plan de Acción Interactiva"])
 with tab_dashboard:
-    # 5. PANEL EJECUTIVO DE MÉTRICAS SANEADO
+    # 5. PANEL EJECUTIVO DE MÉTRICAS SANEADO (MÓDULO DE CATEGORÍAS ELIMINADO COMPLETAMENTE)
     col1, col2, col3 = st.columns(3)
     with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
     with col2: st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🏆" if puesto_calculado <= 24 else f"Puesto {puesto_calculado} 🚨", delta="Puesto 4 en TPA Red 🏆")
@@ -110,7 +110,6 @@ with tab_calidad:
     
     col_pie_left, col_pie_right = st.columns([1.2, 1.0])
     with col_pie_left:
-        # DATASET TOTALIZADO AL 100% REAL CON APERTURA DE DESVÍOS EN TALLER
         df_quejas_sincronizado = pd.DataFrame({
             "Factor de Desvío": [
                 "Falta de Kit de Seguridad (36%)", 
@@ -124,7 +123,7 @@ with tab_calidad:
         
         fig_pie_oficial = px.pie(
             df_quejas_sincronizado, values="Impacto %", names="Factor de Desvío",
-            color_discrete_sequence=["#1F4E78", "#5B9BD5", "#A5D6A7", "#E57373", "#90A4AE"], # Gris azulado para el taller
+            color_discrete_sequence=["#1F4E78", "#5B9BD5", "#A5D6A7", "#E57373", "#90A4AE"],
             title="Estructura de Impactos en Encuestas de Calidad (Base 100%)"
         )
         
@@ -136,14 +135,14 @@ with tab_calidad:
         st.plotly_chart(fig_pie_oficial, use_container_width=True)
         
     with col_pie_right:
-        st.info("💡 **Diagnóstico Raíz**: La caída se asocia a una percepción de *'pérdida de beneficios'* materiales en showroom y desvíos blandos en la atención y plazos de Posventa. (El desvío de leads fue derivado al pilar Ventas).")
+        st.info("💡 **Diagnóstico Raíz Saneado**: La caída se asocia a una percepción de *'pérdida de beneficios'* materiales en showroom y desvíos blandos en la atención y plazos de Posventa. (El desvío de leads fue derivado al pilar Ventas).")
         st.markdown("""
         ### 📋 Desglose Técnico de Desvíos de Calidad Observados:
         *   **Falta de Kit de Seguridad (36%)**: Los clientes manifiestan descontento severo porque el kit pasó a ser arancelado o no viene como 'obsequio' de cortesía corporativa al retirar el vehículo.
-        *   **Falta de Presentes / Detalles de Marketing (20%)**: Menciones críticas asociadas a la falta de recuerdos o atenciones tradicionales (ej. llaveros o matafuegos) tras concretar una inversión 0km.
+        *   **Falta de Presentes / Detalles de Marketing (20%)**: Menciones críticas asociadas a la falta de recuerdos o atenciones especiales (ej. llaveros o matafuegos) tras concretar una inversión 0km.
         *   **Falta de Máquina de Café (16%)**: Verbatines de Posventa. Califican de 'miserable' el retiro de la expendedora gratuita y la instalación de terminales chicas.
         *   **Seguimiento Post-Entrega SSI (13%)**: Ausencia de llamados comerciales de cortesía programados dentro de las 48 horas posteriores a la entrega física de la unidad.
-        *   **Procesos Operativos de Taller / CSI (15%)**: Foco de fricción en la atención dura del taller. Concentrado en **demoras en la promesa de entrega (5%)**, **falta de claridad al explicar la factura (4%)**, **trato frío en recepción (3%)** y **detalles de limpieza al devolver la unidad (3%)**.
+        *   **Procesos Operativos de Taller / CSI (15%)**: Foco de fricción en la atención dura del taller. Concentrado en demoras en la promesa de entrega (5%), falta de claridad al explicar la factura (4%), trato frío en recepción (3%) y detalles de limpieza al devolver la unidad (3%).
         """)
 
     st.divider()
@@ -157,7 +156,9 @@ with tab_plan:
     st.subheader("📋 Planilla de Seguimiento y Control de Avances por Responsable")
     st.markdown("Hacé **doble clic en cualquier celda** de las columnas libres para registrar tus compromisos de mejora, avances y fechas reales:")
 
-    if "db_final_dep_v400" not in st.session_state:
+    # FORZADO DE REFRESCO TOTAL CON CAMBIO DE VARIABLE EN MEMORIA DE SERVIDOR
+    if "db_final_dep_v500" not in st.session_state:
+        # Carga compacta continua de las 19 filas originales del Drive con Pablo Carrizo exclusivo en Punto 6
         data_rows = [
             ["Coordinación", "Alejandro López", "Centralizar seguimiento transversal y tablero único", "Reporte online", "Quincenal", "", "", "Pendiente"],
             ["Calidad", "A. Aguilar", "Incorporar kits de seguridad de Autolux inyectados en cada entrega", "Remitos con kit firmado", "Mensual", "", "", "Pendiente"],
@@ -170,7 +171,7 @@ with tab_plan:
             ["RRHH", "A. Di Costanzo", "Ejecutar plan de capacitación semestral obligatorio", "% de cumplimiento", "Cierre Año", "", "", "Pendiente"],
             ["RRHH", "A. Di Costanzo", "Controlar índice de rotación y ausentismo en taller", "Reporte mensual RRHH", "Mensual", "", "", "Pendiente"],
             ["Facilities", "D. Colque / A. Di Costanzo", "Negociar reprogramación de obras en Las Lajitas", "Minuta firmada fieldman", "60 días", "", "", "Pendiente"],
-            ["Facilities", "D. Colque / A. Di Costanzo", "Planificar adecuación edilicia para sucursal Salta", "Plan de obra aprobado", "Cierre Año", "", "", "Pendiente"],
+            ["Facilities", "D. Colque / A. Di Costanzo", "Planificar adecuación edilicia para sucursal Salta", "Plan de obra approved", "Cierre Año", "", "", "Pendiente"],
             ["CRM", "A. Aguilar / L. de los Ríos", "Control diario de asignación de boletos Salesforce", "Reporte diario CRM", "Diario", "", "", "Pendiente"],
             ["CRM", "A. Aguilar / L. de los Ríos", "Responder prospectos digitales en menos de 2 horas", "Dashboard Salesforce", "Semanal", "", "", "Pendiente"],
             ["CRM", "A. Aguilar / L. de los Ríos", "Eliminar boletos vencidos sin actividad comercial", "Auditoría de sistema", "Mensual", "", "", "Pendiente"],
@@ -179,12 +180,15 @@ with tab_plan:
             ["TCFA y Seguros", "L. de los Ríos / Romina R.", "Campaña de difusión para activación de App Seguros", "Tasa de activación App", "Mensual", "", "", "Pendiente"],
             ["KINTO", "Aaron Martearena", "Rediseñar proceso de seguimiento de siniestros One", "Flujograma unificado", "45 días", "", "", "Pendiente"]
         ]
-        st.session_state.db_final_dep_v400 = pd.DataFrame(data_rows, columns=["Área", "Responsables", "Compromiso de Mejora", "Indicador / Evidencia", "Fecha de Medición", "Comentarios", "Fecha Real", "Estado"])
+        st.session_state.db_final_dep_v400 = None # Destruir variable previa obsoleta
+        st.session_state.db_final_dep_v500 = pd.DataFrame(data_rows, columns=["Área", "Responsables", "Compromiso de Mejora", "Indicador / Evidencia", "Fecha de Medición", "Comentarios", "Fecha Real", "Estado"])
 
-    lista_responsables = ["Todos"] + sorted(list(st.session_state.db_final_dep_v400["Responsables"].unique()))
+    # Selector de Responsables completo que ahora sí lee la nómina entera
+    lista_responsables = ["Todos"] + sorted(list(st.session_state.db_final_dep_v500["Responsables"].unique()))
     filtro_lider = st.selectbox("👤 Filtrar por Responsable de Mesa:", lista_responsables)
-    df_vista = st.session_state.db_final_dep_v400 if filtro_lider == "Todos" else st.session_state.db_final_dep_v400[st.session_state.db_final_dep_v400["Responsables"] == filtro_lider]
+    df_vista = st.session_state.db_final_dep_v500 if filtro_lider == "Todos" else st.session_state.db_final_dep_v500[st.session_state.db_final_dep_v500["Responsables"] == filtro_lider]
 
+    # Grilla Editable Sincronizada
     df_editado = st.data_editor(
         df_vista,
         column_config={
@@ -192,17 +196,18 @@ with tab_plan:
             "Compromiso de Mejora": st.column_config.TextColumn(disabled=True), "Indicador / Evidencia": st.column_config.TextColumn(disabled=True),
             "Fecha de Medición": st.column_config.TextColumn(disabled=True), "Estado": st.column_config.SelectboxColumn(options=["Pendiente", "En Proceso", "Completado"], default="Pendiente")
         },
-        use_container_width=True, key="editor_dep_definitivo_v400"
+        use_container_width=True, key="editor_dep_definitivo_v500"
     )
 
     if st.button("💾 Guardar Cambios"):
-        for idx, row in df_editado.iterrows(): st.session_state.db_final_dep_v400.loc[idx] = row
-        st.success("🎉 Novedades guardadas en la sesión.")
+        for idx, row in df_editado.iterrows(): 
+            st.session_state.db_final_dep_v500.loc[idx] = row
+        st.success("🎉 Novedades y compromisos guardados en la sesión.")
 
-    # MOTOR DE EXPORTACIÓN EXCEL AZUL/BLANCO
+    # MOTOR DE EXPORTACIÓN CON ENCABEZADOS EN AZUL INSTITUCIONAL Y FONDOS BLANCOS CORREGIDO
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        st.session_state.db_final_dep_v400.to_excel(writer, sheet_name='Plan de Accion DEP', index=False)
+        st.session_state.db_final_dep_v500.to_excel(writer, sheet_name='Plan de Accion DEP', index=False)
         worksheet = writer.sheets['Plan de Accion DEP']
         
         fill_blue_header = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
@@ -210,17 +215,21 @@ with tab_plan:
         font_body = Font(name='Arial', size=10, bold=False, color="000000")
         border_thin = Border(left=Side(style='thin', color='DDDDDD'), right=Side(style='thin', color='DDDDDD'), top=Side(style='thin', color='DDDDDD'), bottom=Side(style='thin', color='DDDDDD'))
         
-        for col_idx in range(1, len(st.session_state.db_final_dep_v400.columns) + 1):
+        # Aplicar el estilo azul y letras blancas SOLO a los encabezados (Fila 1)
+        for col_idx in range(1, len(st.session_state.db_final_dep_v500.columns) + 1):
             cell = worksheet.cell(row=1, column=col_idx)
             cell.fill = fill_blue_header; cell.font = font_white_header; cell.border = border_thin
             
-        for row_idx in range(2, len(st.session_state.db_final_dep_v400) + 2):
-            for col_idx in range(1, len(st.session_state.db_final_dep_v400.columns) + 1):
-                cell = worksheet.cell(row=row_idx, column=col_idx); cell.font = font_body; cell.border = border_thin
+        # Formatear el cuerpo en blanco tradicional con letras negras
+        for row_idx in range(2, len(st.session_state.db_final_dep_v500) + 2):
+            for col_idx in range(1, len(st.session_state.db_final_dep_v500.columns) + 1):
+                cell = worksheet.cell(row=row_idx, column=col_idx)
+                cell.font = font_body; cell.border = border_thin
                 
-        for col_idx in range(1, len(st.session_state.db_final_dep_v400.columns) + 1):
+        # Autoajuste automático de anchos de columnas
+        for col_idx in range(1, len(st.session_state.db_final_dep_v500.columns) + 1):
             col_letter = get_column_letter(col_idx); max_len = 0
-            for row_idx in range(1, len(st.session_state.db_final_dep_v400) + 2):
+            for row_idx in range(1, len(st.session_state.db_final_dep_v500) + 2):
                 val = worksheet.cell(row=row_idx, column=col_idx).value
                 if val: max_len = max(max_len, len(str(val)))
             worksheet.column_dimensions[col_letter].width = max(max_len + 3, 12)
