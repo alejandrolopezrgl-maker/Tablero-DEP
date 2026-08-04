@@ -68,7 +68,7 @@ else:
 # 4. CAPA DE ENRUTAMIENTO POR PESTAÑAS (3 TABS DEFINIDOS)
 tab_dashboard, tab_calidad, tab_plan = st.tabs(["📊 Dashboard del Dealer", "🕵️ Análisis Clínico de Calidad (CSI/NPS)", "📋 Plan de Acción Interactiva"])
 with tab_dashboard:
-    # 5. PANEL EJECUTIVO DE MÉTRICAS SANEADO (MÓDULO DE CATEGORÍAS ELIMINADO COMPLETAMENTE)
+    # 5. PANEL EJECUTIVO DE MÉTRICAS SANEADO
     col1, col2, col3 = st.columns(3)
     with col1: st.metric("Cumplimiento DEP Real", f"{score_global_final:.1f}%")
     with col2: st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🏆" if puesto_calculado <= 24 else f"Puesto {puesto_calculado} 🚨", delta="Puesto 4 en TPA Red 🏆")
@@ -95,7 +95,7 @@ with tab_dashboard:
         acu_c = st.slider("C: Kinto Movilidad (100)", 0, 100, 100)
     with col_em2:
         acu_d = st.slider("D: Club Toyota (100)", 0, 100, 100)
-        acu_e = st.slider("E: Toyota Plan de Ahorro (100)", 0, 100, 100)
+        acu_e = st.slider("E: Toyota Plan de Ahorro (100)", 0, 100, 100, key="slider_tpa_dashboard")
         acu_f = st.slider("F: Toyota Financial Services (100)", 0, 100, 100)
     with col_em3:
         acu_g = st.slider("G: Vehículos Usados (100)", 0, 100, 100)
@@ -135,7 +135,7 @@ with tab_calidad:
         st.plotly_chart(fig_pie_oficial, use_container_width=True)
         
     with col_pie_right:
-        st.info("💡 **Diagnóstico Raíz Saneado**: La caída se asocia a una percepción de *'pérdida de beneficios'* materiales en showroom y desvíos blandos en la atención y plazos de Posventa. (El desvío de leads fue derivado al pilar Ventas).")
+        st.info("💡 **Diagnóstico Raíz Saneado**: La caída se asocia a una percepción de *'pérdida de beneficios'* materiales en showroom y desvíos blandos en la atención y plazos de Posventa.")
         st.markdown("""
         ### 📋 Desglose Técnico de Desvíos de Calidad Observados:
         *   **Falta de Kit de Seguridad (36%)**: Los clientes manifiestan descontento severo porque el kit pasó a ser arancelado o no viene como 'obsequio' de cortesía corporativa al retirar el vehículo.
@@ -158,7 +158,6 @@ with tab_plan:
 
     # FORZADO DE REFRESCO TOTAL CON CAMBIO DE VARIABLE EN MEMORIA DE SERVIDOR
     if "db_final_dep_v500" not in st.session_state:
-        # Carga compacta continua de las 19 filas originales del Drive con Pablo Carrizo exclusivo en Punto 6
         data_rows = [
             ["Coordinación", "Alejandro López", "Centralizar seguimiento transversal y tablero único", "Reporte online", "Quincenal", "", "", "Pendiente"],
             ["Calidad", "A. Aguilar", "Incorporar kits de seguridad de Autolux inyectados en cada entrega", "Remitos con kit firmado", "Mensual", "", "", "Pendiente"],
@@ -180,10 +179,10 @@ with tab_plan:
             ["TCFA y Seguros", "L. de los Ríos / Romina R.", "Campaña de difusión para activación de App Seguros", "Tasa de activación App", "Mensual", "", "", "Pendiente"],
             ["KINTO", "Aaron Martearena", "Rediseñar proceso de seguimiento de siniestros One", "Flujograma unificado", "45 días", "", "", "Pendiente"]
         ]
-        st.session_state.db_final_dep_v400 = None # Destruir variable previa obsoleta
+        st.session_state.db_final_dep_v400 = None
         st.session_state.db_final_dep_v500 = pd.DataFrame(data_rows, columns=["Área", "Responsables", "Compromiso de Mejora", "Indicador / Evidencia", "Fecha de Medición", "Comentarios", "Fecha Real", "Estado"])
 
-    # Selector de Responsables completo que ahora sí lee la nómina entera
+    # Selector de Responsables completo
     lista_responsables = ["Todos"] + sorted(list(st.session_state.db_final_dep_v500["Responsables"].unique()))
     filtro_lider = st.selectbox("👤 Filtrar por Responsable de Mesa:", lista_responsables)
     df_vista = st.session_state.db_final_dep_v500 if filtro_lider == "Todos" else st.session_state.db_final_dep_v500[st.session_state.db_final_dep_v500["Responsables"] == filtro_lider]
@@ -204,7 +203,7 @@ with tab_plan:
             st.session_state.db_final_dep_v500.loc[idx] = row
         st.success("🎉 Novedades y compromisos guardados en la sesión.")
 
-    # MOTOR DE EXPORTACIÓN CON ENCABEZADOS EN AZUL INSTITUCIONAL Y FONDOS BLANCOS CORREGIDO
+    # MOTOR DE EXPORTACIÓN EXCEL CORREGIDO
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
         st.session_state.db_final_dep_v500.to_excel(writer, sheet_name='Plan de Accion DEP', index=False)
@@ -226,7 +225,7 @@ with tab_plan:
                 cell = worksheet.cell(row=row_idx, column=col_idx)
                 cell.font = font_body; cell.border = border_thin
                 
-        # Autoajuste automático de anchos de columnas
+        # Autoajuste de anchos de columnas
         for col_idx in range(1, len(st.session_state.db_final_dep_v500.columns) + 1):
             col_letter = get_column_letter(col_idx); max_len = 0
             for row_idx in range(1, len(st.session_state.db_final_dep_v500) + 2):
