@@ -202,7 +202,7 @@ with tab_plan:
             "Fecha de finalización": st.column_config.TextColumn(), "Fecha de control": st.column_config.TextColumn(),
             "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"], default="EN PROCESO"), "Observación": st.column_config.TextColumn()
         },
-        use_container_width=True, key="editor_dep_foto_v2", hide_index=True
+        use_container_width=True, key="editor_dep_foto_v3", hide_index=True
     )
 
     if st.button("💾 Guardar Cambios Actuales"):
@@ -219,7 +219,7 @@ with tab_plan:
         fill_blue_header = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
         font_white_header = Font(name='Arial', size=10, bold=True, color="FFFFFF")
         font_body = Font(name='Arial', size=10, bold=False, color="000000")
-        border_thin = Border(left=Side(style='thin', color='CC'), right=Side(style='thin', color='CC'), top=Side(style='thin', color='CC'), bottom=Side(style='thin', color='CC'))
+        border_thin = Border(left=Side(style='thin', color='CCCCCC'), right=Side(style='thin', color='CCCCCC'), top=Side(style='thin', color='CCCCCC'), bottom=Side(style='thin', color='CCCCCC'))
         
         for col_idx in range(1, len(st.session_state.db_final_dep_excel_v1.columns) + 1):
             cell = worksheet.cell(row=1, column=col_idx)
