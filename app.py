@@ -153,84 +153,88 @@ with tab_calidad:
     with col_v2:
         st.error("**Foco Espera & Taller (CSI)**\n* *'SACARON LA MÁQUINA DE CAFÉ DEL LUGAR DE ESPERA, UNA ACTITUD TOTALMENTE MISERABLE.'*\n* *'Hay que esperar dos horas... ahora hay una máquina muy chica que nadie sabe usar, es tedioso, por el precio deberían dar como antes.'*")
 with tab_plan:
-    st.subheader("📋 Planilla de Seguimiento y Control de Avances por Responsable")
-    st.markdown("Hacé **doble clic en cualquier celda** de las columnas libres para registrar tus compromisos de mejora, avances y fechas reales:")
+    st.subheader("📋 Planilla de Seguimiento y Agenda de Compromisos DEP")
+    st.markdown("Hacé **doble clic en cualquier celda** de las columnas libres para registrar comentarios y gestionar plazos reales:")
 
-    # FORZADO DE REFRESCO TOTAL CON CAMBIO DE VARIABLE EN MEMORIA DE SERVIDOR
-    if "db_final_dep_v500" not in st.session_state:
+    if "db_final_dep_excel_v1" not in st.session_state:
+        # Los 19 desvíos DEP mapeados estrictamente en la matriz de la foto
         data_rows = [
-            ["Coordinación", "Alejandro López", "Centralizar seguimiento transversal y tablero único", "Reporte online", "Quincenal", "", "", "Pendiente"],
-            ["Calidad", "A. Aguilar", "Incorporar kits de seguridad de Autolux inyectados en cada entrega", "Remitos con kit firmado", "Mensual", "", "", "Pendiente"],
-            ["Calidad", "A. Aguilar", "Compra e instalación de módulos de café y termos en showroom", "Factura de compra y fotos", "30 días", "", "", "Pendiente"],
-            ["Calidad", "A. Aguilar", "Lanzar campaña de fidelización con sorteos activos", "Evolución score TASA", "Mensual", "", "", "Pendiente"],
-            ["Calidad", "A. Aguilar", "Implementar auditorías internas tipo Mystery Shopper", "Reportes de auditoría", "Trimestral", "", "", "Pendiente"],
-            ["Calidad", "A. Aguilar", "Desarrollar tablero de control de KPIs operativos", "Dashboard operativo", "45 días", "", "", "Pendiente"],
-            ["Calidad", "Pablo Carrizo", "Reorganizar proceso de preparación y alistamiento UCT", "Minuta de proceso", "Quincenal", "", "", "Pendiente"],
-            ["RRHH", "A. Di Costanzo", "Incorporar 2 colaboradores administrativos para TPA", "Alta de nómina registrada", "Noviembre", "", "", "Pendiente"],
-            ["RRHH", "A. Di Costanzo", "Ejecutar plan de capacitación semestral obligatorio", "% de cumplimiento", "Cierre Año", "", "", "Pendiente"],
-            ["RRHH", "A. Di Costanzo", "Controlar índice de rotación y ausentismo en taller", "Reporte mensual RRHH", "Mensual", "", "", "Pendiente"],
-            ["Facilities", "D. Colque / A. Di Costanzo", "Negociar reprogramación de obras en Las Lajitas", "Minuta firmada fieldman", "60 días", "", "", "Pendiente"],
-            ["Facilities", "D. Colque / A. Di Costanzo", "Planificar adecuación edilicia para sucursal Salta", "Plan de obra approved", "Cierre Año", "", "", "Pendiente"],
-            ["CRM", "A. Aguilar / L. de los Ríos", "Control diario de asignación de boletos Salesforce", "Reporte diario CRM", "Diario", "", "", "Pendiente"],
-            ["CRM", "A. Aguilar / L. de los Ríos", "Responder prospectos digitales en menos de 2 horas", "Dashboard Salesforce", "Semanal", "", "", "Pendiente"],
-            ["CRM", "A. Aguilar / L. de los Ríos", "Eliminar boletos vencidos sin actividad comercial", "Auditoría de sistema", "Mensual", "", "", "Pendiente"],
-            ["Posventa", "Daniel Colque", "Incrementar tasa de contacto para campañas de Airbags", "% de avance de campaña", "Semanal", "", "", "Pendiente"],
-            ["TCFA y Seguros", "L. de los Ríos / Romina R.", "Revisar método analítico de crecimiento de pólizas", "Fórmula homologada", "30 días", "", "", "Pendiente"],
-            ["TCFA y Seguros", "L. de los Ríos / Romina R.", "Campaña de difusión para activación de App Seguros", "Tasa de activación App", "Mensual", "", "", "Pendiente"],
-            ["KINTO", "Aaron Martearena", "Rediseñar proceso de seguimiento de siniestros One", "Flujograma unificado", "45 días", "", "", "Pendiente"]
+            [1, "14-jul", "Coordinación", "Seguimiento Transversal", "Tableros desvinculados", "Centralizar tablero único", "ALTA", "Reporte online", "Alejandro López", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Reportes transversales"],
+            [2, "14-jul", "Calidad", "Kits de Seguridad", "Falta kit de obsequio", "Incorporar kits de seguridad de Autolux en cada entrega", "ALTA", "Remitos firmados", "A. Aguilar", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Validar stock central"],
+            [3, "14-jul", "Calidad", "Módulos de Café", "Expendedoras retiradas", "Compra e instalación de módulos de café en showroom", "ALTA", "Factura de compra", "A. Aguilar", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Gestión salas de espera"],
+            [4, "14-jul", "Calidad", "Fidelización", "Baja percepción", "Lanzar campaña de fidelización con sorteos activos", "ALTA", "Evolución score", "A. Aguilar", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Bases con Marketing"],
+            [5, "14-jul", "Calidad", "Auditoría Interna", "Desvíos blandos", "Implementar auditorías internas Mystery Shopper", "ALTA", "Reporte auditoría", "A. Aguilar", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Sucursales Salta/Tartagal"],
+            [6, "14-jul", "Calidad", "Tablero KPIs", "Falta visibilidad", "Desarrollar tablero de control de KPIs operativos", "ALTA", "Dashboard operativo", "A. Aguilar", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Extracción Salesforce"],
+            [7, "14-jul", "Calidad", "Alistamiento UCT", "Demoras preparación", "Reorganizar proceso de preparación y alistamiento UCT", "ALTA", "Minuta de proceso", "Pablo Carrizo", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Garantizar estándar"],
+            [8, "14-jul", "RRHH", "Personal TPA", "Sobrecarga admin", "Incorporar 2 colaboradores administrativos para TPA", "ALTA", "Alta de nómina", "A. Di Costanzo", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Vacantes activas"],
+            [9, "14-jul", "RRHH", "Capacitación", "Certificaciones ok", "Ejecutar plan de capacitación semestral obligatorio", "ALTA", "% de cumplimiento", "A. Di Costanzo", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Foco asesores sin reválida"],
+            [10, "14-jul", "RRHH", "Ausentismo", "Fricciones taller", "Controlar índice de rotación y ausentismo en taller", "ALTA", "Reporte mensual", "A. Di Costanzo", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Mitigar demoras de entrega"],
+            [11, "14-jul", "Facilities", "Obras Las Lajitas", "Riesgo penalidad", "Negociar reprogramación de obras en Las Lajitas", "ALTA", "Minuta fieldman", "D. Colque / A. Di Costanzo", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Evitar impactos manual"],
+            [12, "14-jul", "Facilities", "Sucursal Salta", "Adecuación edilicia", "Planificar adecuación edilicia para sucursal Salta", "ALTA", "Plan aprobado", "D. Colque / A. Di Costanzo", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Alineación estructural"],
+            [13, "14-jul", "CRM", "Salesforce", "Boletos estancados", "Control diario de asignación de boletos Salesforce", "ALTA", "Reporte CRM diario", "A. Aguilar / L. de los Ríos", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Evitar caídas de leads"],
+            [14, "14-jul", "CRM", "Prospectos", "Demoras atención", "Responder prospectos digitales en menos de 2 horas", "ALTA", "Dashboard Salesforce", "A. Aguilar / L. de los Ríos", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Guardias fines de semana"],
+            [15, "14-jul", "CRM", "Filtro Boletos", "Boletos vencidos", "Eliminar boletos vencidos sin actividad comercial", "ALTA", "Auditoría sistema", "A. Aguilar / L. de los Ríos", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Limpieza de base al 80%"],
+            [16, "14-jul", "Posventa", "Campañas Airbags", "Baja tasa contacto", "Incrementar tasa de contacto para campañas de Airbags", "ALTA", "% avance campaña", "Daniel Colque", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Llamados sobre históricas"],
+            [17, "14-jul", "TCFA y Seguros", "Método", "Desvío pólizas", "Revisar método analítico de crecimiento de pólizas", "ALTA", "Fórmula homologada", "L. de los Ríos / Romina R.", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Consistencia comisiones"],
+            [18, "14-jul", "TCFA y Seguros", "App Seguros", "Baja activación", "Campaña de difusión para activación de App Seguros", "ALTA", "Tasa activación", "L. de los Ríos / Romina R.", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Promoción tótems salón"],
+            [19, "14-jul", "KINTO", "Siniestros One", "Flujos sueltos", "Rediseñar proceso de seguimiento de siniestros One", "ALTA", "Flujograma unificado", "Aaron Martearena", "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Respuesta de flota Kinto"]
         ]
-        st.session_state.db_final_dep_v400 = None
-        st.session_state.db_final_dep_v500 = pd.DataFrame(data_rows, columns=["Área", "Responsables", "Compromiso de Mejora", "Indicador / Evidencia", "Fecha de Medición", "Comentarios", "Fecha Real", "Estado"])
+        columnas_foto = [
+            "#", "Fecha de Alta", "Gerencia / Área / Sector", "Tema / Proyecto", 
+            "Situación actual", "Acción", "Prioridad", "Indicador de eficiencia / Entregable", 
+            "Responsable", "Fecha de Inicio", "Fecha de finalización", "Fecha de control", 
+            "Estado", "Observación"
+        ]
+        st.session_state.db_final_dep_excel_v1 = pd.DataFrame(data_rows, columns=columnas_foto)
 
-    # Selector de Responsables completo
-    lista_responsables = ["Todos"] + sorted(list(st.session_state.db_final_dep_v500["Responsables"].unique()))
-    filtro_lider = st.selectbox("👤 Filtrar por Responsable de Mesa:", lista_responsables)
-    df_vista = st.session_state.db_final_dep_v500 if filtro_lider == "Todos" else st.session_state.db_final_dep_v500[st.session_state.db_final_dep_v500["Responsables"] == filtro_lider]
+    lista_responsables = ["Todos"] + sorted(list(st.session_state.db_final_dep_excel_v1["Responsable"].unique()))
+    filtro_lider = st.selectbox("👤 Filtrar Vista por Responsable:", lista_responsables)
+    df_vista = st.session_state.db_final_dep_excel_v1 if filtro_lider == "Todos" else st.session_state.db_final_dep_excel_v1[st.session_state.db_final_dep_excel_v1["Responsable"] == filtro_lider]
 
-    # Grilla Editable Sincronizada
     df_editado = st.data_editor(
         df_vista,
         column_config={
-            "Área": st.column_config.TextColumn(disabled=True), "Responsables": st.column_config.TextColumn(disabled=True),
-            "Compromiso de Mejora": st.column_config.TextColumn(disabled=True), "Indicador / Evidencia": st.column_config.TextColumn(disabled=True),
-            "Fecha de Medición": st.column_config.TextColumn(disabled=True), "Estado": st.column_config.SelectboxColumn(options=["Pendiente", "En Proceso", "Completado"], default="Pendiente")
+            "#": st.column_config.NumberColumn(disabled=True), "Fecha de Alta": st.column_config.TextColumn(disabled=True),
+            "Gerencia / Área / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True),
+            "Situación actual": st.column_config.TextColumn(disabled=True), "Acción": st.column_config.TextColumn(disabled=True),
+            "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador de eficiencia / Entregable": st.column_config.TextColumn(disabled=True),
+            "Responsable": st.column_config.TextColumn(disabled=True), "Fecha de Inicio": st.column_config.TextColumn(),
+            "Fecha de finalización": st.column_config.TextColumn(), "Fecha de control": st.column_config.TextColumn(),
+            "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"], default="EN PROCESO"), "Observación": st.column_config.TextColumn()
         },
-        use_container_width=True, key="editor_dep_definitivo_v500"
+        use_container_width=True, key="editor_dep_foto_v2", hide_index=True
     )
 
-    if st.button("💾 Guardar Cambios"):
-        for idx, row in df_editado.iterrows(): 
-            st.session_state.db_final_dep_v500.loc[idx] = row
-        st.success("🎉 Novedades y compromisos guardados en la sesión.")
+    if st.button("💾 Guardar Cambios Actuales"):
+        for _, row in df_editado.iterrows():
+            idx_original = row["#"] - 1
+            st.session_state.db_final_dep_excel_v1.iloc[idx_original] = row
+        st.success("🎉 Agenda de compromisos DEP guardada en memoria local de la sesión.")
 
-    # MOTOR DE EXPORTACIÓN EXCEL CORREGIDO
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        st.session_state.db_final_dep_v500.to_excel(writer, sheet_name='Plan de Accion DEP', index=False)
-        worksheet = writer.sheets['Plan de Accion DEP']
+        st.session_state.db_final_dep_excel_v1.to_excel(writer, sheet_name='Agenda', index=False)
+        worksheet = writer.sheets['Agenda']
         
         fill_blue_header = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
-        font_white_header = Font(name='Arial', size=11, bold=True, color="FFFFFF")
+        font_white_header = Font(name='Arial', size=10, bold=True, color="FFFFFF")
         font_body = Font(name='Arial', size=10, bold=False, color="000000")
-        border_thin = Border(left=Side(style='thin', color='DDDDDD'), right=Side(style='thin', color='DDDDDD'), top=Side(style='thin', color='DDDDDD'), bottom=Side(style='thin', color='DDDDDD'))
+        border_thin = Border(left=Side(style='thin', color='CC'), right=Side(style='thin', color='CC'), top=Side(style='thin', color='CC'), bottom=Side(style='thin', color='CC'))
         
-        # Aplicar el estilo azul y letras blancas SOLO a los encabezados (Fila 1)
-        for col_idx in range(1, len(st.session_state.db_final_dep_v500.columns) + 1):
+        for col_idx in range(1, len(st.session_state.db_final_dep_excel_v1.columns) + 1):
             cell = worksheet.cell(row=1, column=col_idx)
             cell.fill = fill_blue_header; cell.font = font_white_header; cell.border = border_thin
             
-        # Formatear el cuerpo en blanco tradicional con letras negras
-        for row_idx in range(2, len(st.session_state.db_final_dep_v500) + 2):
-            for col_idx in range(1, len(st.session_state.db_final_dep_v500.columns) + 1):
+        for row_idx in range(2, len(st.session_state.db_final_dep_excel_v1) + 2):
+            for col_idx in range(1, len(st.session_state.db_final_dep_excel_v1.columns) + 1):
                 cell = worksheet.cell(row=row_idx, column=col_idx)
                 cell.font = font_body; cell.border = border_thin
                 
-        # Autoajuste de anchos de columnas
-        for col_idx in range(1, len(st.session_state.db_final_dep_v500.columns) + 1):
+        for col_idx in range(1, len(st.session_state.db_final_dep_excel_v1.columns) + 1):
             col_letter = get_column_letter(col_idx); max_len = 0
-            for row_idx in range(1, len(st.session_state.db_final_dep_v500) + 2):
+            for row_idx in range(1, len(st.session_state.db_final_dep_excel_v1) + 2):
                 val = worksheet.cell(row=row_idx, column=col_idx).value
                 if val: max_len = max(max_len, len(str(val)))
-            worksheet.column_dimensions[col_letter].width = max(max_len + 3, 12)
+            worksheet.column_dimensions[col_letter].width = max(max_len + 3, 11)
 
-    st.download_button(label="📥 Descargar Plan de Acción Completo en Excel", data=buffer.getvalue(), file_name="Plan_de_Accion_DEP_Autolux_2026.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    st.download_button(label="📥 Descargar Agenda de Seguimiento Formateada (Excel)", data=buffer.getvalue(), file_name="Plan_de_Accion_PVT_JULIO_26_Saneado.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
