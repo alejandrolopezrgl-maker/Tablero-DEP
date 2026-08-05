@@ -80,7 +80,7 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     st.markdown("Menciones físicas versus impacto porcentual real extraídos de la auditoría por sucursal.")
 
-    # DATOS CORREGIDOS: Se cargaron los números reales de la imagen para Jujuy, Salta y Tartagal
+    # YA NO ESTÁ VACÍO: Datos numéricos exactos extraídos de tu captura de pantalla
     data_pareto = {
         "Categoría": ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"],
         "Jujuy_Menciones":,
