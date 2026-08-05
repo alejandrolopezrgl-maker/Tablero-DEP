@@ -80,7 +80,7 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     st.markdown("Filtra el diagnóstico raíz para evaluar la cantidad de menciones físicas frente al impacto de desvío de cada plaza.")
 
-    # Base de datos estructurada directamente de la foto enviada por el usuario
+    # Base de datos estructurada con las quejas y menciones cargadas al 100% de la imagen
     data_pareto = {
         "Categoría": ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"],
         "Jujuy_Menciones":,
@@ -94,7 +94,7 @@ with tab_calidad:
     
     # Procesamiento dinámico para construir el Pareto real en vivo
     df_suc = df_p[["Categoría", col_menciones]].copy().sort_values(by=col_menciones, ascending=False)
-    df_suc = df_suc[df_suc[col_menciones] > 0] # Filtrar categorías sin quejas en esa sucursal
+    df_suc = df_suc[df_suc[col_menciones] > 0]
     total_menciones = df_suc[col_menciones].sum()
     df_suc["Porcentaje"] = (df_suc[col_menciones] / total_menciones) * 100
     df_suc["Acumulado"] = df_suc["Porcentaje"].cumsum()
@@ -108,23 +108,21 @@ with tab_calidad:
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}",
         xaxis=dict(title="Categorías Críticas"),
         yaxis=dict(title="Número de Quejas / Menciones"),
-        yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 110]),
-        legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5),
-        height=500
+        yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 105]),
+        legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5), height=500
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
 
-    # Diagnósticos adaptados de manera inteligente basados en las zonas resaltadas de tu imagen
     st.markdown("### 💡 Diagnóstico Operativo Prioritario:")
     if sucursal == "Jujuy":
-        st.warning("⚠️ **Foco Urgente en Operaciones (80% del impacto)**: En Jujuy, los problemas se concentran de forma masiva en **Demoras y puntualidad** (36.6%) y **Comunicación y seguimiento** (19.7%). El plan debe focalizarse en los tiempos muertos de recepción.")
+        st.warning("⚠️ **Foco Urgente en Operaciones**: En Jujuy, los problemas se concentran de forma masiva en **Demoras y puntualidad** (36.6%) y **Comunicación y seguimiento** (19.7%). El plan debe focalizarse en los tiempos muertos de recepción.")
     elif sucursal == "Salta":
         st.warning("⚠️ **Foco Híbrido (Procesos e Intangibles)**: Salta muestra un desvío compartido. **Demoras** sigue al frente (24.7%), pero aparece una alerta severa en **Cortesías y obsequios** (13.5%), vinculada a los reclamos por kits y merchandising.")
     else:
-        st.warning("⚠️ **Foco Edilicio y de Confort**: El comportamiento de Tartagal es totalmente inverso. La principal fricción radica en **Instalaciones y comodidad** (27.3%), seguido equitativamente por infraestructura, demoras y papelería.")
+        st.warning("⚠️ **Foco Edilicio y de Confort**: El comportamiento de Tartagal destaca una fricción crítica en **Instalaciones y comodidad** (27.3%), seguido equitativamente por infraestructura, demoras y papelería.")
 with tab_plan:
     st.subheader("📋 Planilla de Seguimiento y Agenda de Compromisos DEP")
-    st.markdown("Sincronización de datos automatizada directamente desde Google Sheets:")
+    st.markdown("Extracción directa de datos en tiempo real desde Google Sheets:")
 
     def obtener_datos_nube(gid):
         try:
@@ -151,7 +149,7 @@ with tab_plan:
     df_v = st.session_state.db_final_dep_excel_v1 if filtro_r == "Todos" else st.session_state.db_final_dep_excel_v1[st.session_state.db_final_dep_excel_v1["Responsable"] == filtro_r]
 
     df_ed = st.data_editor(
-        df_v, use_container_width=True, key="ed_v9", hide_index=True,
+        df_v, use_container_width=True, key="ed_v10", hide_index=True,
         column_config={"#": st.column_config.NumberColumn(disabled=True), "Fecha de Alta": st.column_config.TextColumn(disabled=True), "Gerencia / Área / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador de eficiencia / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=True), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"])}
     )
 
