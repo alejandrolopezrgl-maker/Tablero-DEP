@@ -78,9 +78,9 @@ with tab_dashboard:
 
 with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
-    st.markdown("Filtra el diagnóstico raíz para evaluar la cantidad de menciones físicas frente al impacto de desvío de cada plaza.")
+    st.markdown("Menciones físicas versus impacto porcentual real extraídos de la auditoría por sucursal.")
 
-    # Base de datos estructurada con las quejas y menciones cargadas al 100% de la imagen
+    # Diccionario cargado con los datos numéricos exactos de tu Pareto por sucursal
     data_pareto = {
         "Categoría": ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"],
         "Jujuy_Menciones":,
@@ -92,14 +92,12 @@ with tab_calidad:
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
     col_menciones = f"{sucursal}_Menciones"
     
-    # Procesamiento dinámico para construir el Pareto real en vivo
     df_suc = df_p[["Categoría", col_menciones]].copy().sort_values(by=col_menciones, ascending=False)
     df_suc = df_suc[df_suc[col_menciones] > 0]
     total_menciones = df_suc[col_menciones].sum()
     df_suc["Porcentaje"] = (df_suc[col_menciones] / total_menciones) * 100
     df_suc["Acumulado"] = df_suc["Porcentaje"].cumsum()
 
-    # Construcción de gráfico de doble eje (Barras para cantidad, Línea para curva acumulada)
     fig_pareto = go.Figure()
     fig_pareto.add_trace(go.Bar(x=df_suc["Categoría"], y=df_suc[col_menciones], name="Cantidad de Menciones", marker_color="#1F4E78", text=df_suc[col_menciones], textposition="inside"))
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
@@ -115,14 +113,14 @@ with tab_calidad:
 
     st.markdown("### 💡 Diagnóstico Operativo Prioritario:")
     if sucursal == "Jujuy":
-        st.warning("⚠️ **Foco Urgente en Operaciones**: En Jujuy, los problemas se concentran de forma masiva en **Demoras y puntualidad** (36.6%) y **Comunicación y seguimiento** (19.7%). El plan debe focalizarse en los tiempos muertos de recepción.")
+        st.warning("⚠️ **Jujuy (80% del impacto)**: Concentración masiva en **Demoras y puntualidad** (36.6%) y **Comunicación y seguimiento** (19.7%). El plan debe focalizarse en tiempos muertos de taller.")
     elif sucursal == "Salta":
-        st.warning("⚠️ **Foco Híbrido (Procesos e Intangibles)**: Salta muestra un desvío compartido. **Demoras** sigue al frente (24.7%), pero aparece una alerta severa en **Cortesías y obsequios** (13.5%), vinculada a los reclamos por kits y merchandising.")
+        st.warning("⚠️ **Salta (Foco Híbrido)**: Desvío compartido. **Demoras** sigue al frente (24.7%), pero aparece una alerta severa en **Cortesías y obsequios** (13.5%), vinculada a reclamos por kits.")
     else:
-        st.warning("⚠️ **Foco Edilicio y de Confort**: El comportamiento de Tartagal destaca una fricción crítica en **Instalaciones y comodidad** (27.3%), seguido equitativamente por infraestructura, demoras y papelería.")
+        st.warning("⚠️ **Tartagal (Foco Edilicio)**: El comportamiento es inverso. La principal fricción radica en **Instalaciones y comodidad** (27.3%), seguido por infraestructura general.")
 with tab_plan:
     st.subheader("📋 Planilla de Seguimiento y Agenda de Compromisos DEP")
-    st.markdown("Extracción directa de datos en tiempo real desde Google Sheets:")
+    st.markdown("Sincronización en tiempo real con las pestañas de tu Google Sheets oficial:")
 
     def obtener_datos_nube(gid):
         try:
@@ -135,7 +133,7 @@ with tab_plan:
     def generar_tabla_respaldo():
         sectores = ["Coordinación", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "RRHH", "RRHH", "RRHH", "Facilities", "Facilities", "CRM", "CRM", "CRM", "Posventa", "TCFA", "TCFA", "KINTO"]
         temas = ["Seguimiento", "Kits", "Café", "Fidelización", "Mystery", "KPIs", "UCT", "Personal", "Capacitación", "Ausentismo", "Las Lajitas", "Salta", "Asignación", "Prospectos", "Boletos", "Airbags", "Método", "App", "Siniestros"]
-        resps = ["Alejandro López", "A. Aguilar", "A. Aguilar", "A. Aguilar", "A. Aguilar", "A. Aguilar", "Pablo Carrizo", "A. Di Costanzo", "A. Di Costanzo", "A. Di Costanzo", "D. Colque", "D. Colque", "A. Aguilar", "A. Aguilar", "A. Aguilar", "Daniel Colque", "L. de los Ríos", "L. de los Ríos", "Aaron Martearena"]
+        resps = ["Alejandro López", "A. Aguilar", "A. Aguilar", "A. Aguilar", "A. Aguilar", "A. Aguilar", "Pablo Carrizo", "A. Di Costanzo", "A. Di Costanzo", "A. Di Costanzo", "Daniel Colque", "Daniel Colque", "A. Aguilar", "A. Aguilar", "A. Aguilar", "Daniel Colque", "L. de los Ríos", "L. de los Ríos", "Aaron Martearena"]
         rows = [[idx+1, "14-jul", sectores[idx], temas[idx], "Desvío detectado", "Ejecutar acción mitigatoria", "ALTA", "Evidencia", resps[idx], "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Sincronizado"] for idx in range(19)]
         cols = ["#", "Fecha de Alta", "Gerencia / Área / Sector", "Tema / Proyecto", "Situación actual", "Acción", "Prioridad", "Indicador de eficiencia / Entregable", "Responsable", "Fecha de Inicio", "Fecha de finalización", "Fecha de control", "Estado", "Observación"]
         return pd.DataFrame(rows, columns=cols)
@@ -149,7 +147,7 @@ with tab_plan:
     df_v = st.session_state.db_final_dep_excel_v1 if filtro_r == "Todos" else st.session_state.db_final_dep_excel_v1[st.session_state.db_final_dep_excel_v1["Responsable"] == filtro_r]
 
     df_ed = st.data_editor(
-        df_v, use_container_width=True, key="ed_v10", hide_index=True,
+        df_v, use_container_width=True, key="ed_v11", hide_index=True,
         column_config={"#": st.column_config.NumberColumn(disabled=True), "Fecha de Alta": st.column_config.TextColumn(disabled=True), "Gerencia / Área / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador de eficiencia / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=True), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"])}
     )
 
