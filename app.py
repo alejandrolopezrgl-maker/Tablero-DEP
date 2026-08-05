@@ -42,7 +42,7 @@ if st.sidebar.button("🔄 Restablecer Valores Oficiales"):
 base_ventas_lux = 55.7 if not penalidad_mov else (55.7 - 5.0)
 base_posventa_lux = 91.7 - (91.7 * (castigo_posventa_fieldman / 100))
 
-# CAPTURA DE VARIABLES SIMULADAS VIVAS CON CONEXIÓN INTER-TAB (ESTADO PERSISTENTE)
+# CAPTURA DE VARIABLES SIMULADAS VIVAS CON ENLACE DIRECTO TRAS LA REESCRITURA
 v_simulada = st.session_state.get("sim_pilar_ventas", base_ventas_lux)
 p_simulada = st.session_state.get("sim_pilar_posventa", base_posventa_lux)
 tpa_simulada = st.session_state.get("sim_pilar_tpa", 72.8)
@@ -50,7 +50,6 @@ kinto_simulada = st.session_state.get("sim_pilar_kinto", 35.8)
 tcfa_simulada = st.session_state.get("sim_pilar_tcfa", 73.0)
 
 # 4. FÓRMULA MATEMÁTICA CON LAS PONDERACIONES OFICIALES DEL MANUAL (PÁG 3)
-# Pesos: Posventa 27%, Ventas 22%, General 20%, TPA 9%, Kinto 6%, Usados 6%, Especiales 5%, TCFA 4%, ESG 1%
 score_global_final = (
     (p_simulada * 0.27) + (v_simulada * 0.22) + (67.6 * 0.20) + 
     (tpa_simulada * 0.09) + (kinto_simulada * 0.06) + (75.8 * 0.06) + 
@@ -68,12 +67,14 @@ data_competitiva = {
 }
 df_bench = pd.DataFrame(data_competitiva)
 
-# MOTOR DE RANKING ELÁSTICO: Responde directamente al impacto de la simulación
-if score_global_final <= 62.0:
-    puesto_calculado = int(24 + ((62.0 - score_global_final) / 5.0) * 10)
+# MOTOR DE RANKING ELÁSTICO CORREGIDO: Si el score simulado es igual al base, clava el puesto 24
+if abs(score_global_final - 67.6) < 0.01:
+    puesto_calculado = 24
+elif score_global_final <= 67.6:
+    puesto_calculado = int(24 + ((67.6 - score_global_final) / 5.0) * 10)
     puesto_calculado = min(43, puesto_calculado)
 else:
-    puesto_calculado = int(24 - ((score_global_final - 62.0) / (72.3 - 62.0)) * (24 - 5))
+    puesto_calculado = int(24 - ((score_global_final - 67.6) / (72.3 - 67.6)) * (24 - 5))
     puesto_calculado = max(1, puesto_calculado)
 
 tab_dashboard, tab_calidad, tab_plan = st.tabs(["📊 Dashboard del Dealer", "🕵️ Análisis de Calidad por Sucursal", "📋 Plan de Acción Interactiva"])
@@ -83,8 +84,10 @@ with tab_dashboard:
     with col2: 
         if puesto_calculado < 24:
             st.metric("Ranking Proyectado", f"Puesto {puesto_calculado} 🏆", delta=f"¡Subiendo {24 - puesto_calculado} puestos!")
+        elif puesto_calculado > 24:
+            st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🚨", delta=f"Bajando {puesto_calculado - 24} puestos")
         else:
-            st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🚨")
+            st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🚗", help="Posición oficial base del Power BI")
     with col3: st.metric("Pilar Posventa Proyectado", f"{p_simulada:.1f}%")
 
     st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Excluyendo General)")
@@ -130,9 +133,9 @@ with tab_dashboard:
 with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     df_p = pd.DataFrame()
-    df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    df_p["Jujuy_Menciones"] = [26, 14, 8, 5, 4, 3, 3, 3, 3, 2]
-    df_p["Salta_Menciones"] = [22, 15, 9, 12, 6, 8, 3, 5, 4, 5]
+    df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehicle", "Protocolo y personalización", "Producto o marca"]
+    df_p["Jujuy_Menciones"] = [26, 14, 8, 3, 5, 2, 7, 5, 1, 0]
+    df_p["Salta_Menciones"] = [22, 15, 9, 12, 6, 8, 2, 3, 5, 7]
     df_p["Tartagal_Menciones"] = [2, 1, 2, 2, 0, 3, 0, 0, 1, 0]
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
@@ -157,8 +160,7 @@ with tab_plan:
     st.markdown("Carga los objetivos manuales de los jefes para ver el cambio elástico en el Dashboard:")
 
     if "db_dep_final_oficial_2026" not in st.session_state:
-        # IMPLEMENTACIÓN DE CÓDIGOS REALES TASA: Saneados Usados (6.1.1), KINTO (5.1.1) y TCFA (7.1.1)
-        cods = ["", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.2.2 KPIs (Pág. 5)", "6.1.1: USADOS CERTIFICADOS (Pág. 63)", "4.3.1 Estructura (Pág. 41)", "4.1.2 NPS TPA (Pág. 41)", "3.3.1 Rotación (Pág. 21)", "3.2.4 Sostenimiento (Pág. 21)", "3.2.4 Sostenimiento (Pág. 21)", "1.5.5 Salesforce (Pág. 5)", "1.5.6 Gestión (Pág. 5)", "1.5.5 Salesforce (Pág. 5)", "3.5.2 Campañas (Pág. 21)", "7.1.1: CARTERA DE SEGUROS (Pág. 69)", "7.1.2: SERVICIOS CONECTADOS (Pág. 69)", "5.1.1: GESTIÓN KINTO ONE (Pág. 50)"]
+        cods = ["", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.2.2 KPIs (Pág. 5)", "6.1.1: USADOS (Pág. 63)", "4.3.1 Estructura (Pág. 41)", "4.1.2 NPS TPA (Pág. 41)", "3.3.1 Rotación (Pág. 21)", "1.4.2 Obra (Pág. 5)", "1.4.2 Obra (Pág. 5)", "2.1.2 CRM (Pág. 5)", "2.1.2 CRM (Pág. 5)", "2.1.2 CRM (Pág. 5)", "3.5.2 Airbags (Pág. 21)", "7.1.1: SEGUROS (Pág. 69)", "7.1.2: APP (Pág. 69)", "5.1.1: KINTO ONE (Pág. 50)"]
         secs = ["Coordinación", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "RRHH", "RRHH", "RRHH", "Facilities", "Facilities", "CRM", "CRM", "CRM", "Posventa", "TCFA", "TCFA", "KINTO"]
         tems = ["Programa DEP", "Ventas - Kits", "Ventas - Showroom", "Ventas - Fidelidad", "Ventas - Mystery", "Ventas - KPIs", "Usados Certificados", "Estructura TPA", "Capacitación TPA", "Rotación Personal", "Las Lajitas", "Reformas Salta", "Lista de Espera", "Tiempos Salesforce", "Limpieza Sistema", "Campañas Seguridad", "Cartera Seguros", "Servicios Conectados", "Gestión Siniestros"]
         sits = ["Desvinculación", "Falta kit obsequio", "Showroom sin insumos", "Baja tasa encuesta", "Desvíos blandos", "Falta visibilidad", "Estándar flojo UCT", "Sobrecarga admin", "Riesgo al cierre YTD", "Inestabilidad nómina", "Obras pendientes 2025", "Pendiente PN 2026", "Boletos estancados", "Demoras atención", "Boletos vencidos", "Baja tasa contacto", "Desvío pólizas", "Baja activación app", "Flujos sueltos One"]
@@ -190,15 +192,26 @@ with tab_plan:
                     elif "4.3.1" in cod or "RRHH" in ger: st.session_state.sim_pilar_tpa = tg
                     elif "5.1.1" in cod: st.session_state.sim_pilar_kinto = tg
                     elif "7.1.1" in cod: st.session_state.sim_pilar_tcfa = tg
-            st.success("🎉 Simulación completada. Gráficos y Ranking actualizados en la pestaña 1.")
+            
+            # Cálculo del score simulado en vivo basado en los pesos oficiales del PDF
+            v_sim = st.session_state.get("sim_pilar_ventas", base_ventas_lux)
+            p_sim = st.session_state.get("sim_pilar_posventa", base_posventa_lux)
+            tpa_sim = st.session_state.get("sim_pilar_tpa", 72.8)
+            kin_sim = st.session_state.get("sim_pilar_kinto", 35.8)
+            tcf_sim = st.session_state.get("sim_pilar_tcfa", 73.0)
+            
+            score_sim = ((p_sim * 0.27) + (v_sim * 0.22) + (67.6 * 0.20) + (tpa_sim * 0.09) + (kin_sim * 0.06) + (75.8 * 0.06) + (49.0 * 0.05) + (tcf_sim * 0.04) + (25.0 * 0.01)) - puntos_a_restar_global
+            if penalidad_mov: score_sim -= 1.1
+            st.session_state.score_simulado_actual = score_sim
+            st.success("🎉 Simulación guardada correctamente. Revisa la primera pestaña del Dashboard.")
             st.rerun()
+
     with col_btn2:
         if st.button("🧹 Limpiar Simulación"):
-            st.session_state.sim_pilar_ventas = base_ventas_lux
-            st.session_state.sim_pilar_posventa = base_posventa_lux
-            st.session_state.sim_pilar_tpa = 72.8; st.session_state.sim_pilar_kinto = 35.8; st.session_state.sim_pilar_tcfa = 73.0
-            if "db_dep_final_oficial_2026" in st.session_state: del st.session_state.db_dep_final_oficial_2026
-            st.success("🧹 Valores Kaizen restablecidos con éxito.")
+            # SANEAMIENTO ABSOLUTO DE CACHÉ: Se borran de raíz tanto la tabla como las celdas volátiles
+            for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "score_simulado_actual", "db_dep_final_oficial_2026"]:
+                if k in st.session_state: del st.session_state[k]
+            st.success("🧹 Valores Kaizen eliminados. El tablero regresó de forma estricta a los datos base oficiales.")
             st.rerun()
 
     buffer = io.BytesIO()
