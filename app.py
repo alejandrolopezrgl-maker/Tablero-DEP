@@ -75,6 +75,7 @@ with tab_dashboard:
     with col2: st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🏆" if puesto_calculado <= 24 else f"Puesto {puesto_calculado} 🚨")
     with col3: st.metric("Pilar Posventa Real", f"{base_posventa_lux:.1f}%")
 
+    # Gráfico 1 - Solo Unidades Operativas de Negocio
     st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Excluyendo General)")
     df_operativo = df_bench[df_bench["Área"] != "General"]
     df_melted_op = df_operativo.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
@@ -85,39 +86,40 @@ with tab_dashboard:
     fig_op.update_layout(xaxis_title="Unidad / Canal Operativo", yaxis_title="Efectividad %")
     st.plotly_chart(fig_op, use_container_width=True)
 
+    # Gráfico 2 - Destacado Exclusivo del Desempeño General / Global
     st.subheader("🏆 Posicionamiento Estratégico: Resultado General Corporativo")
     df_general = df_bench[df_bench["Área"] == "General"]
     df_melted_gen = df_general.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
-    
     fig_gen = px.bar(
         df_melted_gen, x="Concesionario", y="Cumplimiento %", color="Concesionario", text_auto=".1f",
-        title="Resultado Consolidado del Campeonato DEP Junio 2026",
         color_discrete_map={"Autolux (LUX) - Puesto 24": "#990000", "DPQ - Puesto 5": "#4A7ebb", "GON - Puesto 10": "#A6A6A6"}
     )
     fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 100]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
     st.plotly_chart(fig_gen, use_container_width=True)
 
+    # RESTAURADO EL CHEKLIST COMPLETO EMT Y SU SIMULADOR
+    st.divider()
+    st.subheader("📝 Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)")
+    col_em1, col_em2, col_em3 = st.columns(3)
+    with col_em1:
+        acu_a = st.slider("A: Estructura Central (100)", 0, 100, 100)
+        acu_b = st.slider("B: Servicio al Cliente (100)", 0, 100, 100)
+        acu_c = st.slider("C: Kinto Movilidad (100)", 0, 100, 100)
+    with col_em2:
+        acu_d = st.slider("D: Club Toyota (100)", 0, 100, 100)
+        acu_e = st.slider("E: Toyota Plan de Ahorro (100)", 0, 100, 100, key="slider_tpa_dashboard")
+        acu_f = st.slider("F: Toyota Financial Services (100)", 0, 100, 100)
+    with col_em3:
+        acu_g = st.slider("G: Vehículos Usados (100)", 0, 100, 100)
+        acu_h = st.slider("H: Canal Convencional (100)", 0, 100, 100)
+        acu_i = st.slider("I: Services Conectados (100)", 0, 100, 100)
+    score_total_emt = acu_a + acu_b + acu_c + acu_d + acu_e + acu_f + acu_g + acu_h + acu_i
+    st.success(f"🎉 Estándar EMT Asegurado: {score_total_emt} / 900 puntos ({(score_total_emt / 900.0) * 100:.1f}%).")
+
 with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
-    
-    categorias_lista = [
-        "Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", 
-        "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", 
-        "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"
-    ]
-    
-    # DATOS OFICIALES DE LA PLANILLA TOTALMENTE CARGADOS EN UNA LÍNEA SEGURA
-    jujuy_menciones = [26, 14, 8, 4, 3, 5, 2, 4, 2, 3]
-    salta_menciones = [22, 15, 9, 12, 5, 7, 3, 6, 4, 6]
-    tartagal_menciones = [2, 1, 2, 2, 0, 3, 0, 1, 0, 0]
-
-    df_p = pd.DataFrame({
-        "Categoría": categorias_lista,
-        "Jujuy_Menciones": jujuy_menciones,
-        "Salta_Menciones": salta_menciones,
-        "Tartagal_Menciones": tartagal_menciones
-    })
-
+    categorias_lista = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
+    df_p = pd.DataFrame({"Categoría": categorias_lista, "Jujuy_Menciones":, "Salta_Menciones":, "Tartagal_Menciones": [2, 1, 2, 2, 0, 3, 1, 0, 0, 0]})
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
     col_menciones = f"{sucursal}_Menciones"
     df_suc = df_p[["Categoría", col_menciones]].copy().sort_values(by=col_menciones, ascending=False)
@@ -131,67 +133,60 @@ with tab_calidad:
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
     fig_pareto.update_layout(
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25),
-        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 110]),
+        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 100]),
         legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
-
-    st.markdown("### 💡 Diagnóstico Operativo Prioritario:")
-    if sucursal == "Jujuy":
-        st.warning("⚠️ **Jujuy (Foco Operaciones)**: Concentración en **Demoras y puntualidad** (36.6%) y **Comunicación** (19.7%). El plan de acción del sector de asesores debe atacar la velocidad en turnos.")
-    elif sucursal == "Salta":
-        st.warning("⚠️ **Salta (Foco Híbrido)**: Desvío compartido entre **Demoras** (24.7%) y **Cortesías / Obsequios** (13.5%). Vinculado directamente a reclamos por entrega de kits de seguridad.")
-    else:
-        st.warning("⚠️ **Tartagal (Foco Infraestructura)**: El principal desvío radica en **Instalaciones y comodidad** (27.3%), seguido equitativamente con un 18.2% por Demoras, Administración y Kits.")
 with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen y Simulador de Impacto DEP")
-    st.markdown("Establece los **Objetivos de Simulación** por cada jefe para proyectar la recuperación del indicador global:")
+    st.markdown("Establece los **Objetivos de Simulación** de forma manual para proyectar la recuperación del indicador global:")
 
     if "db_dep_simulador_v1" not in st.session_state:
-        # Reincorporación de los 19 desvíos DEP agregando la columna de Capítulos y limpiando fechas por requerimiento
+        # Numeración oficial por capítulos y secciones regulatorias TASA, arrancando el Target de simulación manual en 0.0%
         data_rows = [
-            [1, "Capítulo I: Estándares de Red", "Coordinación", "Seguimiento Transversal", "Tableros desvinculados", "Centralizar tablero único", "ALTA", "Reporte online", "Alejandro López", "", "", "EN PROCESO", 67.6],
-            [2, "Capítulo III: CSI / SSI", "Calidad", "Kits de Seguridad", "Falta kit de obsequio", "Incorporar kits de seguridad de Autolux", "ALTA", "Remitos firmados", "A. Aguilar", "", "", "EN PROCESO", 67.6],
-            [3, "Capítulo III: CSI / SSI", "Calidad", "Módulos de Café", "Expendedoras retiradas", "Compra e instalación de módulos de café", "ALTA", "Factura de compra", "A. Aguilar", "", "", "EN PROCESO", 67.6],
-            [4, "Capítulo III: CSI / SSI", "Calidad", "Fidelización", "Baja percepción", "Lanzar campaña de fidelización con sorteos", "ALTA", "Evolución score", "A. Aguilar", "", "", "EN PROCESO", 67.6],
-            [5, "Capítulo III: CSI / SSI", "Calidad", "Auditoría Interna", "Desvíos blandos", "Implementar auditorías Mystery Shopper", "ALTA", "Reporte auditoría", "A. Aguilar", "", "", "EN PROCESO", 67.6],
-            [6, "Capítulo I: Estándares de Red", "Calidad", "Tablero KPIs", "Falta visibilidad", "Desarrollar tablero de control operativo", "ALTA", "Dashboard operativo", "A. Aguilar", "", "", "EN PROCESO", 67.6],
-            [7, "Capítulo V: Operaciones", "Calidad", "Alistamiento UCT", "Demoras preparación", "Reorganizar preparación UCT", "ALTA", "Minuta de proceso", "Pablo Carrizo", "", "", "EN PROCESO", 67.6],
-            [8, "Capítulo II: Estructura Comercial", "RRHH", "Personal TPA", "Sobrecarga admin", "Incorporar 2 colaboradores para TPA", "ALTA", "Alta de nómina", "A. Di Costanzo", "", "", "EN PROCESO", 72.8],
-            [9, "Capítulo IV: Capacitación", "RRHH", "Capacitación", "Certificaciones ok", "Ejecutar plan de capacitación semestral", "ALTA", "% de cumplimiento", "A. Di Costanzo", "", "", "EN PROCESO", 67.6],
-            [10, "Capítulo V: Operaciones", "RRHH", "Ausentismo", "Fricciones taller", "Controlar índice de rotación en taller", "ALTA", "Reporte mensual", "A. Di Costanzo", "", "", "EN PROCESO", 91.7],
-            [11, "Capítulo I: Estándares de Red", "Facilities", "Obras Las Lajitas", "Riesgo penalidad", "Negociar reprogramación de obras", "ALTA", "Minuta fieldman", "Daniel Colque", "", "", "EN PROCESO", 91.7],
-            [12, "Capítulo I: Estándares de Red", "Facilities", "Sucursal Salta", "Adecuación edilicia", "Planificar adecuación edilicia Salta", "ALTA", "Plan aprobado", "Daniel Colque", "", "", "EN PROCESO", 91.7],
-            [13, "Capítulo II: Estructura Comercial", "CRM", "Salesforce", "Boletos estancados", "Control diario de asignación Salesforce", "ALTA", "Reporte CRM diario", "A. Aguilar", "", "", "EN PROCESO", 55.7],
-            [14, "Capítulo II: Estructura Comercial", "CRM", "Prospectos", "Demoras atención", "Responder prospectos digitales < 2 horas", "ALTA", "Dashboard Salesforce", "A. Aguilar", "", "", "EN PROCESO", 55.7],
-            [15, "Capítulo II: Estructura Comercial", "CRM", "Filtro Boletos", "Boletos vencidos", "Eliminar boletos vencidos sin actividad", "ALTA", "Auditoría sistema", "A. Aguilar", "", "", "EN PROCESO", 55.7],
-            [16, "Capítulo V: Operaciones", "Posventa", "Campañas Airbags", "Baja tasa contacto", "Incrementar tasa contacto Airbags", "ALTA", "% avance campaña", "Daniel Colque", "", "", "EN PROCESO", 91.7],
-            [17, "Capítulo VI: TCFA e Incentivos", "TCFA y Seguros", "Método", "Desvío pólizas", "Revisar método analítico de pólizas", "ALTA", "Fórmula homologada", "L. de los Ríos", "", "", "EN PROCESO", 73.0],
-            [18, "Capítulo VI: TCFA e Incentivos", "TCFA y Seguros", "App Seguros", "Baja activación", "Campaña de activación de App Seguros", "ALTA", "Tasa activación", "L. de los Ríos", "", "", "EN PROCESO", 73.0],
-            [19, "Capítulo VII: Nuevas Movilidades", "KINTO", "Siniestros One", "Flujos sueltos", "Rediseñar proceso de siniestros One", "ALTA", "Flujograma unificado", "Aaron Martearena", "", "", "EN PROCESO", 35.8]
+            [1, "1.5.1: CUMPLIMIENTO DE OBJ. ACUMULADOS DE VTAS HILUX, SW4, HIACE", "Coordinación", "Seguimiento Transversal", "Tableros desvinculados", "Centralizar tablero único", "ALTA", "Reporte online", "Alejandro López", "", "", "EN PROCESO", 0.0],
+            [2, "3.2.4: MEJORA CONTINUA CSI EN SHOWROOM", "Calidad", "Kits de Seguridad", "Falta kit de obsequio", "Incorporar kits de seguridad de Autolux", "ALTA", "Remitos firmados", "A. Aguilar", "", "", "EN PROCESO", 0.0],
+            [3, "3.2.4: MEJORA CONTINUA CSI EN SHOWROOM", "Calidad", "Módulos de Café", "Expendedoras retiradas", "Compra e instalación de módulos de café", "ALTA", "Factura de compra", "A. Aguilar", "", "", "EN PROCESO", 0.0],
+            [4, "3.2.5: EVOLUCIÓN INDICADOR SSI GENERAL", "Calidad", "Fidelización", "Baja percepción", "Lanzar campaña de fidelización con sorteos", "ALTA", "Evolución score", "A. Aguilar", "", "", "EN PROCESO", 0.0],
+            [5, "3.2.5: EVOLUCIÓN INDICADOR SSI GENERAL", "Calidad", "Auditoría Interna", "Desvíos blandos", "Implementar auditorías Mystery Shopper", "ALTA", "Reporte auditoría", "A. Aguilar", "", "", "EN PROCESO", 0.0],
+            [6, "1.2.2: SEGUIMIENTO DE KPIs OPERATIVOS", "Calidad", "Tablero KPIs", "Falta visibilidad", "Desarrollar tablero de control operativo", "ALTA", "Dashboard operativo", "A. Aguilar", "", "", "EN PROCESO", 0.0],
+            [7, "5.1.4: PROCESOS OPERATIVOS DE TALLER / ALISTAMIENTO", "Calidad", "Alistamiento UCT", "Demoras preparación", "Reorganizar preparación UCT", "ALTA", "Minuta de proceso", "Pablo Carrizo", "", "", "EN PROCESO", 0.0],
+            [8, "2.4.1: INFRAESTRUCTURA Y RECURSOS EN CANALES OFICIALES", "RRHH", "Personal TPA", "Sobrecarga admin", "Incorporar 2 colaboradores para TPA", "ALTA", "Alta de nómina", "A. Di Costanzo", "", "", "EN PROCESO", 0.0],
+            [9, "4.1.2: CERTIFICACIONES REQUERIDAS DE ASESORES Y TÉCNICOS", "RRHH", "Capacitación", "Certificaciones ok", "Ejecutar plan de capacitación semestral", "ALTA", "% de cumplimiento", "A. Di Costanzo", "", "", "EN PROCESO", 0.0],
+            [10, "5.2.3: CLIMA LABORAL E ÍNDICE DE ROTACIÓN EN POSVENTA", "RRHH", "Ausentismo", "Fricciones taller", "Controlar índice de rotación en taller", "ALTA", "Reporte mensual", "A. Di Costanzo", "", "", "EN PROCESO", 0.0],
+            [11, "1.4.2: SEGUIMIENTO DE COMPROMISOS Y AUDITORÍA DE CAMPO", "Facilities", "Obras Las Lajitas", "Riesgo penalidad", "Negociar reprogramación de obras", "ALTA", "Minuta fieldman", "Daniel Colque", "", "", "EN PROCESO", 0.0],
+            [12, "1.4.2: SEGUIMIENTO DE COMPROMISOS Y AUDITORÍA DE CAMPO", "Facilities", "Sucursal Salta", "Adecuación edilicia", "Planificar adecuación edilicia Salta", "ALTA", "Plan aprobado", "Daniel Colque", "", "", "EN PROCESO", 0.0],
+            [13, "2.1.2: PROCESAMIENTO Y GESTIÓN DE LEADS EN SALESFORCE", "CRM", "Salesforce", "Boletos estancados", "Control diario de asignación Salesforce", "ALTA", "Reporte CRM diario", "A. Aguilar", "", "", "EN PROCESO", 0.0],
+            [14, "2.1.2: PROCESAMIENTO Y GESTIÓN DE LEADS EN SALESFORCE", "CRM", "Prospectos", "Demoras atención", "Responder prospectos digitales < 2 horas", "ALTA", "Dashboard Salesforce", "A. Aguilar", "", "", "EN PROCESO", 0.0],
+            [15, "2.1.2: PROCESAMIENTO Y GESTIÓN DE LEADS EN SALESFORCE", "CRM", "Filtro Boletos", "Boletos vencidos", "Eliminar boletos vencidos sin actividad", "ALTA", "Auditoría sistema", "A. Aguilar", "", "", "EN PROCESO", 0.0],
+            [16, "5.1.5: CUMPLIMIENTO DE CAMPAÑAS ESPECIALES DE AIRBAGS", "Posventa", "Campañas Airbags", "Baja tasa contacto", "Incrementar tasa contacto Airbags", "ALTA", "% avance campaña", "Daniel Colque", "", "", "EN PROCESO", 0.0],
+            [17, "6.1.1: COBERTURA Y CRECIMIENTO EN PÓLIZAS DE SEGUROS", "TCFA y Seguros", "Método", "Desvío pólizas", "Revisar método analítico de pólizas", "ALTA", "Fórmula homologada", "L. de los Ríos", "", "", "EN PROCESO", 0.0],
+            [18, "6.1.1: COBERTURA Y CRECIMIENTO EN PÓLIZAS DE SEGUROS", "TCFA y Seguros", "App Seguros", "Baja activación", "Campaña de activación de App Seguros", "ALTA", "Tasa activación", "L. de los Ríos", "", "", "EN PROCESO", 0.0],
+            [19, "7.3.2: ESTÁNDAR OPERATIVO DE UNIDADES KINTO SHARE", "KINTO", "Siniestros One", "Flujos sueltos", "Rediseñar proceso de siniestros One", "ALTA", "Flujograma unificado", "Aaron Martearena", "", "", "EN PROCESO", 0.0]
         ]
-        cols = ["#", "Capítulo Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"]
+        cols = ["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"]
         st.session_state.db_dep_simulador_v1 = pd.DataFrame(data_rows, columns=cols)
 
     df_ed = st.data_editor(
-        st.session_state.db_dep_simulador_v1, use_container_width=True, key="grilla_sim_v1", hide_index=True,
+        st.session_state.db_dep_simulador_v1, use_container_width=True, key="grilla_sim_v2", hide_index=True,
         column_config={
-            "#": st.column_config.NumberColumn(disabled=True), "Capítulo Manual": st.column_config.TextColumn(disabled=True),
+            "#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True),
             "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True),
             "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True),
             "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True),
             "Responsable": st.column_config.TextColumn(disabled=True), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]),
             "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%"),
-            "Estimación de Cumplimiento": st.column_config.TextColumn(help="Compromiso del jefe"),
-            "Fecha Estimada Cumplimiento": st.column_config.TextColumn(help="Fecha estimada")
+            "Estimación de Cumplimiento": st.column_config.TextColumn(), "Fecha Estimada Cumplimiento": st.column_config.TextColumn()
         }
     )
 
     if st.button("🧮 Simular y Guardar Objetivos Kaizen"):
         st.session_state.db_dep_simulador_v1 = df_ed
-        promedio_simulado = df_ed["Objetivo Simulación (%)"].mean()
+        # Solo promedia los objetivos ingresados que sean mayores a 0 para una simulación manual real
+        df_activos = df_ed[df_ed["Objetivo Simulación (%)"] > 0]
+        promedio_simulado = df_activos["Objetivo Simulación (%)"].mean() if not df_activos.empty else score_global_final
         st.session_state.score_simulado_actual = promedio_simulado
-        st.success(f"🎉 Simulación Ejecutada. Si los jefes cumplen las metas, Autolux alcanzará un score del {promedio_simulado:.1f}% (Ir a pestaña Dashboard para ver impacto).")
+        st.success(f"🎉 Simulación guardada. Si los jefes alcanzan estos objetivos, el score global proyectado será del {promedio_simulado:.1f}%.")
 
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
