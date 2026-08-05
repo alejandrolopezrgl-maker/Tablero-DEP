@@ -112,7 +112,8 @@ with tab_dashboard:
         title="Resultado Consolidado RED - Evaluación DEP Junio 2026",
         color_discrete_map={"Autolux (LUX) - Puesto 24": "#990000", "DPQ - Puesto 5": "#4A7ebb", "GON - Puesto 10": "#A6A6A6"}
     )
-    fig_gen.update_layout(showlegend=False, yaxis=dict(range=), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
+    # CORREGIDO DE RAÍZ: Se inyectó manualmente el rango numérico [0, 100] para open-source
+    fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 100]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
     st.plotly_chart(fig_gen, use_container_width=True)
 
     # Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)
@@ -125,7 +126,7 @@ with tab_dashboard:
         acu_c = st.slider("C: Kinto Movilidad (100)", 0, 100, 100)
     with col_em2:
         acu_d = st.slider("D: Club Toyota (100)", 0, 100, 100)
-        acu_e = st.slider("E: Toyota Plan de Ahorro (100)", 0, 100, 100, key="slider_tpa_dashboard")
+        acu_e = st.sidebar.slider("E: Toyota Plan de Ahorro (100)", 0, 100, 100, key="slider_tpa_dashboard_v2") if 'slider_tpa_dashboard' in locals() else st.slider("E: Toyota Plan de Ahorro (100)", 0, 100, 100, key="slider_tpa_dashboard_v2")
         acu_f = st.slider("F: Toyota Financial Services (100)", 0, 100, 100)
     with col_em3:
         acu_g = st.slider("G: Vehículos Usados (100)", 0, 100, 100)
@@ -138,9 +139,9 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     df_p = pd.DataFrame()
     df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehicle", "Protocolo y personalización", "Producto o marca"]
-    df_p["Jujuy_Menciones"] =
-    df_p["Salta_Menciones"] =
-    df_p["Tartagal_Menciones"] =
+    df_p["Jujuy_Menciones"] = [26, 14, 8, 4, 3, 2, 1, 0, 2, 0]
+    df_p["Salta_Menciones"] = [22, 15, 9, 12, 5, 4, 2, 1, 0, 0]
+    df_p["Tartagal_Menciones"] = [2, 1, 2, 2, 0, 3, 1, 0, 0, 0]
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
     col_menciones = f"{sucursal}_Menciones"
@@ -153,9 +154,10 @@ with tab_calidad:
     fig_pareto = go.Figure()
     fig_pareto.add_trace(go.Bar(x=df_suc["Categoría"], y=df_suc[col_menciones], name="Cantidad de Menciones", marker_color="#1F4E78", text=df_suc[col_menciones], textposition="inside"))
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
+    # CORREGIDO DE RAÍZ: Se inyectó el rango de la curva acumulada de Pareto de 0 a 100 por ciento
     fig_pareto.update_layout(
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25),
-        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=),
+        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 100]),
         legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
@@ -191,7 +193,6 @@ with tab_plan:
                 if tg > 0:
                     cod = str(r["Código Auditoría Manual"])
                     ger = str(r["Gerencia / Sector"])
-                    # ENLACE RE-PROGRAMADO: Guarda los targets de los jefes directamente en las llaves de sesión del Bloque 1
                     if "1.1.1" in cod or "Ventas" in ger: st.session_state.sim_pilar_ventas = tg
                     elif "3.5.2" in cod or "Posventa" in ger or "Facilities" in ger: st.session_state.sim_pilar_posventa = tg
                     elif "4.3.1" in cod or "RRHH" in ger: st.session_state.sim_pilar_tpa = tg
