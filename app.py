@@ -66,6 +66,7 @@ else:
     puesto_calculado = int(24 + ((62.0 - score_global_final) / 5.0) * 10)
     puesto_calculado = min(43, puesto_calculado)
 
+# 4. CAPA DE ENRUTAMIENTO POR PESTAÑAS (3 TABS DEFINIDOS)
 tab_dashboard, tab_calidad, tab_plan = st.tabs(["📊 Dashboard del Dealer", "🕵️ Análisis de Calidad por Sucursal", "📋 Plan de Acción Interactiva"])
 with tab_dashboard:
     simulado_score = st.session_state.get("score_simulado_actual", score_global_final)
@@ -86,18 +87,20 @@ with tab_dashboard:
     fig_op.update_layout(xaxis_title="Unidad / Canal Operativo", yaxis_title="Efectividad %")
     st.plotly_chart(fig_op, use_container_width=True)
 
-    # Gráfico 2 - Destacado Exclusivo del Desempeño General / Global
+    # Gráfico 2 - AJUSTADO TERMINOLOGÍA: Reemplazada la palabra Campeonato por Consolidado RED
     st.subheader("🏆 Posicionamiento Estratégico: Resultado General Corporativo")
     df_general = df_bench[df_bench["Área"] == "General"]
     df_melted_gen = df_general.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
+    
     fig_gen = px.bar(
         df_melted_gen, x="Concesionario", y="Cumplimiento %", color="Concesionario", text_auto=".1f",
+        title="Resultado Consolidado RED - Evaluación DEP Junio 2026",
         color_discrete_map={"Autolux (LUX) - Puesto 24": "#990000", "DPQ - Puesto 5": "#4A7ebb", "GON - Puesto 10": "#A6A6A6"}
     )
     fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 100]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
     st.plotly_chart(fig_gen, use_container_width=True)
 
-    # RESTAURADO EL CHEKLIST COMPLETO EMT Y SU SIMULADOR
+    # Checklist Completo EMT y su simulador
     st.divider()
     st.subheader("📝 Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)")
     col_em1, col_em2, col_em3 = st.columns(3)
@@ -118,8 +121,14 @@ with tab_dashboard:
 
 with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
-    categorias_lista = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    df_p = pd.DataFrame({"Categoría": categorias_lista, "Jujuy_Menciones":, "Salta_Menciones":, "Tartagal_Menciones": [2, 1, 2, 2, 0, 3, 1, 0, 0, 0]})
+    
+    # SOLUCIÓN DEFINITIVA SINTAXIS: Se inyectaron los datos fijos de forma directa en las listas sin diccionarios vacíos
+    df_p = pd.DataFrame()
+    df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
+    df_p["Jujuy_Menciones"] = [26, 14, 8, 5, 4, 3, 3, 2, 1, 1]
+    df_p["Salta_Menciones"] = [22, 15, 9, 12, 6, 8, 5, 4, 4, 4]
+    df_p["Tartagal_Menciones"] = [2, 1, 2, 2, 0, 3, 1, 0, 0, 0]
+
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
     col_menciones = f"{sucursal}_Menciones"
     df_suc = df_p[["Categoría", col_menciones]].copy().sort_values(by=col_menciones, ascending=False)
@@ -133,10 +142,18 @@ with tab_calidad:
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
     fig_pareto.update_layout(
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25),
-        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 100]),
+        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 105]),
         legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
+
+    st.markdown("### 💡 Diagnóstico Operativo Prioritario:")
+    if sucursal == "Jujuy":
+        st.warning("⚠️ **Jujuy (Foco Operaciones)**: Concentración en **Demoras y puntualidad** (36.6%) y **Comunicación** (19.7%). El plan de acción del sector de asesores debe atacar la velocidad en turnos.")
+    elif sucursal == "Salta":
+        st.warning("⚠️ **Salta (Foco Híbrido)**: Desvío compartido entre **Demoras** (24.7%) y **Cortesías / Obsequios** (13.5%). Vinculado directamente a reclamos por entrega de kits de seguridad.")
+    else:
+        st.warning("⚠️ **Tartagal (Foco Infraestructura)**: El principal desvío radica en **Instalaciones y comodidad** (27.3%), seguido equitativamente con un 18.2% por Demoras, Administración y Kits.")
 with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen y Simulador de Impacto DEP")
     st.markdown("Establece los **Objetivos de Simulación** de forma manual para proyectar la recuperación del indicador global:")
@@ -182,7 +199,6 @@ with tab_plan:
 
     if st.button("🧮 Simular y Guardar Objetivos Kaizen"):
         st.session_state.db_dep_simulador_v1 = df_ed
-        # Solo promedia los objetivos ingresados que sean mayores a 0 para una simulación manual real
         df_activos = df_ed[df_ed["Objetivo Simulación (%)"] > 0]
         promedio_simulado = df_activos["Objetivo Simulación (%)"].mean() if not df_activos.empty else score_global_final
         st.session_state.score_simulado_actual = promedio_simulado
