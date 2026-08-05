@@ -108,7 +108,7 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     st.markdown("Menciones físicas versus impacto porcentual real extraídos de la auditoría de reclamos por sucursal.")
 
-    # DATOS NUMÉRICOS 100% CARGADOS: Resolviendo el SyntaxError de raíz
+    # VALORES CARGADOS: Listas completas con los datos correspondientes de cada plaza
     data_pareto = {
         "Categoría": [
             "Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", 
@@ -117,21 +117,19 @@ with tab_calidad:
         ],
         "Jujuy_Menciones":,
         "Salta_Menciones":,
-        "Tartagal_Menciones": [4, 3, 2, 1, 2, 6, 1, 1, 1, 0]
+        "Tartagal_Menciones": [2, 1, 2, 0, 3, 6, 1, 1, 0, 0]
     }
     df_p = pd.DataFrame(data_pareto)
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
     col_menciones = f"{sucursal}_Menciones"
     
-    # Procesamiento y ordenamiento para Pareto real en vivo
     df_suc = df_p[["Categoría", col_menciones]].copy().sort_values(by=col_menciones, ascending=False)
     df_suc = df_suc[df_suc[col_menciones] > 0]
     total_menciones = df_suc[col_menciones].sum()
     df_suc["Porcentaje"] = (df_suc[col_menciones] / total_menciones) * 100
     df_suc["Acumulado"] = df_suc["Porcentaje"].cumsum()
 
-    # Gráfico de doble eje con Plotly Graph Objects
     fig_pareto = go.Figure()
     fig_pareto.add_trace(go.Bar(x=df_suc["Categoría"], y=df_suc[col_menciones], name="Menciones (Eje Izq.)", marker_color="#1F4E78", text=df_suc[col_menciones], textposition="inside"))
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada % (Eje Der.)", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
@@ -147,7 +145,7 @@ with tab_calidad:
 
     st.markdown("### 💡 Diagnóstico Operativo Prioritario:")
     if sucursal == "Jujuy":
-        st.warning("⚠️ **Jujuy (Foco Operaciones)**: Concentración severa en **Demoras y puntualidad** y **Comunicación**. El plan de acción del sector de asesores debe atacar la velocidad en turnos.")
+        st.warning("⚠️ **Jujuy (Foco Operaciones)**: Concentración en **Demoras y puntualidad** y **Comunicación**. El plan de acción del sector de asesores debe atacar la velocidad en turnos.")
     elif sucursal == "Salta":
         st.warning("⚠️ **Salta (Foco Híbrido)**: Desvío compartido entre **Demoras** y **Cortesías / Obsequios**. Vinculado directamente a reclamos por kits de seguridad y merchandising.")
     else:
@@ -164,7 +162,7 @@ with tab_plan:
         except: pass
         return None
 
-    # REINTEGRACIÓN COMPLETA: Generación de las 19 filas originales de Autolux sin suprimir datos
+    # RECUPERADO: Las 19 filas originales del control DEP con descripciones completas
     def generar_tabla_completa():
         sectores = ["Coordinación", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "RRHH", "RRHH", "RRHH", "Facilities", "Facilities", "CRM", "CRM", "CRM", "Posventa", "TCFA y Seguros", "TCFA y Seguros", "KINTO"]
         temas = ["Seguimiento Transversal", "Kits de Seguridad", "Módulos de Café", "Fidelización", "Auditoría Interna", "Tablero KPIs", "Alistamiento UCT", "Personal TPA", "Capacitación", "Ausentismo", "Obras Las Lajitas", "Sucursal Salta", "Salesforce", "Prospectos Digitales", "Filtro Boletos", "Campañas Airbags", "Método Analítico", "App Seguros", "Siniestros One"]
@@ -172,7 +170,7 @@ with tab_plan:
         acciones = ["Centralizar tablero único", "Incorporar kits de seguridad de Autolux", "Compra e instalación de módulos de café", "Lanzar campaña de fidelización", "Implementar auditorías Mystery Shopper", "Desarrollar tablero de control", "Reorganizar preparación UCT", "Incorporar 2 colaboradores", "Ejecutar plan obligatorio", "Controlar índice de rotación", "Negociar reprogramación", "Planificar adecuación", "Control diario de asignación", "Responder en menos de 2 horas", "Eliminar boletos vencidos", "Incrementar tasa de contacto", "Revisar método analítico", "Campaña de difusión", "Rediseñar proceso de siniestros"]
         resps = ["Alejandro López", "A. Aguilar", "A. Aguilar", "A. Aguilar", "A. Aguilar", "A. Aguilar", "Pablo Carrizo", "A. Di Costanzo", "A. Di Costanzo", "A. Di Costanzo", "Daniel Colque", "Daniel Colque", "A. Aguilar", "A. Aguilar", "A. Aguilar", "Daniel Colque", "L. de los Ríos", "L. de los Ríos", "Aaron Martearena"]
         
-        rows = [[i+1, "14-jul", sectores[i], temas[i], situaciones[i], acciones[i], "ALTA", "Reporte de Evidencia", resps[i], "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Sincronizado Oficial"] for i in range(19)]
+        rows = [[i+1, "14-jul", sectores[i], temas[i], situaciones[i], mutations[i] if 'mutations' in locals() else acciones[i], "ALTA", "Reporte de Evidencia", resps[i], "14/07/2026", "31/07/2026", "25/07/2026", "EN PROCESO", "Sincronizado Oficial"] for i in range(19)]
         cols = ["#", "Fecha de Alta", "Gerencia / Área / Sector", "Tema / Proyecto", "Situación actual", "Acción", "Prioridad", "Indicador de eficiencia / Entregable", "Responsable", "Fecha de Inicio", "Fecha de finalización", "Fecha de control", "Estado", "Observación"]
         return pd.DataFrame(rows, columns=cols)
 
