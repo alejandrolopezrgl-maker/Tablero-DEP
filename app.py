@@ -75,6 +75,7 @@ with tab_dashboard:
     with col2: st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🏆" if puesto_calculado <= 24 else f"Puesto {puesto_calculado} 🚨")
     with col3: st.metric("Pilar Posventa Real", f"{base_posventa_lux:.1f}%")
 
+    # 6. VISUALIZACIÓN GRÁFICA COMPARATIVA POR UNIDADES DE NEGOCIO (ESTILO POWER BI)
     st.subheader("🏁 Cumplimiento por Áreas de Negocio: Autolux vs Lote Líder de la Red")
     df_melted = df_bench.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
     fig_bench = px.bar(
@@ -84,6 +85,7 @@ with tab_dashboard:
     )
     st.plotly_chart(fig_bench, use_container_width=True)
 
+    # 7. AUDITORÍA INTERNA DE MOVIMIENTO TOYOTA (EMT)
     st.divider()
     st.subheader("📝 Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)")
     col_em1, col_em2, col_em3 = st.columns(3)
@@ -106,14 +108,11 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     st.markdown("Menciones físicas versus impacto porcentual real extraídos de la auditoría de reclamos por sucursal.")
 
-    categorias_lista = [
-        "Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", 
-        "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", 
-        "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"
-    ]
-    jujuy_menciones =
-    salta_menciones =
-    tartagal_menciones =
+    # LISTAS COMPLETA EN UNA LÍNEA SEGURA: Resuelve el SyntaxError de raíz sin recortes
+    categorias_lista = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
+    jujuy_menciones = [26, 14, 8, 7, 5, 4, 3, 2, 1, 1]
+    salta_menciones = [22, 15, 9, 12, 6, 5, 4, 2, 2, 1]
+    tartagal_menciones = [12, 10, 8, 4, 7, 15, 3, 1, 0, 0]
 
     df_p = pd.DataFrame({
         "Categoría": categorias_lista,
@@ -135,14 +134,14 @@ with tab_calidad:
     fig_pareto.add_trace(go.Bar(x=df_suc["Categoría"], y=df_suc[col_menciones], name="Cantidad de Menciones", marker_color="#1F4E78", text=df_suc[col_menciones], textposition="inside"))
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
 
-    # AJUSTE DE LEYENDA: Movida explícitamente abajo con margen (y=-0.4) para evitar solapamientos
+    # AJUSTE DE DISEÑO: Leyenda reubicada abajo (y=-0.45) y margen amplio para que no tape los ejes
     fig_pareto.update_layout(
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}",
         xaxis=dict(title="Categorías Críticas", tickangle=-25),
         yaxis=dict(title="Número de Quejas (Cantidad)"),
-        yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=),
-        legend=dict(orientation="h", yanchor="top", y=-0.4, xanchor="center", x=0.5),
-        margin=dict(b=120),
+        yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 105]),
+        legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5),
+        margin=dict(b=140),
         height=550
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
@@ -186,7 +185,7 @@ with tab_plan:
     df_v = st.session_state.db_final_dep_excel_v1 if filtro_r == "Todos" else st.session_state.db_final_dep_excel_v1[st.session_state.db_final_dep_excel_v1["Responsable"] == filtro_r]
 
     df_ed = st.data_editor(
-        df_v, use_container_width=True, key="ed_v14", hide_index=True,
+        df_v, use_container_width=True, key="ed_v15", hide_index=True,
         column_config={
             "#": st.column_config.NumberColumn(disabled=True), "Fecha de Alta": st.column_config.TextColumn(disabled=True), "Gerencia / Área / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador de eficiencia / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=True),
             "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"])
