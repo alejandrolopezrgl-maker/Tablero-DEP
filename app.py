@@ -66,9 +66,8 @@ else:
     puesto_calculado = int(24 + ((62.0 - score_global_final) / 5.0) * 10)
     puesto_calculado = min(43, puesto_calculado)
 
-tab_dashboard, tab_calidad, tab_plan = st.tabs(["📊 Dashboard del Dealer", "🕵️ Análisis de Calidad por Sucursal", "📋 Plan de Acción y Simulador Kaizen"])
+tab_dashboard, tab_calidad, tab_plan = st.tabs(["📊 Dashboard del Dealer", "🕵️ Análisis de Calidad por Sucursal", "📋 Plan de Acción Interactiva"])
 with tab_dashboard:
-    # MÓDULO DE SIMULACIÓN ASOCIADO EN CASO DE EXISTIR MODIFICACIONES EN PESTAÑA 3
     simulado_score = st.session_state.get("score_simulado_actual", score_global_final)
     
     col1, col2, col3 = st.columns(3)
@@ -76,7 +75,6 @@ with tab_dashboard:
     with col2: st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🏆" if puesto_calculado <= 24 else f"Puesto {puesto_calculado} 🚨")
     with col3: st.metric("Pilar Posventa Real", f"{base_posventa_lux:.1f}%")
 
-    # SEPARACIÓN REQUERIDA: Gráfico 1 - Solo Unidades Operativas de Negocio
     st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Excluyendo General)")
     df_operativo = df_bench[df_bench["Área"] != "General"]
     df_melted_op = df_operativo.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
@@ -87,7 +85,6 @@ with tab_dashboard:
     fig_op.update_layout(xaxis_title="Unidad / Canal Operativo", yaxis_title="Efectividad %")
     st.plotly_chart(fig_op, use_container_width=True)
 
-    # SEPARACIÓN REQUERIDA: Gráfico 2 - Destacado Exclusivo del Desempeño General / Global
     st.subheader("🏆 Posicionamiento Estratégico: Resultado General Corporativo")
     df_general = df_bench[df_bench["Área"] == "General"]
     df_melted_gen = df_general.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
@@ -102,13 +99,25 @@ with tab_dashboard:
 
 with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
-    categorias_lista = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
+    
+    categorias_lista = [
+        "Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", 
+        "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", 
+        "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"
+    ]
+    
+    # DATOS OFICIALES DE LA PLANILLA TOTALMENTE CARGADOS EN UNA LÍNEA SEGURA
+    jujuy_menciones = [26, 14, 8, 4, 3, 5, 2, 4, 2, 3]
+    salta_menciones = [22, 15, 9, 12, 5, 7, 3, 6, 4, 6]
+    tartagal_menciones = [2, 1, 2, 2, 0, 3, 0, 1, 0, 0]
+
     df_p = pd.DataFrame({
         "Categoría": categorias_lista,
-        "Jujuy_Menciones":,
-        "Salta_Menciones":,
-        "Tartagal_Menciones": [2, 1, 2, 2, 0, 3, 1, 0, 0, 0]
+        "Jujuy_Menciones": jujuy_menciones,
+        "Salta_Menciones": salta_menciones,
+        "Tartagal_Menciones": tartagal_menciones
     })
+
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
     col_menciones = f"{sucursal}_Menciones"
     df_suc = df_p[["Categoría", col_menciones]].copy().sort_values(by=col_menciones, ascending=False)
@@ -122,10 +131,18 @@ with tab_calidad:
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
     fig_pareto.update_layout(
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25),
-        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 105]),
-        legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=500
+        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 110]),
+        legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
+
+    st.markdown("### 💡 Diagnóstico Operativo Prioritario:")
+    if sucursal == "Jujuy":
+        st.warning("⚠️ **Jujuy (Foco Operaciones)**: Concentración en **Demoras y puntualidad** (36.6%) y **Comunicación** (19.7%). El plan de acción del sector de asesores debe atacar la velocidad en turnos.")
+    elif sucursal == "Salta":
+        st.warning("⚠️ **Salta (Foco Híbrido)**: Desvío compartido entre **Demoras** (24.7%) y **Cortesías / Obsequios** (13.5%). Vinculado directamente a reclamos por entrega de kits de seguridad.")
+    else:
+        st.warning("⚠️ **Tartagal (Foco Infraestructura)**: El principal desvío radica en **Instalaciones y comodidad** (27.3%), seguido equitativamente con un 18.2% por Demoras, Administración y Kits.")
 with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen y Simulador de Impacto DEP")
     st.markdown("Establece los **Objetivos de Simulación** por cada jefe para proyectar la recuperación del indicador global:")
@@ -156,7 +173,6 @@ with tab_plan:
         cols = ["#", "Capítulo Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"]
         st.session_state.db_dep_simulador_v1 = pd.DataFrame(data_rows, columns=cols)
 
-    # Grilla Editable Sincronizada con Campos de Fecha Vacíos y Columna de Simulación Activa
     df_ed = st.data_editor(
         st.session_state.db_dep_simulador_v1, use_container_width=True, key="grilla_sim_v1", hide_index=True,
         column_config={
@@ -171,15 +187,12 @@ with tab_plan:
         }
     )
 
-    # BOTÓN DE ACCIÓN: Ejecuta la simulación matemática en tiempo real
     if st.button("🧮 Simular y Guardar Objetivos Kaizen"):
         st.session_state.db_dep_simulador_v1 = df_ed
-        # Lógica matemática: Calcula el nuevo promedio del pilar operativo con los objetivos cargados
         promedio_simulado = df_ed["Objetivo Simulación (%)"].mean()
         st.session_state.score_simulado_actual = promedio_simulado
         st.success(f"🎉 Simulación Ejecutada. Si los jefes cumplen las metas, Autolux alcanzará un score del {promedio_simulado:.1f}% (Ir a pestaña Dashboard para ver impacto).")
 
-    # MOTOR EXCEL CORPORATIVO CON LA HOJA ADAPTADA
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
         st.session_state.db_dep_simulador_v1.to_excel(writer, sheet_name='Plan de Accion', index=False)
