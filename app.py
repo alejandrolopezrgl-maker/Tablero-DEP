@@ -108,15 +108,14 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     st.markdown("Menciones físicas versus impacto porcentual real extraídos de la auditoría de reclamos por sucursal.")
 
-    # ESTRUCTURA CORREGIDA: Se eliminó el formato diccionario que causaba el fallo web
     categorias_lista = [
         "Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", 
         "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", 
         "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"
     ]
     jujuy_menciones = [26, 14, 8, 5, 5, 4, 3, 3, 2, 1]
-    salta_menciones = [22, 15, 9, 12, 8, 6, 5, 4, 4, 3]
-    tartagal_menciones = [2, 1, 2, 1, 3, 6, 1, 1, 2, 1]
+    salta_menciones = [22, 15, 9, 12, 6, 5, 4, 2, 2, 1]
+    tartagal_menciones = [2, 1, 2, 0, 1, 3, 1, 0, 1, 0]
 
     df_p = pd.DataFrame({
         "Categoría": categorias_lista,
@@ -166,7 +165,6 @@ with tab_plan:
         except: pass
         return None
 
-    # RECUPERADO: Las 19 filas originales de Autolux intactas con descripciones completas
     def generar_tabla_completa():
         sectores = ["Coordinación", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "RRHH", "RRHH", "RRHH", "Facilities", "Facilities", "CRM", "CRM", "CRM", "Posventa", "TCFA y Seguros", "TCFA y Seguros", "KINTO"]
         temas = ["Seguimiento Transversal", "Kits de Seguridad", "Módulos de Café", "Fidelización", "Auditoría Interna", "Tablero KPIs", "Alistamiento UCT", "Personal TPA", "Capacitación", "Ausentismo", "Obras Las Lajitas", "Sucursal Salta", "Salesforce", "Prospectos Digitales", "Filtro Boletos", "Campañas Airbags", "Método Analítico", "App Seguros", "Siniestros One"]
@@ -187,7 +185,7 @@ with tab_plan:
     df_v = st.session_state.db_final_dep_excel_v1 if filtro_r == "Todos" else st.session_state.db_final_dep_excel_v1[st.session_state.db_final_dep_excel_v1["Responsable"] == filtro_r]
 
     df_ed = st.data_editor(
-        df_v, use_container_width=True, key="ed_v12", hide_index=True,
+        df_v, use_container_width=True, key="ed_v13", hide_index=True,
         column_config={
             "#": st.column_config.NumberColumn(disabled=True), "Fecha de Alta": st.column_config.TextColumn(disabled=True), "Gerencia / Área / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador de eficiencia / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=True),
             "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"])
@@ -199,7 +197,7 @@ with tab_plan:
             st.session_state.db_final_dep_excel_v1.iloc[row["#"] - 1] = row
         st.success("🎉 Agenda de compromisos DEP guardada correctamente.")
 
-    # MOTOR EXCEL CORPORATIVO: Encabezados en Azul profundo (#1F4E78) y Letras Blancas
+    # MOTOR EXCEL CORREGIDO: Solucionado el AttributeError usando col_idx en lugar del objeto lista
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
         st.session_state.db_final_dep_excel_v1.to_excel(writer, sheet_name='Agenda', index=False)
@@ -216,8 +214,14 @@ with tab_plan:
             for c in range(1, len(st.session_state.db_final_dep_excel_v1.columns) + 1):
                 cell = ws.cell(row=r, column=c)
                 cell.font = font_b; cell.border = bdr
-        for col in ws.columns:
-            m_len = max(len(str(cell.value or '')) for cell in col)
-            ws.column_dimensions[get_column_letter(col.column)].width = max(m_len + 3, 11)
+                
+        # Corrección definitiva: Iterar por índice numérico de columna para openpyxl
+        for col_idx in range(1, len(st.session_state.db_final_dep_excel_v1.columns) + 1):
+            col_letter = get_column_letter(col_idx)
+            m_len = 0
+            for row_idx in range(1, len(st.session_state.db_final_dep_excel_v1) + 2):
+                val = ws.cell(row=row_idx, column=col_idx).value
+                if val: m_len = max(m_len, len(str(val)))
+            ws.column_dimensions[col_letter].width = max(m_len + 3, 11)
 
     st.download_button(label="📥 Descargar Agenda de Seguimiento Formateada (Excel)", data=buffer.getvalue(), file_name="Plan_de_Accion_Saneado.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
