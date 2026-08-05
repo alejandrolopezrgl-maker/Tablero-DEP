@@ -34,36 +34,35 @@ if visitas_fm < 85:
 else: 
     st.sidebar.success("🟢 Compromisos Fieldman a salvo (≥85%).")
 
-# 3. BASE DE DATOS ESTRATÉGICA HOMOLOGADA PARA CALCULAR 62.0% CLAVADO AL INICIO
-base_ventas_lux = 43.5 if not penalidad_mov else (43.5 - 5.0)
-base_posventa_lux = 78.2 - (78.2 * (castigo_posventa_fieldman / 100))
+# 3. BASE DE DATOS ESTRATÉGICA EXTRACTADA DIRECTAMENTE DEL POWER BI TOYOTA (62.0% BASE DE JUNIO)
+base_ventas_lux = 55.7 if not penalidad_mov else (55.7 - 5.0)
+base_posventa_lux = 91.7 - (91.7 * (castigo_posventa_fieldman / 100))
 
-# INICIALIZACIÓN EXPLÍCITA DE PILARES PARA EVITAR DESFASES DE MEMORIA
-if "sim_pilar_ventas" not in st.session_state or st.session_state.sim_pilar_ventas is None: 
-    st.session_state.sim_pilar_ventas = base_ventas_lux
-if "sim_pilar_posventa" not in st.session_state or st.session_state.sim_pilar_posventa is None: 
-    st.session_state.sim_pilar_posventa = base_posventa_lux
-if "sim_pilar_tpa" not in st.session_state or st.session_state.sim_pilar_tpa is None: 
-    st.session_state.sim_pilar_tpa = 72.8
-if "sim_pilar_kinto" not in st.session_state or st.session_state.sim_pilar_kinto is None: 
-    st.session_state.sim_pilar_kinto = 35.8
-if "sim_pilar_tcfa" not in st.session_state or st.session_state.sim_pilar_tcfa is None: 
-    st.session_state.sim_pilar_tcfa = 73.0
+# INICIALIZACIÓN LIMITADA: Si no existe simulación previa, arranca estrictamente en None
+if "sim_pilar_ventas" not in st.session_state: st.session_state.sim_pilar_ventas = None
+if "sim_pilar_posventa" not in st.session_state: st.session_state.sim_pilar_posventa = None
+if "sim_pilar_tpa" not in st.session_state: st.session_state.sim_pilar_tpa = None
+if "sim_pilar_kinto" not in st.session_state: st.session_state.sim_pilar_kinto = None
+if "sim_pilar_tcfa" not in st.session_state: st.session_state.sim_pilar_tcfa = None
 
-v_simulada = st.session_state.sim_pilar_ventas
-p_simulada = st.session_state.sim_pilar_posventa
-tpa_simulada = st.session_state.sim_pilar_tpa
-kinto_simulada = st.session_state.sim_pilar_kinto
-tcfa_simulada = st.session_state.sim_pilar_tcfa
+v_simulada = st.session_state.sim_pilar_ventas if st.session_state.sim_pilar_ventas is not None else base_ventas_lux
+p_simulada = st.session_state.sim_pilar_posventa if st.session_state.sim_pilar_posventa is not None else base_posventa_lux
+tpa_simulada = st.session_state.sim_pilar_tpa if st.session_state.sim_pilar_tpa is not None else 72.8
+kinto_simulada = st.session_state.sim_pilar_kinto if st.session_state.sim_pilar_kinto is not None else 35.8
+tcfa_simulada = st.session_state.sim_pilar_tcfa if st.session_state.sim_pilar_tcfa is not None else 73.0
 
 # 4. FÓRMULA MATEMÁTICA CON LAS PONDERACIONES OFICIALES DEL MANUAL (PÁG 3)
-score_global_final = (
-    (p_simulada * 0.27) + (v_simulada * 0.22) + (67.6 * 0.20) + 
-    (tpa_simulada * 0.09) + (kinto_simulada * 0.06) + (75.8 * 0.06) + 
-    (49.0 * 0.05) + (tcfa_simulada * 0.04) + (25.0 * 0.01)
-)
-score_global_final = score_global_final - puntos_a_restar_global
-if penalidad_mov: score_global_final -= 1.1
+if st.session_state.sim_pilar_ventas is None and st.session_state.sim_pilar_posventa is None:
+    score_global_final = 62.0 - puntos_a_restar_global
+    if penalidad_mov: score_global_final -= 1.1
+else:
+    score_global_final = (
+        (p_simulada * 0.27) + (v_simulada * 0.22) + (67.6 * 0.20) + 
+        (tpa_simulada * 0.09) + (kinto_simulada * 0.06) + (75.8 * 0.06) + 
+        (49.0 * 0.05) + (tcfa_simulada * 0.04) + (25.0 * 0.01)
+    )
+    score_global_final = score_global_final - puntos_a_restar_global
+    if penalidad_mov: score_global_final -= 1.1
 
 data_competitiva = {
     "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "General"],
@@ -83,11 +82,11 @@ else:
     puesto_calculado = max(5, min(24, puesto_calculado))
 
 if st.sidebar.button("🔄 Restablecer Valores Oficiales", key="btn_reset_lateral"):
-    st.session_state.sim_pilar_ventas = base_ventas_lux
-    st.session_state.sim_pilar_posventa = base_posventa_lux
-    st.session_state.sim_pilar_tpa = 72.8
-    st.session_state.sim_pilar_kinto = 35.8
-    st.session_state.sim_pilar_tcfa = 73.0
+    st.session_state.sim_pilar_ventas = None
+    st.session_state.sim_pilar_posventa = None
+    st.session_state.sim_pilar_tpa = None
+    st.session_state.sim_pilar_kinto = None
+    st.session_state.sim_pilar_tcfa = None
     st.session_state.reestablecer = True
     st.rerun()
 
@@ -133,7 +132,7 @@ with tab_dashboard:
         acu_c = st.slider("C: Kinto Movilidad (100)", 0, 100, 100)
     with col_em2:
         acu_d = st.slider("D: Club Toyota (100)", 0, 100, 100)
-        acu_e = st.slider("E: Toyota Plan de Ahorro (100)", 0, 100, 100, key="slider_tpa_dash_v3")
+        acu_e = st.slider("E: Toyota Plan de Ahorro (100)", 0, 100, 100, key="slider_tpa_dash_v4")
         acu_f = st.slider("F: Toyota Financial Services (100)", 0, 100, 100)
     with col_em3:
         acu_g = st.slider("G: Vehículos Usados (100)", 0, 100, 100)
@@ -146,8 +145,8 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     df_p = pd.DataFrame()
     df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehicle", "Protocolo y personalización", "Producto o marca"]
-    df_p["Jujuy_Menciones"] = [26, 14, 8, 3, 11, 4, 3, 2, 1, 0]
-    df_p["Salta_Menciones"] = [22, 15, 9, 12, 11, 7, 5, 4, 2, 2]
+    df_p["Jujuy_Menciones"] = [26, 14, 8, 4, 3, 2, 2, 1, 0, 0]
+    df_p["Salta_Menciones"] = [22, 15, 9, 12, 11, 4, 6, 0, 0, 0]
     df_p["Tartagal_Menciones"] = [2, 1, 2, 2, 0, 3, 1, 0, 0, 0]
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
@@ -171,7 +170,7 @@ with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen y Simulador de Impacto DEP")
     st.markdown("Carga los objetivos manuales de los jefes para ver el cambio elástico en el Dashboard:")
 
-    if "db_dep_final_oficial_2026_v6" not in st.session_state:
+    if "db_dep_final_oficial_2026_v7" not in st.session_state:
         cods = ["", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.2.2 KPIs (Pág. 5)", "6.1.1: USADOS (Pág. 63)", "4.3.1 Estructura (Pág. 41)", "4.1.2 NPS TPA (Pág. 41)", "3.3.1 Rotación (Pág. 21)", "1.4.2 Obra (Pág. 5)", "1.4.2 Obra (Pág. 5)", "2.1.2 CRM (Pág. 5)", "2.1.2 CRM (Pág. 5)", "2.1.2 CRM (Pág. 5)", "3.5.2 Airbags (Pág. 21)", "7.1.1: SEGUROS (Pág. 69)", "7.1.2: APP (Pág. 69)", "5.1.1: KINTO ONE (Pág. 50)"]
         secs = ["Coordinación", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "RRHH", "RRHH", "RRHH", "Facilities", "Facilities", "CRM", "CRM", "CRM", "Posventa", "TCFA", "TCFA", "KINTO"]
         tems = ["Programa DEP", "Ventas - Kits", "Ventas - Showroom", "Ventas - Fidelidad", "Ventas - Mystery", "Ventas - KPIs", "Usados Certificados", "Estructura TPA", "Capacitación TPA", "Rotación Personal", "Las Lajitas", "Reformas Salta", "Lista de Espera", "Tiempos Salesforce", "Limpieza Sistema", "Campañas Seguridad", "Cartera Seguros", "Servicios Conectados", "Gestión Siniestros"]
@@ -180,10 +179,10 @@ with tab_plan:
         resps = ["Alejandro López", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Pablo Carrizo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Daniel Colque", "Daniel Colque", "Alfredo Aguilar", "Lucía de los Ríos", "Lucía de los Ríos", "Daniel Colque", "Lucía de los Ríos", "Romina R.", "Aaron Martearena"]
         
         rows = [[i+1, cods[i], secs[i], tems[i], sits[i], accs[i], "ALTA", "Evidencia", resps[i], "", "", "EN PROCESO", 0.0] for i in range(19)]
-        st.session_state.db_dep_final_oficial_2026_v6 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
+        st.session_state.db_dep_final_oficial_2026_v7 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
 
     df_ed = st.data_editor(
-        st.session_state.db_dep_final_oficial_2026_v6, use_container_width=True, key="grilla_dep_oficial_final_6", hide_index=True,
+        st.session_state.db_dep_final_oficial_2026_v7, use_container_width=True, key="grilla_dep_oficial_final_7", hide_index=True,
         column_config={
             "#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=True), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%"),
             "Estimación de Cumplimiento": st.column_config.TextColumn(), "Fecha Estimada Cumplimiento": st.column_config.TextColumn()
@@ -193,7 +192,7 @@ with tab_plan:
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
         if st.button("🧮 Simular e Impactar Dashboard"):
-            st.session_state.db_dep_final_oficial_2026_v6 = df_ed
+            st.session_state.db_dep_final_oficial_2026_v7 = df_ed
             for _, r in df_ed.iterrows():
                 tg = r["Objetivo Simulación (%)"]
                 if tg > 0:
@@ -201,44 +200,43 @@ with tab_plan:
                     ger = str(r["Gerencia / Sector"])
                     if "1.1.1" in cod or "Ventas" in ger: st.session_state.sim_pilar_ventas = tg
                     elif "3.5.2" in cod or "Posventa" in ger or "Facilities" in ger: st.session_state.sim_pilar_posventa = tg
-                    elif "4.3.1" in cod or "RRHH" in ger: st.session_state.sim_pilar_tpa = tg
+                    elif "2.4.1" in cod or "RRHH" in ger: st.session_state.sim_pilar_tpa = tg
                     elif "5.1.1" in cod: st.session_state.sim_pilar_kinto = tg
-                    elif "7.1.1" in cod: st.session_state.sim_pilar_tcfa = tg
-            st.success("🎉 Simulación completada. Gráficos y Ranking actualizados de forma elástica.")
+                    elif "6.1.1" in cod: st.session_state.sim_pilar_tcfa = tg
+            st.success("🎉 Simulación completada. Gráficos y Ranking actualizados.")
             st.rerun()
             
     with col_btn2:
         if st.button("🧹 Limpiar Simulación"):
-            # ASIGNACIÓN DE RETORNO CONTROLADA: Fuerza a que los pilares simulen exactamente la base del Power BI
-            st.session_state.sim_pilar_ventas = base_ventas_lux
-            st.session_state.sim_pilar_posventa = base_posventa_lux
-            st.session_state.sim_pilar_tpa = 72.8
-            st.session_state.sim_pilar_kinto = 35.8
-            st.session_state.sim_pilar_tcfa = 73.0
-            if "db_dep_final_oficial_2026_v6" in st.session_state:
-                del st.session_state.db_dep_final_oficial_2026_v6
+            st.session_state.sim_pilar_ventas = None
+            st.session_state.sim_pilar_posventa = None
+            st.session_state.sim_pilar_tpa = None
+            st.session_state.sim_pilar_kinto = None
+            st.session_state.sim_pilar_tcfa = None
+            if "db_dep_final_oficial_2026_v7" in st.session_state:
+                del st.session_state.db_dep_final_oficial_2026_v7
             st.success("🧹 Valores de simulación limpiados correctamente.")
             st.rerun()
 
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        st.session_state.db_dep_final_oficial_2026_v6.to_excel(writer, sheet_name='Plan de Accion', index=False)
+        st.session_state.db_dep_final_oficial_2026_v7.to_excel(writer, sheet_name='Plan de Accion', index=False)
         ws = writer.sheets['Plan de Accion']
         f_b = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
         font_h = Font(name='Arial', size=10, bold=True, color="FFFFFF")
         font_b = Font(name='Arial', size=10, color="000000")
         bdr = Border(left=Side(style='thin', color='CCCCCC'), right=Side(style='thin', color='CCCCCC'), top=Side(style='thin', color='CCCCCC'), bottom=Side(style='thin', color='CCCCCC'))
         
-        for c in range(1, len(st.session_state.db_dep_final_oficial_2026_v6.columns) + 1):
+        for c in range(1, len(st.session_state.db_dep_final_oficial_2026_v7.columns) + 1):
             cell = ws.cell(row=1, column=c)
             cell.fill = f_b; cell.font = font_h; cell.border = bdr
-        for r in range(2, len(st.session_state.db_dep_final_oficial_2026_v6) + 2):
-            for c in range(1, len(st.session_state.db_dep_final_oficial_2026_v6.columns) + 1):
+        for r in range(2, len(st.session_state.db_dep_final_oficial_2026_v7) + 2):
+            for c in range(1, len(st.session_state.db_dep_final_oficial_2026_v7.columns) + 1):
                 cell = ws.cell(row=r, column=c)
                 cell.font = font_b; cell.border = bdr
-        for col_idx in range(1, len(st.session_state.db_dep_final_oficial_2026_v6.columns) + 1):
+        for col_idx in range(1, len(st.session_state.db_dep_final_oficial_2026_v7.columns) + 1):
             col_letter = get_column_letter(col_idx); m_len = 0
-            for row_idx in range(1, len(st.session_state.db_dep_final_oficial_2026_v6) + 2):
+            for row_idx in range(1, len(st.session_state.db_dep_final_oficial_2026_v7) + 2):
                 val = ws.cell(row=row_idx, column=col_idx).value
                 if val: m_len = max(m_len, len(str(val)))
             ws.column_dimensions[col_letter].width = max(m_len + 3, 11)
