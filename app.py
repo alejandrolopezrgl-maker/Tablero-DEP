@@ -75,7 +75,6 @@ with tab_dashboard:
     with col2: st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🏆" if puesto_calculado <= 24 else f"Puesto {puesto_calculado} 🚨")
     with col3: st.metric("Pilar Posventa Real", f"{base_posventa_lux:.1f}%")
 
-    # 6. VISUALIZACIÓN GRÁFICA COMPARATIVA POR UNIDADES DE NEGOCIO (ESTILO POWER BI)
     st.subheader("🏁 Cumplimiento por Áreas de Negocio: Autolux vs Lote Líder de la Red")
     df_melted = df_bench.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
     fig_bench = px.bar(
@@ -85,7 +84,6 @@ with tab_dashboard:
     )
     st.plotly_chart(fig_bench, use_container_width=True)
 
-    # 7. AUDITORÍA INTERNA DE MOVIMIENTO TOYOTA (EMT)
     st.divider()
     st.subheader("📝 Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)")
     col_em1, col_em2, col_em3 = st.columns(3)
@@ -108,11 +106,16 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     st.markdown("Menciones físicas versus impacto porcentual real extraídos de la auditoría de reclamos por sucursal.")
 
-    # LISTAS COMPLETA EN UNA LÍNEA SEGURA: Resuelve el SyntaxError de raíz sin recortes
-    categorias_lista = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    jujuy_menciones = [26, 14, 8, 7, 5, 4, 3, 2, 1, 1]
-    salta_menciones = [22, 15, 9, 12, 6, 5, 4, 2, 2, 1]
-    tartagal_menciones = [12, 10, 8, 4, 7, 15, 3, 1, 0, 0]
+    categorias_lista = [
+        "Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", 
+        "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", 
+        "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"
+    ]
+    
+    # DATOS 100% VERÍDICOS: Sincronizados de forma exacta con la grilla de tu imagen
+    jujuy_menciones = [26, 14, 8, 6, 6, 4, 3, 2, 1, 1]
+    salta_menciones = [22, 15, 9, 12, 8, 6, 8, 3, 4, 2]
+    tartagal_menciones = [2, 1, 2, 2, 0, 3, 0, 0, 0, 1]
 
     df_p = pd.DataFrame({
         "Categoría": categorias_lista,
@@ -134,7 +137,6 @@ with tab_calidad:
     fig_pareto.add_trace(go.Bar(x=df_suc["Categoría"], y=df_suc[col_menciones], name="Cantidad de Menciones", marker_color="#1F4E78", text=df_suc[col_menciones], textposition="inside"))
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
 
-    # AJUSTE DE DISEÑO: Leyenda reubicada abajo (y=-0.45) y margen amplio para que no tape los ejes
     fig_pareto.update_layout(
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}",
         xaxis=dict(title="Categorías Críticas", tickangle=-25),
@@ -148,11 +150,11 @@ with tab_calidad:
 
     st.markdown("### 💡 Diagnóstico Operativo Prioritario:")
     if sucursal == "Jujuy":
-        st.warning("⚠️ **Jujuy (Foco Operaciones)**: Concentración en **Demoras y puntualidad** y **Comunicación**. El plan de acción del sector de asesores debe atacar la velocidad en turnos.")
+        st.warning("⚠️ **Jujuy (Foco Operaciones)**: Concentración en **Demoras y puntualidad** (36.6%) y **Comunicación** (19.7%). El plan de acción del sector de asesores debe atacar la velocidad en turnos.")
     elif sucursal == "Salta":
-        st.warning("⚠️ **Salta (Foco Híbrido)**: Desvío compartido entre **Demoras** y **Cortesías / Obsequios**. Vinculado directamente a reclamos por kits de seguridad y merchandising.")
+        st.warning("⚠️ **Salta (Foco Híbrido)**: Desvío compartido entre **Demoras** (24.7%) y **Cortesías / Obsequios** (13.5%). Vinculado directamente a reclamos por entrega de kits de seguridad.")
     else:
-        st.warning("⚠️ **Tartagal (Foco Infraestructura)**: El principal cuello de botella radica en **Instalaciones y comodidad**, requiriendo atención prioritaria de maestranza y facilities.")
+        st.warning("⚠️ **Tartagal (Foco Infraestructura)**: El principal desvío radica en **Instalaciones y comodidad** (27.3%), seguido equitativamente con un 18.2% por Demoras, Administración y Kits.")
 with tab_plan:
     st.subheader("📋 Agenda de Seguimiento y Control de Compromisos DEP")
     st.markdown("Sincronización automática de datos en tiempo real desde Google Sheets:")
