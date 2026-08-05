@@ -75,7 +75,6 @@ with tab_dashboard:
     with col2: st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🏆" if puesto_calculado <= 24 else f"Puesto {puesto_calculado} 🚨")
     with col3: st.metric("Pilar Posventa Real", f"{base_posventa_lux:.1f}%")
 
-    # 6. VISUALIZACIÓN GRÁFICA COMPARATIVA POR UNIDADES DE NEGOCIO (ESTILO POWER BI)
     st.subheader("🏁 Cumplimiento por Áreas de Negocio: Autolux vs Lote Líder de la Red")
     df_melted = df_bench.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
     fig_bench = px.bar(
@@ -85,7 +84,6 @@ with tab_dashboard:
     )
     st.plotly_chart(fig_bench, use_container_width=True)
 
-    # 7. AUDITORÍA INTERNA DE MOVIMIENTO TOYOTA (EMT)
     st.divider()
     st.subheader("📝 Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)")
     col_em1, col_em2, col_em3 = st.columns(3)
@@ -113,9 +111,9 @@ with tab_calidad:
         "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", 
         "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"
     ]
-    jujuy_menciones = [26, 14, 8, 5, 5, 4, 3, 3, 2, 1]
-    salta_menciones = [22, 15, 9, 12, 6, 5, 4, 2, 2, 1]
-    tartagal_menciones = [2, 1, 2, 0, 1, 3, 1, 0, 1, 0]
+    jujuy_menciones =
+    salta_menciones =
+    tartagal_menciones =
 
     df_p = pd.DataFrame({
         "Categoría": categorias_lista,
@@ -134,15 +132,18 @@ with tab_calidad:
     df_suc["Acumulado"] = df_suc["Porcentaje"].cumsum()
 
     fig_pareto = go.Figure()
-    fig_pareto.add_trace(go.Bar(x=df_suc["Categoría"], y=df_suc[col_menciones], name="Menciones (Eje Izq.)", marker_color="#1F4E78", text=df_suc[col_menciones], textposition="inside"))
-    fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada % (Eje Der.)", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
+    fig_pareto.add_trace(go.Bar(x=df_suc["Categoría"], y=df_suc[col_menciones], name="Cantidad de Menciones", marker_color="#1F4E78", text=df_suc[col_menciones], textposition="inside"))
+    fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
 
+    # AJUSTE DE LEYENDA: Movida explícitamente abajo con margen (y=-0.4) para evitar solapamientos
     fig_pareto.update_layout(
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}",
-        xaxis=dict(title="Categorías Críticas"),
+        xaxis=dict(title="Categorías Críticas", tickangle=-25),
         yaxis=dict(title="Número de Quejas (Cantidad)"),
-        yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 105]),
-        legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5), height=450
+        yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=),
+        legend=dict(orientation="h", yanchor="top", y=-0.4, xanchor="center", x=0.5),
+        margin=dict(b=120),
+        height=550
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
 
@@ -185,7 +186,7 @@ with tab_plan:
     df_v = st.session_state.db_final_dep_excel_v1 if filtro_r == "Todos" else st.session_state.db_final_dep_excel_v1[st.session_state.db_final_dep_excel_v1["Responsable"] == filtro_r]
 
     df_ed = st.data_editor(
-        df_v, use_container_width=True, key="ed_v13", hide_index=True,
+        df_v, use_container_width=True, key="ed_v14", hide_index=True,
         column_config={
             "#": st.column_config.NumberColumn(disabled=True), "Fecha de Alta": st.column_config.TextColumn(disabled=True), "Gerencia / Área / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador de eficiencia / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=True),
             "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"])
@@ -197,7 +198,6 @@ with tab_plan:
             st.session_state.db_final_dep_excel_v1.iloc[row["#"] - 1] = row
         st.success("🎉 Agenda de compromisos DEP guardada correctamente.")
 
-    # MOTOR EXCEL CORREGIDO: Solucionado el AttributeError usando col_idx en lugar del objeto lista
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
         st.session_state.db_final_dep_excel_v1.to_excel(writer, sheet_name='Agenda', index=False)
@@ -215,7 +215,6 @@ with tab_plan:
                 cell = ws.cell(row=r, column=c)
                 cell.font = font_b; cell.border = bdr
                 
-        # Corrección definitiva: Iterar por índice numérico de columna para openpyxl
         for col_idx in range(1, len(st.session_state.db_final_dep_excel_v1.columns) + 1):
             col_letter = get_column_letter(col_idx)
             m_len = 0
