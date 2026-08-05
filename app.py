@@ -39,19 +39,26 @@ if st.sidebar.button("🔄 Restablecer Valores Oficiales de Junio"):
     st.session_state.reestablecer = True
     st.rerun()
 
-# 3. BASE DE DATOS ESTRATÉGICA EXTRACTADA DIRECTAMENTE DEL POWER BI TOYOTA
+# 3. VALORES BASE DEL POWER BI TOYOTA
 base_ventas_lux = 55.7 if not penalidad_mov else (55.7 - 5.0)
 base_posventa_lux = 91.7 - (91.7 * (castigo_posventa_fieldman / 100))
 
+# CAPTURA DE VARIABLES SIMULADAS INTERACTIVAS (REEMPLAZO EN VIVO)
+v_simulada = st.session_state.get("sim_pilar_ventas", base_ventas_lux)
+p_simulada = st.session_state.get("sim_pilar_posventa", base_posventa_lux)
+tpa_simulada = st.session_state.get("sim_pilar_tpa", 72.8)
+kinto_simulada = st.session_state.get("sim_pilar_kinto", 35.8)
+tcfa_simulada = st.session_state.get("sim_pilar_tcfa", 73.0)
+
 data_competitiva = {
     "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "General"],
-    "Autolux (LUX) - Puesto 24": [base_ventas_lux, 49.0, base_posventa_lux, 72.8, 35.8, 75.8, 73.0, 25.0, 67.6],
+    "Autolux (LUX) - Puesto 24": [v_simulada, 49.0, p_simulada, tpa_simulada, kinto_simulada, 75.8, tcfa_simulada, 25.0, 67.6],
     "DPQ - Puesto 5": [72.3, 55.0, 91.0, 85.0, 68.5, 78.0, 88.0, 25.0, 72.3],
     "GON - Puesto 10": [68.0, 50.0, 88.5, 71.0, 65.2, 74.0, 79.0, 26.0, 69.8]
 }
 df_bench = pd.DataFrame(data_competitiva)
 
-# Score Global Base de Autolux (62.0% Oficial a Junio)
+# Score Global Base de Autolux
 score_global_final = 62.0 - puntos_a_restar_global
 if penalidad_mov:
     score_global_final -= 1.1
@@ -66,7 +73,6 @@ else:
     puesto_calculado = int(24 + ((62.0 - score_global_final) / 5.0) * 10)
     puesto_calculado = min(43, puesto_calculado)
 
-# 4. CAPA DE ENRUTAMIENTO POR PESTAÑAS (3 TABS DEFINIDOS)
 tab_dashboard, tab_calidad, tab_plan = st.tabs(["📊 Dashboard del Dealer", "🕵️ Análisis de Calidad por Sucursal", "📋 Plan de Acción Interactiva"])
 with tab_dashboard:
     simulado_score = st.session_state.get("score_simulado_actual", score_global_final)
@@ -76,7 +82,7 @@ with tab_dashboard:
     with col2: st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🏆" if puesto_calculado <= 24 else f"Puesto {puesto_calculado} 🚨")
     with col3: st.metric("Pilar Posventa Real", f"{base_posventa_lux:.1f}%")
 
-    # Gráfico 1 - Solo Unidades Operativas de Negocio
+    # Gráfico 1 - Solo Unidades Operativas de Negocio (Actualiza con la simulación en vivo)
     st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Excluyendo General)")
     df_operativo = df_bench[df_bench["Área"] != "General"]
     df_melted_op = df_operativo.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
@@ -123,8 +129,8 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     df_p = pd.DataFrame()
     df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    df_p["Jujuy_Menciones"] = [26, 14, 8, 4, 12, 1, 4, 1, 0, 1]
-    df_p["Salta_Menciones"] = [22, 15, 9, 12, 11, 4, 7, 2, 2, 5]
+    df_p["Jujuy_Menciones"] = [26, 14, 8, 5, 4, 3, 2, 2, 1, 1]
+    df_p["Salta_Menciones"] = [22, 15, 9, 12, 6, 4, 3, 1, 1, 2]
     df_p["Tartagal_Menciones"] = [2, 1, 2, 2, 0, 3, 1, 0, 0, 0]
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
@@ -148,10 +154,10 @@ with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen y Simulador de Impacto DEP")
     st.markdown("Establece los **Objetivos de Simulación** de forma manual para proyectar la recuperación del indicador global:")
 
-    # CAMBIO DE VARIABLE FORZADO: Destruye la caché anterior de Streamlit e instala los Capítulos Numéricos solicitados
     if "db_dep_simulador_v_definitivo" not in st.session_state:
+        # SANEADO: Fila 1 (Alejandro López) queda completamente vacía en código de capítulo
         data_rows = [
-            [1, "1.5.1: CUMPLIMIENTO DE OBJ. ACUMULADOS DE VTAS HILUX, SW4, HIACE", "Coordinación", "Seguimiento Transversal", "Tableros desvinculados", "Centralizar tablero único", "ALTA", "Reporte online", "Alejandro López", "", "", "EN PROCESO", 0.0],
+            [1, "", "Coordinación", "Seguimiento Transversal", "Tableros desvinculados", "Centralizar tablero único", "ALTA", "Reporte online", "Alejandro López", "", "", "EN PROCESO", 0.0],
             [2, "3.2.4: MEJORA CONTINUA CSI EN SHOWROOM", "Calidad", "Kits de Seguridad", "Falta kit de obsequio", "Incorporar kits de seguridad de Autolux", "ALTA", "Remitos firmados", "A. Aguilar", "", "", "EN PROCESO", 0.0],
             [3, "3.2.4: MEJORA CONTINUA CSI EN SHOWROOM", "Calidad", "Módulos de Café", "Expendedoras retiradas", "Compra e instalación de módulos de café", "ALTA", "Factura de compra", "A. Aguilar", "", "", "EN PROCESO", 0.0],
             [4, "3.2.5: EVOLUCIÓN INDICADOR SSI GENERAL", "Calidad", "Fidelización", "Baja percepción", "Lanzar campaña de fidelización con sorteos", "ALTA", "Evolución score", "A. Aguilar", "", "", "EN PROCESO", 0.0],
@@ -175,7 +181,7 @@ with tab_plan:
         st.session_state.db_dep_simulador_v_definitivo = pd.DataFrame(data_rows, columns=cols)
 
     df_ed = st.data_editor(
-        st.session_state.db_dep_simulador_v_definitivo, use_container_width=True, key="grilla_sim_v_final", hide_index=True,
+        st.session_state.db_dep_simulador_v_definitivo, use_container_width=True, key="grilla_sim_v_final_2", hide_index=True,
         column_config={
             "#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True),
             "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True),
@@ -189,6 +195,18 @@ with tab_plan:
 
     if st.button("🧮 Simular y Guardar Objetivos Kaizen"):
         st.session_state.db_dep_simulador_v_definitivo = df_ed
+        
+        # FILTRADO Y MAPEO MATEMÁTICO REAL PARA ENLAZAR CON EL DASHBOARD EN VIVO
+        for _, r in df_ed.iterrows():
+            tg = r["Objetivo Simulación (%)"]
+            if tg > 0:
+                cod = str(r["Código Auditoría Manual"])
+                if "1.5.1" in cod: st.session_state.sim_pilar_ventas = tg
+                elif "3.2.4" in cod or "5.1.4" in cod or "5.2.3" in cod or "5.1.5" in cod: st.session_state.sim_pilar_posventa = tg
+                elif "2.4.1" in cod: st.session_state.sim_pilar_tpa = tg
+                elif "7.3.2" in cod: st.session_state.sim_pilar_kinto = tg
+                elif "6.1.1" in cod: st.session_state.sim_pilar_tcfa = tg
+        
         df_activos = df_ed[df_ed["Objetivo Simulación (%)"] > 0]
         promedio_simulado = df_activos["Objetivo Simulación (%)"].mean() if not df_activos.empty else score_global_final
         st.session_state.score_simulado_actual = promedio_simulado
