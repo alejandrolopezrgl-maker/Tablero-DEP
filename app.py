@@ -87,7 +87,7 @@ with tab_dashboard:
     fig_op.update_layout(xaxis_title="Unidad / Canal Operativo", yaxis_title="Efectividad %")
     st.plotly_chart(fig_op, use_container_width=True)
 
-    # Gráfico 2 - AJUSTADO TERMINOLOGÍA: Reemplazada la palabra Campeonato por Consolidado RED
+    # Gráfico 2 - Posicionamiento Estratégico General
     st.subheader("🏆 Posicionamiento Estratégico: Resultado General Corporativo")
     df_general = df_bench[df_bench["Área"] == "General"]
     df_melted_gen = df_general.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
@@ -100,7 +100,7 @@ with tab_dashboard:
     fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 100]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
     st.plotly_chart(fig_gen, use_container_width=True)
 
-    # Checklist Completo EMT y su simulador
+    # Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)
     st.divider()
     st.subheader("📝 Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)")
     col_em1, col_em2, col_em3 = st.columns(3)
@@ -121,12 +121,10 @@ with tab_dashboard:
 
 with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
-    
-    # SOLUCIÓN DEFINITIVA SINTAXIS: Se inyectaron los datos fijos de forma directa en las listas sin diccionarios vacíos
     df_p = pd.DataFrame()
     df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    df_p["Jujuy_Menciones"] = [26, 14, 8, 5, 4, 3, 3, 2, 1, 1]
-    df_p["Salta_Menciones"] = [22, 15, 9, 12, 6, 8, 5, 4, 4, 4]
+    df_p["Jujuy_Menciones"] = [26, 14, 8, 4, 12, 1, 4, 1, 0, 1]
+    df_p["Salta_Menciones"] = [22, 15, 9, 12, 11, 4, 7, 2, 2, 5]
     df_p["Tartagal_Menciones"] = [2, 1, 2, 2, 0, 3, 1, 0, 0, 0]
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
@@ -142,24 +140,16 @@ with tab_calidad:
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
     fig_pareto.update_layout(
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25),
-        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 105]),
+        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 100]),
         legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
-
-    st.markdown("### 💡 Diagnóstico Operativo Prioritario:")
-    if sucursal == "Jujuy":
-        st.warning("⚠️ **Jujuy (Foco Operaciones)**: Concentración en **Demoras y puntualidad** (36.6%) y **Comunicación** (19.7%). El plan de acción del sector de asesores debe atacar la velocidad en turnos.")
-    elif sucursal == "Salta":
-        st.warning("⚠️ **Salta (Foco Híbrido)**: Desvío compartido entre **Demoras** (24.7%) y **Cortesías / Obsequios** (13.5%). Vinculado directamente a reclamos por entrega de kits de seguridad.")
-    else:
-        st.warning("⚠️ **Tartagal (Foco Infraestructura)**: El principal desvío radica en **Instalaciones y comodidad** (27.3%), seguido equitativamente con un 18.2% por Demoras, Administración y Kits.")
 with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen y Simulador de Impacto DEP")
     st.markdown("Establece los **Objetivos de Simulación** de forma manual para proyectar la recuperación del indicador global:")
 
-    if "db_dep_simulador_v1" not in st.session_state:
-        # Numeración oficial por capítulos y secciones regulatorias TASA, arrancando el Target de simulación manual en 0.0%
+    # CAMBIO DE VARIABLE FORZADO: Destruye la caché anterior de Streamlit e instala los Capítulos Numéricos solicitados
+    if "db_dep_simulador_v_definitivo" not in st.session_state:
         data_rows = [
             [1, "1.5.1: CUMPLIMIENTO DE OBJ. ACUMULADOS DE VTAS HILUX, SW4, HIACE", "Coordinación", "Seguimiento Transversal", "Tableros desvinculados", "Centralizar tablero único", "ALTA", "Reporte online", "Alejandro López", "", "", "EN PROCESO", 0.0],
             [2, "3.2.4: MEJORA CONTINUA CSI EN SHOWROOM", "Calidad", "Kits de Seguridad", "Falta kit de obsequio", "Incorporar kits de seguridad de Autolux", "ALTA", "Remitos firmados", "A. Aguilar", "", "", "EN PROCESO", 0.0],
@@ -182,10 +172,10 @@ with tab_plan:
             [19, "7.3.2: ESTÁNDAR OPERATIVO DE UNIDADES KINTO SHARE", "KINTO", "Siniestros One", "Flujos sueltos", "Rediseñar proceso de siniestros One", "ALTA", "Flujograma unificado", "Aaron Martearena", "", "", "EN PROCESO", 0.0]
         ]
         cols = ["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"]
-        st.session_state.db_dep_simulador_v1 = pd.DataFrame(data_rows, columns=cols)
+        st.session_state.db_dep_simulador_v_definitivo = pd.DataFrame(data_rows, columns=cols)
 
     df_ed = st.data_editor(
-        st.session_state.db_dep_simulador_v1, use_container_width=True, key="grilla_sim_v2", hide_index=True,
+        st.session_state.db_dep_simulador_v_definitivo, use_container_width=True, key="grilla_sim_v_final", hide_index=True,
         column_config={
             "#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True),
             "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True),
@@ -198,31 +188,31 @@ with tab_plan:
     )
 
     if st.button("🧮 Simular y Guardar Objetivos Kaizen"):
-        st.session_state.db_dep_simulador_v1 = df_ed
+        st.session_state.db_dep_simulador_v_definitivo = df_ed
         df_activos = df_ed[df_ed["Objetivo Simulación (%)"] > 0]
         promedio_simulado = df_activos["Objetivo Simulación (%)"].mean() if not df_activos.empty else score_global_final
         st.session_state.score_simulado_actual = promedio_simulado
-        st.success(f"🎉 Simulación guardada. Si los jefes alcanzan estos objetivos, el score global proyectado será del {promedio_simulado:.1f}%.")
+        st.success(f"🎉 Simulación guardada de forma manual. Nuevo score proyectado: {promedio_simulado:.1f}%.")
 
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        st.session_state.db_dep_simulador_v1.to_excel(writer, sheet_name='Plan de Accion', index=False)
+        st.session_state.db_dep_simulador_v_definitivo.to_excel(writer, sheet_name='Plan de Accion', index=False)
         ws = writer.sheets['Plan de Accion']
         f_b = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
         font_h = Font(name='Arial', size=10, bold=True, color="FFFFFF")
         font_b = Font(name='Arial', size=10, color="000000")
         bdr = Border(left=Side(style='thin', color='CCCCCC'), right=Side(style='thin', color='CCCCCC'), top=Side(style='thin', color='CCCCCC'), bottom=Side(style='thin', color='CCCCCC'))
         
-        for c in range(1, len(st.session_state.db_dep_simulador_v1.columns) + 1):
+        for c in range(1, len(st.session_state.db_dep_simulador_v_definitivo.columns) + 1):
             cell = ws.cell(row=1, column=c)
             cell.fill = f_b; cell.font = font_h; cell.border = bdr
-        for r in range(2, len(st.session_state.db_dep_simulador_v1) + 2):
-            for c in range(1, len(st.session_state.db_dep_simulador_v1.columns) + 1):
+        for r in range(2, len(st.session_state.db_dep_simulador_v_definitivo) + 2):
+            for c in range(1, len(st.session_state.db_dep_simulador_v_definitivo.columns) + 1):
                 cell = ws.cell(row=r, column=c)
                 cell.font = font_b; cell.border = bdr
-        for col_idx in range(1, len(st.session_state.db_dep_simulador_v1.columns) + 1):
+        for col_idx in range(1, len(st.session_state.db_dep_simulador_v_definitivo.columns) + 1):
             col_letter = get_column_letter(col_idx); m_len = 0
-            for row_idx in range(1, len(st.session_state.db_dep_simulador_v1) + 2):
+            for row_idx in range(1, len(st.session_state.db_dep_simulador_v_definitivo) + 2):
                 val = ws.cell(row=row_idx, column=col_idx).value
                 if val: m_len = max(m_len, len(str(val)))
             ws.column_dimensions[col_letter].width = max(m_len + 3, 11)
