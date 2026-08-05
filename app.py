@@ -49,7 +49,7 @@ tpa_simulada = st.session_state.get("sim_pilar_tpa", 72.8)
 kinto_simulada = st.session_state.get("sim_pilar_kinto", 35.8)
 tcfa_simulada = st.session_state.get("sim_pilar_tcfa", 73.0)
 
-# 4. FÓRMULA MATEMÁTICA CON LAS PONDERACIONES OFICIALES DEL MANUAL (PÁG 1)
+# 4. FÓRMULA MATEMÁTICA CON LAS PONDERACIONES OFICIALES DEL MANUAL (PÁG 3)
 score_global_final = (
     (p_simulada * 0.27) + (v_simulada * 0.22) + (67.6 * 0.20) + 
     (tpa_simulada * 0.09) + (kinto_simulada * 0.06) + (75.8 * 0.06) + 
@@ -104,10 +104,10 @@ with tab_dashboard:
         title="Resultado Consolidado RED - Evaluación DEP Junio 2026",
         color_discrete_map={"Autolux (LUX) - Puesto 24": "#990000", "DPQ - Puesto 5": "#4A7ebb", "GON - Puesto 10": "#A6A6A6"}
     )
-    # CONFIGURACIÓN CORREGIDA: Se fijó el rango explícitamente [0, 100]
     fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 100]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
     st.plotly_chart(fig_gen, use_container_width=True)
 
+    # Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)
     st.divider()
     st.subheader("📝 Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)")
     col_em1, col_em2, col_em3 = st.columns(3)
@@ -130,8 +130,8 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     df_p = pd.DataFrame()
     df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    df_p["Jujuy_Menciones"] = [26, 14, 8, 5, 5, 2, 4, 3, 2, 2]
-    df_p["Salta_Menciones"] = [22, 15, 9, 12, 7, 6, 8, 4, 3, 3]
+    df_p["Jujuy_Menciones"] = [26, 14, 8, 8, 5, 2, 4, 2, 1, 1]
+    df_p["Salta_Menciones"] = [22, 15, 9, 12, 6, 9, 5, 3, 4, 3]
     df_p["Tartagal_Menciones"] = [2, 1, 2, 2, 0, 3, 1, 0, 0, 0]
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
@@ -145,7 +145,6 @@ with tab_calidad:
     fig_pareto = go.Figure()
     fig_pareto.add_trace(go.Bar(x=df_suc["Categoría"], y=df_suc[col_menciones], name="Cantidad de Menciones", marker_color="#1F4E78", text=df_suc[col_menciones], textposition="inside"))
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
-    # CONFIGURACIÓN CORREGIDA: Se fijó el rango acumulado de 0 a 100
     fig_pareto.update_layout(
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25),
         yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 100]),
@@ -154,23 +153,24 @@ with tab_calidad:
     st.plotly_chart(fig_pareto, use_container_width=True)
 with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen y Simulador de Impacto DEP")
-    st.markdown("Carga los objetivos manuales de los jefes para ver el cambio elástico en el Dashboard:")
+    st.markdown("Establece los objetivos de forma manual para ver el cambio elástico en el Dashboard:")
 
-    if "db_dep_final_oficial_2026" not in st.session_state:
-        cods = ["", "1.1.1 SSI", "1.1.1 SSI", "1.1.1 SSI", "1.1.1 SSI", "1.2.2 KPIs", "UCT", "2.4.1 TPA", "4.1.2 TPA", "3.3.1 Rotación", "1.4.2 Obra", "1.4.2 Obra", "2.1.2 CRM", "2.1.2 CRM", "2.1.2 CRM", "3.5.2 Airbags", "6.1.1 TCFA", "6.1.1 TCFA", "7.3.2 KINTO"]
+    if "db_dep_oficial_final_v5" not in st.session_state:
+        # MAPEO DE CÓDIGOS OFICIALES SEGÚN EL ÍNDICE DEL MANUAL TOYOTA ENTREGADO (PÁG 2)
+        cods = ["", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.5.5 Salesforce (Pág. 5)", "Capítulo Usados (Pág. 63)", "4.3.1 Estructura (Pág. 41)", "Capítulo TPA (Pág. 41)", "3.3.1 Rotación (Pág. 21)", "3.2.4 Sostenimiento (Pág. 21)", "3.2.4 Sostenimiento (Pág. 21)", "1.5.5 Salesforce (Pág. 5)", "1.5.6 Gestión (Pág. 5)", "1.5.5 Salesforce (Pág. 5)", "3.5.2 Campañas (Pág. 21)", "Capítulo TCFA (Pág. 69)", "Capítulo TCFA (Pág. 69)", "Capítulo KINTO (Pág. 50)"]
         secs = ["Coordinación", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "RRHH", "RRHH", "RRHH", "Facilities", "Facilities", "CRM", "CRM", "CRM", "Posventa", "TCFA", "TCFA", "KINTO"]
         tems = ["Programa DEP", "Ventas - Kits", "Ventas - Showroom", "Ventas - Fidelidad", "Ventas - Mystery", "Ventas - KPIs", "Usados Certificados", "Estructura TPA", "Capacitación TPA", "Rotación Personal", "Las Lajitas", "Reformas Salta", "Lista de Espera", "Tiempos Salesforce", "Limpieza Sistema", "Campañas Seguridad", "Cartera Seguros", "Servicios Conectados", "Gestión Siniestros"]
         sits = ["Desvinculación", "Falta kit obsequio", "Showroom sin insumos", "Baja tasa encuesta", "Desvíos blandos", "Falta visibilidad", "Estándar flojo UCT", "Sobrecarga admin", "Riesgo al cierre YTD", "Inestabilidad nómina", "Obras pendientes 2025", "Pendiente PN 2026", "Boletos estancados", "Demoras atención", "Boletos vencidos", "Baja tasa contacto", "Desvío pólizas", "Baja activación app", "Flujos sueltos One"]
-        accs = ["Tablero único de control, calendario de vencimientos y evidencias", "Kits de seguridad como obsequio de Autolux en las entregas", "Compra de café, termos, etc. Para la sala de espera", "Campaña de fidelización con sorteos activos en encuestas TASA", "Implementación obligatoria de auditorías mystery shopper", "Desarrollo de un tablero único de control de KPIs operativos", "Reorganización completa de toma, entrega y venta de unidades UCT", "Incorporación de 2 colaboradores administrativos", "Plan de seguimiento semestral obligatorio junto a RRHH", "Control y estabilización de la nómina de personal de taller", "Negociación con fieldman TASA sobre obras no hechas de 2025", "Planificar reformas de Chapa, Pintura y traslado de lavaderos", "Seguimiento diario con foco crítico a cierre de mes", "Garantizar atención de prospectos digitales en menos de 2 horas", "Eliminación activa de boletos vencidos sin actividad comercial", "Citaciones masivas Airbags ABI 414/415 para subir de escalón", "Revisar el método de cálculo para crecimiento de pólizas", "Seguimiento focalizado en revendedores y empresas para la app", "Revisar proceso de seguimiento junto al área de Posventa"]
+        accs = ["Tablero único de control, calendario de vencimientos y evidencias transversales", "Kits de seguridad como obsequio de Autolux en las entregas de unidades", "Compra de café, termos, etc. Para la sala de espera de clientes", "Campaña de fidelización con sorteos activos en encuestas de la red", "Implementación obligatoria de auditorías mystery shopper en salones", "Desarrollo de un tablero único de control de KPIs operativos centrales", "Reorganización completa de toma, entrega y venta de unidades UCT", "Incorporación de 2 colaboradores administrativos para el área de planes", "Plan de seguimiento semestral obligatorio junto a Recursos Humanos", "Control y estabilización de la nómina de personal técnico de taller", "Negociación con fieldman TASA sobre obras no hechas planteadas 2025", "Planificar reformas de Chapa, Pintura y traslado físico de lavaderos", "Seguimiento diario con foco crítico a cierre de mes en carpetas", "Garantizar atención de prospectos digitales en menos de 2 horas en CRM", "Eliminación activa de boletos vencidos sin actividad comercial en sistema", "Citaciones masivas Airbags ABI 414/415 para subir de escalón", "Revisar el método de cálculo para crecimiento de pólizas comerciales", "Seguimiento focalizado en revendedores y empresas para la activación app", "Revisar proceso de seguimiento junto al área de Posventa de flota"]
         resps = ["Alejandro López", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Pablo Carrizo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Daniel Colque", "Daniel Colque", "Alfredo Aguilar", "Lucía de los Ríos", "Lucía de los Ríos", "Daniel Colque", "Lucía de los Ríos", "Romina R.", "Aaron Martearena"]
         
         rows = [[i+1, cods[i], secs[i], tems[i], sits[i], accs[i], "ALTA", "Evidencia", resps[i], "", "", "EN PROCESO", 0.0] for i in range(19)]
-        st.session_state.db_dep_final_oficial_2026 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
+        st.session_state.db_dep_oficial_final_v5 = pd.DataFrame(rows, columns=["#", "Capítulo / Pág Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
 
     df_ed = st.data_editor(
-        st.session_state.db_dep_final_oficial_2026, use_container_width=True, key="grilla_dep_oficial_final_4", hide_index=True,
+        st.session_state.db_dep_oficial_final_v5, use_container_width=True, key="grilla_lideres_final_v5", hide_index=True,
         column_config={
-            "#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=True), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%"),
+            "#": st.column_config.NumberColumn(disabled=True), "Capítulo / Pág Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=True), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%"),
             "Estimación de Cumplimiento": st.column_config.TextColumn(), "Fecha Estimada Cumplimiento": st.column_config.TextColumn()
         }
     )
@@ -178,17 +178,17 @@ with tab_plan:
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
         if st.button("🧮 Simular e Impactar Dashboard"):
-            st.session_state.db_dep_final_oficial_2026 = df_ed
+            st.session_state.db_dep_oficial_final_v5 = df_ed
             for _, r in df_ed.iterrows():
                 tg = r["Objetivo Simulación (%)"]
                 if tg > 0:
-                    cod = str(r["Código Auditoría Manual"])
+                    cod = str(r["Capítulo / Pág Manual"])
                     ger = str(r["Gerencia / Sector"])
-                    if "1.1.1" in cod or "Ventas" in ger: st.session_state.sim_pilar_ventas = tg
-                    elif "3.5.2" in cod or "Posventa" in ger or "Facilities" in ger: st.session_state.sim_pilar_posventa = tg
-                    elif "2.4.1" in cod or "RRHH" in ger: st.session_state.sim_pilar_tpa = tg
-                    elif "7.3.2" in cod: st.session_state.sim_pilar_kinto = tg
-                    elif "6.1.1" in cod: st.session_state.sim_pilar_tcfa = tg
+                    if "Pág. 5" in cod or "Ventas" in ger: st.session_state.sim_pilar_ventas = tg
+                    elif "Pág. 21" in cod or "Posventa" in ger or "Facilities" in ger: st.session_state.sim_pilar_posventa = tg
+                    elif "Pág. 41" in cod or "RRHH" in ger: st.session_state.sim_pilar_tpa = tg
+                    elif "Pág. 50" in cod: st.session_state.sim_pilar_kinto = tg
+                    elif "Pág. 69" in cod: st.session_state.sim_pilar_tcfa = tg
             st.success("🎉 Simulación completada. Gráficos y Ranking actualizados en la pestaña 1.")
             st.rerun()
     with col_btn2:
@@ -196,29 +196,29 @@ with tab_plan:
             st.session_state.sim_pilar_ventas = base_ventas_lux
             st.session_state.sim_pilar_posventa = base_posventa_lux
             st.session_state.sim_pilar_tpa = 72.8; st.session_state.sim_pilar_kinto = 35.8; st.session_state.sim_pilar_tcfa = 73.0
-            if "db_dep_final_oficial_2026" in st.session_state: del st.session_state.db_dep_final_oficial_2026
+            if "db_dep_oficial_final_v5" in st.session_state: del st.session_state.db_dep_oficial_final_v5
             st.success("🧹 Valores Kaizen restablecidos con éxito.")
             st.rerun()
 
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        st.session_state.db_dep_final_oficial_2026.to_excel(writer, sheet_name='Plan de Accion', index=False)
+        st.session_state.db_dep_oficial_final_v5.to_excel(writer, sheet_name='Plan de Accion', index=False)
         ws = writer.sheets['Plan de Accion']
         f_b = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
         font_h = Font(name='Arial', size=10, bold=True, color="FFFFFF")
         font_b = Font(name='Arial', size=10, color="000000")
         bdr = Border(left=Side(style='thin', color='CCCCCC'), right=Side(style='thin', color='CCCCCC'), top=Side(style='thin', color='CCCCCC'), bottom=Side(style='thin', color='CCCCCC'))
         
-        for c in range(1, len(st.session_state.db_dep_final_oficial_2026.columns) + 1):
+        for c in range(1, len(st.session_state.db_dep_oficial_final_v5.columns) + 1):
             cell = ws.cell(row=1, column=c)
             cell.fill = f_b; cell.font = font_h; cell.border = bdr
-        for r in range(2, len(st.session_state.db_dep_final_oficial_2026) + 2):
-            for c in range(1, len(st.session_state.db_dep_final_oficial_2026.columns) + 1):
+        for r in range(2, len(st.session_state.db_dep_oficial_final_v5) + 2):
+            for c in range(1, len(st.session_state.db_dep_oficial_final_v5.columns) + 1):
                 cell = ws.cell(row=r, column=c)
                 cell.font = font_b; cell.border = bdr
-        for col_idx in range(1, len(st.session_state.db_dep_final_oficial_2026.columns) + 1):
+        for col_idx in range(1, len(st.session_state.db_dep_oficial_final_v5.columns) + 1):
             col_letter = get_column_letter(col_idx); m_len = 0
-            for row_idx in range(1, len(st.session_state.db_dep_final_oficial_2026) + 2):
+            for row_idx in range(1, len(st.session_state.db_dep_oficial_final_v5) + 2):
                 val = ws.cell(row=row_idx, column=col_idx).value
                 if val: m_len = max(m_len, len(str(val)))
             ws.column_dimensions[col_letter].width = max(m_len + 3, 11)
