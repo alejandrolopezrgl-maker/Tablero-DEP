@@ -50,7 +50,6 @@ kinto_simulada = st.session_state.get("sim_pilar_kinto", 35.8)
 tcfa_simulada = st.session_state.get("sim_pilar_tcfa", 73.0)
 
 # 4. FÓRMULA MATEMÁTICA CON LAS PONDERACIONES OFICIALES DEL MANUAL (PÁG 1)
-# Pesos: Posventa 27%, Ventas 22%, General 20%, TPA 9%, Kinto 6%, Usados 6%, Especiales 5%, TCFA 4%, ESG 1%
 score_global_final = (
     (p_simulada * 0.27) + (v_simulada * 0.22) + (67.6 * 0.20) + 
     (tpa_simulada * 0.09) + (kinto_simulada * 0.06) + (75.8 * 0.06) + 
@@ -105,7 +104,8 @@ with tab_dashboard:
         title="Resultado Consolidado RED - Evaluación DEP Junio 2026",
         color_discrete_map={"Autolux (LUX) - Puesto 24": "#990000", "DPQ - Puesto 5": "#4A7ebb", "GON - Puesto 10": "#A6A6A6"}
     )
-    fig_gen.update_layout(showlegend=False, yaxis=dict(range=), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
+    # CONFIGURACIÓN CORREGIDA: Se fijó el rango explícitamente [0, 100]
+    fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 100]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
     st.plotly_chart(fig_gen, use_container_width=True)
 
     st.divider()
@@ -130,9 +130,9 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     df_p = pd.DataFrame()
     df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    df_p["Jujuy_Menciones"] =
-    df_p["Salta_Menciones"] =
-    df_p["Tartagal_Menciones"] =
+    df_p["Jujuy_Menciones"] = [26, 14, 8, 5, 5, 2, 4, 3, 2, 2]
+    df_p["Salta_Menciones"] = [22, 15, 9, 12, 7, 6, 8, 4, 3, 3]
+    df_p["Tartagal_Menciones"] = [2, 1, 2, 2, 0, 3, 1, 0, 0, 0]
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
     col_menciones = f"{sucursal}_Menciones"
@@ -145,9 +145,10 @@ with tab_calidad:
     fig_pareto = go.Figure()
     fig_pareto.add_trace(go.Bar(x=df_suc["Categoría"], y=df_suc[col_menciones], name="Cantidad de Menciones", marker_color="#1F4E78", text=df_suc[col_menciones], textposition="inside"))
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
+    # CONFIGURACIÓN CORREGIDA: Se fijó el rango acumulado de 0 a 100
     fig_pareto.update_layout(
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25),
-        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=),
+        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 100]),
         legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
