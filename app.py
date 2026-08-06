@@ -51,7 +51,6 @@ p_simulada = st.session_state.sim_pilar_posventa if st.session_state.sim_pilar_p
 tpa_simulada = st.session_state.sim_pilar_tpa if st.session_state.sim_pilar_tpa is not None else 72.8
 kinto_simulada = st.session_state.sim_pilar_kinto if st.session_state.sim_pilar_kinto is not None else 35.8
 tcfa_simulada = st.session_state.sim_pilar_tcfa if st.session_state.sim_pilar_tcfa is not None else 73.0
-# ¡SANEADO COMPLETAMENTE!: Clavados los porcentajes reales del manual enviados en tu captura
 g_simulada = st.session_state.sim_pilar_general if st.session_state.sim_pilar_general is not None else 65.6
 
 # 4. FÓRMULA DE PROYECCIÓN DEL SCORE GLOBAL CON LAS PONDERACIONES EXACTAS
@@ -67,7 +66,7 @@ else:
     score_global_final = score_global_final - puntos_a_restar_global
     if penalidad_mov: score_global_final -= 1.1
 
-# DATAFRAME OPERATIVO CORREGIDO CON LOS PORCENTAJES DE TU CAPTURA (LUX: 65.6%, DPQ: 59.8%, GON: 79.0%)
+# DATAFRAME OPERATIVO CORREGIDO CON LOS PORCENTAJES DE TU CAPTURA
 data_operativa = {
     "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "GENERAL"],
     "Autolux (LUX)": [v_simulada, 49.0, p_simulada, tpa_simulada, kinto_simulada, 75.8, tcfa_simulada, 25.0, g_simulada],
@@ -113,24 +112,24 @@ with tab_dashboard:
             st.metric("Ranking General Red", f"Puesto 24 🚗", help="Posición base oficial de Autolux")
     with col3: st.metric("Pilar GENERAL Proyectado", f"{g_simulada:.1f}%")
 
-    # GRÁFICO 1: Desempeño Operativo con los porcentajes reales de la planilla (LUX: 65.6%, DPQ: 59.8%, GON: 79.0%)
+    # GRÁFICO 1 CORREGIDO: Se inyectó manualmente la expresión del eje Y [0, 100]
     st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Incluyendo Pilar GENERAL)")
     df_melted_op = df_bench_op.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
     fig_op = px.bar(
         df_melted_op, x="Área", y="Cumplimiento %", color="Concesionario", barmode="group", text_auto=".1f",
         color_discrete_map={"Autolux (LUX)": "#d62728", "DPQ - Puesto 5": "#1f77b4", "GON - Puesto 10": "#7f7f7f"}
     )
-    fig_op.update_layout(xaxis_title="Eje del Concesionario / Unidad Operativa", yaxis_title="Efectividad %", yaxis=dict(range=))
+    fig_op.update_layout(xaxis_title="Eje del Concesionario / Unidad Operativa", yaxis_title="Efectividad %", yaxis=dict(range=[0, 100]))
     st.plotly_chart(fig_op, use_container_width=True)
 
-    # GRÁFICO 2: Ranking Final y Posicionamiento Estratégico General de la Red
+    # GRÁFICO 2 CORREGIDO: Se inyectó manualmente la expresión del eje Y [0, 100]
     st.subheader("🏆 Posicionamiento Estratégico: Resultado Consolidado RED")
     fig_gen = px.bar(
         df_bench_ranking, x="Concesionario", y="Porcentaje DEP Global", color="Concesionario", text_auto=".1f",
         title="Evaluación DEP Acumulada a Junio - Posición y Porcentaje",
         color_discrete_map={"Autolux (LUX) - Puesto 24": "#990000", "DPQ - Puesto 5": "#4A7ebb", "GON - Puesto 10": "#A6A6A6"}
     )
-    fig_gen.update_layout(showlegend=False, yaxis=dict(range=), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
+    fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 100]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
     st.plotly_chart(fig_gen, use_container_width=True)
 
     # Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)
@@ -156,9 +155,9 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     df_p = pd.DataFrame()
     df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    df_p["Jujuy_Menciones"] =
-    df_p["Salta_Menciones"] =
-    df_p["Tartagal_Menciones"] =
+    df_p["Jujuy_Menciones"] = [42, 28, 19, 14, 11, 8, 5, 3, 2, 1]
+    df_p["Salta_Menciones"] = [55, 34, 22, 18, 12, 9, 6, 4, 2, 1]
+    df_p["Tartagal_Menciones"] = [15, 11, 8, 5, 4, 3, 2, 1, 1, 0]
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
     col_menciones = f"{sucursal}_Menciones"
@@ -173,7 +172,7 @@ with tab_calidad:
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
     fig_pareto.update_layout(
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25),
-        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=),
+        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 100]),
         legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
