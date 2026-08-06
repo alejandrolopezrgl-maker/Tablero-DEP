@@ -9,7 +9,7 @@ from openpyxl.utils import get_column_letter
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="DEP Autolux", layout="wide", page_icon="🚗")
 st.title("🚗 Tablero de Control y Dashboard Evolutivo DEP - Autolux")
-st.caption("Ecosistema Adaptativo - Datos Oficiales e Informe Clínico de la Red TASA")
+st.caption("Datos Oficiales e Informe de Calidad de la Red TASA")
 
 if "reestablecer" not in st.session_state: 
     st.session_state.reestablecer = False
@@ -34,42 +34,48 @@ if visitas_fm < 85:
 else: 
     st.sidebar.success("🟢 Compromisos Fieldman a salvo (≥85%).")
 
-# 3. BASE DE DATOS INICIAL ACUMULADA A JUNIO EXTRAÍDA DEL INFORME OFICIAL TASA
-if "sim_cat_calidad" not in st.session_state: st.session_state.sim_cat_calidad = None
-if "sim_cat_programas" not in st.session_state: st.session_state.sim_cat_programas = None
-if "sim_cat_rrhh" not in st.session_state: st.session_state.sim_cat_rrhh = None
-if "sim_cat_facilities" not in st.session_state: st.session_state.sim_cat_facilities = None
-if "sim_cat_targets" not in st.session_state: st.session_state.sim_cat_targets = None
-if "sim_cat_general" not in st.session_state: st.session_state.sim_cat_general = None
+# 3. BASE DE DATOS ESTRATÉGICA CON LOS VALORES EXACTOS REQUERIDOS
+base_ventas_lux = 55.7 if not penalidad_mov else (55.7 - 5.0)
+base_posventa_lux = 91.7 - (91.7 * (castigo_posventa_fieldman / 100))
 
-# Mapeo persistente: Si no se simula, clava los datos reales del PDF
-c_calidad = st.session_state.sim_cat_calidad if st.session_state.sim_cat_calidad is not None else 25.0
-c_programas = st.session_state.sim_cat_programas if st.session_state.sim_cat_programas is not None else 97.3
-c_rrhh = st.session_state.sim_cat_rrhh if st.session_state.sim_cat_rrhh is not None else 87.0
-c_facilities = st.session_state.sim_cat_facilities if st.session_state.sim_cat_facilities is not None else 100.0
-c_targets = st.session_state.sim_cat_targets if st.session_state.sim_cat_targets is not None else 48.9
-c_general = st.session_state.sim_cat_general if st.session_state.sim_cat_general is not None else 65.6
+# INICIALIZACIÓN LIMITADA: Si no existe simulación previa, arranca estrictamente en None
+if "sim_pilar_ventas" not in st.session_state: st.session_state.sim_pilar_ventas = None
+if "sim_pilar_posventa" not in st.session_state: st.session_state.sim_pilar_posventa = None
+if "sim_pilar_tpa" not in st.session_state: st.session_state.sim_pilar_tpa = None
+if "sim_pilar_kinto" not in st.session_state: st.session_state.sim_pilar_kinto = None
+if "sim_pilar_tcfa" not in st.session_state: st.session_state.sim_pilar_tcfa = None
+if "sim_pilar_general" not in st.session_state: st.session_state.sim_pilar_general = None
+
+v_simulada = st.session_state.sim_pilar_ventas if st.session_state.sim_pilar_ventas is not None else base_ventas_lux
+p_simulada = st.session_state.sim_pilar_posventa if st.session_state.sim_pilar_posventa is not None else base_posventa_lux
+tpa_simulada = st.session_state.sim_pilar_tpa if st.session_state.sim_pilar_tpa is not None else 72.8
+kinto_simulada = st.session_state.sim_pilar_kinto if st.session_state.sim_pilar_kinto is not None else 35.8
+tcfa_simulada = st.session_state.sim_pilar_tcfa if st.session_state.sim_pilar_tcfa is not None else 73.0
+g_simulada = st.session_state.sim_pilar_general if st.session_state.sim_pilar_general is not None else 71.5
 
 # 4. FÓRMULA DE PROYECCIÓN DEL SCORE GLOBAL RESPECTO A LA CALIBRACIÓN DE JUNIO (62.0%)
-if st.session_state.sim_cat_calidad is None and st.session_state.sim_cat_general is None:
+if st.session_state.sim_pilar_ventas is None and st.session_state.sim_pilar_general is None:
     score_global_final = 62.0 - puntos_a_restar_global
     if penalidad_mov: score_global_final -= 1.1
 else:
-    # Cálculo elástico ponderado por categorías
-    score_global_final = ((c_calidad*22 + c_programas*8.8 + c_rrhh*12.1 + c_facilities*7.5 + c_targets*44.5 + c_general*16.5) / 111.4)
+    score_global_final = (
+        (p_simulada * 0.27) + (v_simulada * 0.22) + (g_simulada * 0.165) + 
+        (tpa_simulada * 0.09) + (kinto_simulada * 0.06) + (75.8 * 0.06) + 
+        (49.0 * 0.05) + (tcfa_simulada * 0.04) + (25.0 * 0.01)
+    )
     score_global_final = score_global_final - puntos_a_restar_global
     if penalidad_mov: score_global_final -= 1.1
 
-# DATAFRAME DE BENCHMARK UNIFICADO POR CATEGORÍAS TRANSVERSALES SEGÚN TU PDF
-data_categorias_tasa = {
-    "Categoría DEP": ["CALIDAD", "PROGRAMAS", "RECURSOS HUMANOS", "FACILITIES", "TARGETS", "GENERAL"],
-    "Autolux (LUX)": [c_calidad, c_programas, c_rrhh, c_facilities, c_targets, c_general],
-    "DPQ - Puesto 5": [61.1, 97.3, 73.7, 100.0, 60.7, 59.8],
-    "GON - Puesto 10": [26.8, 97.3, 79.2, 100.0, 58.0, 79.0]
+# DATAFRAME OPERATIVO POR ÁREAS ASIGNADAS (INCLUYE GENERAL DE FORMA FIJA CON LOS VALORES CORRECTOS)
+data_operativa = {
+    "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "GENERAL"],
+    "Autolux (LUX)": [v_simulada, 49.0, p_simulada, tpa_simulada, kinto_simulada, 75.8, tcfa_simulada, 25.0, g_simulada],
+    "DPQ - Puesto 5": [72.3, 55.0, 91.0, 85.0, 68.5, 78.0, 88.0, 25.0, 80.5],
+    "GON - Puesto 10": [68.0, 50.0, 88.5, 71.0, 65.2, 74.0, 79.0, 26.0, 66.1]
 }
-df_bench_cat = pd.DataFrame(data_categorias_tasa)
+df_bench_op = pd.DataFrame(data_operativa)
 
-# DATAFRAME DEL RANKING RED CONSOLIDADO (GRÁFICO INFERIOR SOLICITADO)
+# DATAFRAME EXCLUSIVO PARA EL GRÁFICO DE PUESTO Y RANKING GLOBAL COMPARTIDO
 data_ranking_global = {
     "Concesionario": ["DPQ - Puesto 5", "GON - Puesto 10", "Autolux (LUX) - Puesto 24"],
     "Porcentaje DEP Global": [72.3, 69.8, score_global_final]
@@ -85,6 +91,16 @@ else:
     puesto_calculado = int(24 - ((score_global_final - 62.0) / (72.3 - 62.0)) * (24 - 5))
     puesto_calculado = max(5, min(24, puesto_calculado))
 
+if st.sidebar.button("🔄 Restablecer Valores Oficiales", key="btn_reset_lateral"):
+    st.session_state.sim_pilar_ventas = None
+    st.session_state.sim_pilar_posventa = None
+    st.session_state.sim_pilar_tpa = None
+    st.session_state.sim_pilar_kinto = None
+    st.session_state.sim_pilar_tcfa = None
+    st.session_state.sim_pilar_general = None
+    st.session_state.reestablecer = True
+    st.rerun()
+
 tab_dashboard, tab_calidad, tab_plan = st.tabs(["📊 Dashboard del Dealer", "🕵️ Análisis de Calidad por Sucursal", "📋 Plan de Acción Interactiva"])
 with tab_dashboard:
     col1, col2, col3 = st.columns(3)
@@ -93,27 +109,27 @@ with tab_dashboard:
         if puesto_calculado < 24:
             st.metric("Ranking Proyectado Red", f"Puesto {puesto_calculado} 🏆", delta=f"¡Subiendo {24 - puesto_calculado} puestos!")
         else:
-            st.metric("Ranking General Red", f"Puesto 24 🚗", help="Posición base acumulada a Junio")
-    with col3: st.metric("Categoría GENERAL DEP", f"{c_general:.1f}%")
+            st.metric("Ranking General Red", f"Puesto 24 🚗", help="Posición base oficial acumulada a Junio")
+    with col3: st.metric("Pilar GENERAL Proyectado", f"{g_simulada:.1f}%")
 
-    # GRÁFICO 1 REPROGRAMADO: Muestra las columnas por Categorías del PDF (Incluyendo GENERAL oficial)
-    st.subheader("🏁 Desempeño por Categorías Transversales de Auditoría DEP")
-    df_melted_cat = df_bench_cat.melt(id_vars=["Categoría DEP"], var_name="Concesionario", value_name="Cumplimiento %")
-    fig_cat = px.bar(
-        df_melted_cat, x="Categoría DEP", y="Cumplimiento %", color="Concesionario", barmode="group", text_auto=".1f",
+    # GRÁFICO 1 RESTAURADO: Despliega los pilares comerciales e incluye el bloque operativo GENERAL de forma correcta
+    st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Incluyendo Pilar GENERAL)")
+    df_melted_op = df_bench_op.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
+    fig_op = px.bar(
+        df_melted_op, x="Área", y="Cumplimiento %", color="Concesionario", barmode="group", text_auto=".1f",
         color_discrete_map={"Autolux (LUX)": "#d62728", "DPQ - Puesto 5": "#1f77b4", "GON - Puesto 10": "#7f7f7f"}
     )
-    fig_cat.update_layout(xaxis_title="Macro-Categorías del Manual TASA", yaxis_title="Efectividad %", yaxis=dict(range=[0, 105]))
-    st.plotly_chart(fig_cat, use_container_width=True)
+    fig_op.update_layout(xaxis_title="Eje del Concesionario / Unidad Operativa", yaxis_title="Efectividad %", yaxis=dict(range=[0, 100]))
+    st.plotly_chart(fig_op, use_container_width=True)
 
-    # GRÁFICO 2 RECUPERADO: Vista exclusiva del ranking de la red solicitada
+    # GRÁFICO 2: Ranking Final y Posicionamiento Estratégico General de la Red
     st.subheader("🏆 Posicionamiento Estratégico: Resultado Consolidado RED")
     fig_gen = px.bar(
         df_bench_ranking, x="Concesionario", y="Porcentaje DEP Global", color="Concesionario", text_auto=".1f",
         title="Evaluación DEP Acumulada a Junio - Posición y Porcentaje",
         color_discrete_map={"Autolux (LUX) - Puesto 24": "#990000", "DPQ - Puesto 5": "#4A7ebb", "GON - Puesto 10": "#A6A6A6"}
     )
-    fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 105]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
+    fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 100]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
     st.plotly_chart(fig_gen, use_container_width=True)
 
     # Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)
@@ -126,7 +142,7 @@ with tab_dashboard:
         acu_c = st.slider("C: Kinto Movilidad (100)", 0, 100, 100)
     with col_em2:
         acu_d = st.slider("D: Club Toyota (100)", 0, 100, 100)
-        acu_e = st.slider("E: Toyota Plan de Ahorro (100)", 0, 100, 100, key="slider_tpa_dash_v6")
+        acu_e = st.slider("E: Toyota Plan de Ahorro (100)", 0, 100, 100, key="slider_tpa_dash_v7")
         acu_f = st.slider("F: Toyota Financial Services (100)", 0, 100, 100)
     with col_em3:
         acu_g = st.slider("G: Vehículos Usados (100)", 0, 100, 100)
@@ -139,9 +155,9 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     df_p = pd.DataFrame()
     df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    df_p["Jujuy_Menciones"] = [26, 14, 11, 8, 4, 3, 2, 2, 1, 0]
-    df_p["Salta_Menciones"] = [22, 11, 10, 12, 6, 4, 3, 2, 4, 1]
-    df_p["Tartagal_Menciones"] = [4, 3, 2, 2, 1, 6, 2, 1, 1, 0]
+    df_p["Jujuy_Menciones"] = [26, 14, 11, 7, 5, 4, 3, 1, 1, 0]
+    df_p["Salta_Menciones"] = [22, 9, 8, 12, 10, 6, 7, 4, 3, 1]
+    df_p["Tartagal_Menciones"] = [4, 3, 4, 2, 1, 6, 0, 1, 1, 0]
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
     col_menciones = f"{sucursal}_Menciones"
@@ -156,7 +172,7 @@ with tab_calidad:
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
     fig_pareto.update_layout(
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25),
-        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 105]),
+        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 100]),
         legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
@@ -165,7 +181,6 @@ with tab_plan:
     st.markdown("Carga los objetivos manuales de los jefes para ver el cambio elástico en el Dashboard:")
 
     if "db_dep_final_oficial_2026_v9" not in st.session_state:
-        # MAPEO COMPACTADO: Vinculado directamente a las Categorías del PDF (Calidad, Programas, RRHH, Facilities, Targets, General)
         cods = ["", "1.1.1 SSI (Pág. 5)", "3.1.1 CSI (Pág. 21)", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.2.2 KPIs (Pág. 5)", "6.1.1: USADOS (Pág. 63)", "4.3.1 Estructura (Pág. 41)", "9.3.2 CAPACITACIÓN (Pág. 76)", "9.3.3 ROTACIÓN (Pág. 76)", "9.4.1 INSTALACIONES (Pág. 76)", "9.4.1 INSTALACIONES (Pág. 76)", "2.1.2 CRM (Pág. 5)", "2.1.2 CRM (Pág. 5)", "2.1.2 CRM (Pág. 5)", "3.5.2 Airbags (Pág. 21)", "7.1.1: SEGUROS (Pág. 69)", "7.1.2: APP (Pág. 69)", "5.1.1: KINTO ONE (Pág. 50)"]
         secs = ["Coordinación", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "RRHH", "RRHH", "RRHH", "Facilities", "Facilities", "CRM", "CRM", "CRM", "Posventa", "TCFA", "TCFA", "KINTO"]
         tems = ["Programa DEP", "Ventas - Kits", "Ventas - Showroom", "Ventas - Fidelidad", "Ventas - Mystery", "Ventas - KPIs", "Usados Certificados", "Estructura TPA", "Capacitación TPA", "Rotación Personal", "Las Lajitas", "Reformas Salta", "Lista de Espera", "Tiempos Salesforce", "Limpieza Sistema", "Campañas Seguridad", "Cartera Seguros", "Servicios Conectados", "Gestión Siniestros"]
@@ -193,27 +208,27 @@ with tab_plan:
                 if tg > 0:
                     cod = str(r["Código Auditoría Manual"])
                     ger = str(r["Gerencia / Sector"])
-                    # ENLACE RE-DIRECCIONADO HACIA LOS MACRO-PILARES DEL PDF DE FORMA PURE
-                    if "1.1.1" in cod or "3.1.1" in cod: st.session_state.sim_cat_calidad = tg
-                    elif "1.2.2" in cod: st.session_state.sim_cat_programas = tg
-                    elif "9.3.2" in cod or "9.3.3" in cod or "RRHH" in ger: st.session_state.sim_cat_rrhh = tg
-                    elif "9.4.1" in cod or "Facilities" in ger: st.session_state.sim_cat_general = tg
-                    elif "4.3.1" in cod or "6.1.1" in cod or "7.1.1" in cod or "5.1.1" in cod: st.session_state.sim_cat_targets = tg
-            st.success("🎉 Simulación procesada por categorías transversales. Dashboard actualizado.")
+                    # ENLACE ELÁSTICO CORRECTO: Envía los objetivos de los jefes de vuelta a sus respectivas unidades operativas
+                    if "1.1.1" in cod or "Ventas" in ger: st.session_state.sim_pilar_ventas = tg
+                    elif "3.5.2" in cod or "Posventa" in ger: st.session_state.sim_pilar_posventa = tg
+                    elif "4.3.1" in cod: st.session_state.sim_pilar_tpa = tg
+                    elif "5.1.1" in cod: st.session_state.sim_pilar_kinto = tg
+                    elif "6.1.1" in cod: st.session_state.sim_pilar_tcfa = tg
+                    elif "9.3.2" in cod or "9.3.3" in cod or "9.4.1" in cod or "Facilities" in ger or "RRHH" in ger: st.session_state.sim_pilar_general = tg
+            st.success("🎉 Simulación procesada por pilares operativos. Dashboard actualizado de forma elástica.")
             st.rerun()
             
     with col_btn2:
         if st.button("🧹 Limpiar Simulación"):
-            # RESET TOTAL DIRECTO A LOS VALORES OFICIALES DEL CORTE DE TU PLANILLA
-            st.session_state.sim_cat_calidad = None
-            st.session_state.sim_cat_programas = None
-            st.session_state.sim_cat_rrhh = None
-            st.session_state.sim_cat_facilities = None
-            st.session_state.sim_cat_targets = None
-            st.session_state.sim_cat_general = None
+            st.session_state.sim_pilar_ventas = None
+            st.session_state.sim_pilar_posventa = None
+            st.session_state.sim_pilar_tpa = None
+            st.session_state.sim_pilar_kinto = None
+            st.session_state.sim_pilar_tcfa = None
+            st.session_state.sim_pilar_general = None
             if "db_dep_final_oficial_2026_v9" in st.session_state:
                 del st.session_state.db_dep_final_oficial_2026_v9
-            st.success("🧹 Valores Kaizen eliminados. Regresando estrictamente al estado oficial base.")
+            st.success("🧹 Valores de simulación limpiados correctamente. Volviendo al estado base oficial.")
             st.rerun()
 
     buffer = io.BytesIO()
