@@ -109,10 +109,9 @@ with tab_dashboard:
         if puesto_calculado < 24:
             st.metric("Ranking Proyectado Red", f"Puesto {puesto_calculado} 🏆", delta=f"¡Subiendo {24 - puesto_calculado} puestos!")
         else:
-            st.metric("Ranking General Red", f"Puesto 24 🚗", help="Posición base oficial de Autolux")
+            st.metric("Ranking General Red", f"Puesto 24 🚨", help="Posición base oficial de Autolux")
     with col3: st.metric("Pilar GENERAL Proyectado", f"{g_simulada:.1f}%")
 
-    # GRÁFICO 1 CORREGIDO: Se inyectó manualmente la expresión del eje Y [0, 100]
     st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Incluyendo Pilar GENERAL)")
     df_melted_op = df_bench_op.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
     fig_op = px.bar(
@@ -122,17 +121,14 @@ with tab_dashboard:
     fig_op.update_layout(xaxis_title="Eje del Concesionario / Unidad Operativa", yaxis_title="Efectividad %", yaxis=dict(range=[0, 100]))
     st.plotly_chart(fig_op, use_container_width=True)
 
-    # GRÁFICO 2 CORREGIDO: Se inyectó manualmente la expresión del eje Y [0, 100]
     st.subheader("🏆 Posicionamiento Estratégico: Resultado Consolidado RED")
     fig_gen = px.bar(
         df_bench_ranking, x="Concesionario", y="Porcentaje DEP Global", color="Concesionario", text_auto=".1f",
-        title="Evaluación DEP Acumulada a Junio - Posición y Porcentaje",
         color_discrete_map={"Autolux (LUX) - Puesto 24": "#990000", "DPQ - Puesto 5": "#4A7ebb", "GON - Puesto 10": "#A6A6A6"}
     )
     fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 100]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
     st.plotly_chart(fig_gen, use_container_width=True)
 
-    # Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)
     st.divider()
     st.subheader("📝 Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)")
     col_em1, col_em2, col_em3 = st.columns(3)
@@ -155,9 +151,9 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     df_p = pd.DataFrame()
     df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    df_p["Jujuy_Menciones"] = [42, 28, 19, 14, 11, 8, 5, 3, 2, 1]
-    df_p["Salta_Menciones"] = [55, 34, 22, 18, 12, 9, 6, 4, 2, 1]
-    df_p["Tartagal_Menciones"] = [15, 11, 8, 5, 4, 3, 2, 1, 1, 0]
+    df_p["Jujuy_Menciones"] = [42, 28, 19, 14, 8, 5, 3, 2, 1, 0]
+    df_p["Salta_Menciones"] = [15, 38, 31, 5, 12, 18, 9, 4, 2, 1]
+    df_p["Tartagal_Menciones"] = [29, 12, 8, 22, 4, 3, 11, 1, 0, 0]
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
     col_menciones = f"{sucursal}_Menciones"
@@ -176,6 +172,16 @@ with tab_calidad:
         legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
+
+    # 🚨 INFORME RESUMIDO AUTOMATIZADO INCORPORADO (MÁXIMO 2 LÍNEAS POR REGLA)
+    st.markdown("---")
+    st.subheader("📌 Diagnóstico Clínico de Foco Estratégico:")
+    if sucursal == "Jujuy":
+        st.info("🎯 **Foco Crítico en Jujuy**: El 60% de los desvíos se concentran en **Demoras y Puntualidad** junto a **Comunicación y Seguimiento**. Es urgente atacar estos dos frentes en el taller para estabilizar el SSI operativo.")
+    elif sucursal == "Salta":
+        st.info("🎯 **Foco Crítico en Salta**: La debilidad principal radica en **Comunicación y Seguimiento** junto a **Administración de Documentos**. Se debe estandarizar el flujo administrativo en las entregas convencionales.")
+    elif sucursal == "Tartagal":
+        st.info("🎯 **Foco Crítico en Tartagal**: Los reclamos están liderados por **Demoras y Puntualidad** y **Cortesías u Obsequios**. Es clave sincronizar los tiempos de alistamiento y revisar la entrega de kits de seguridad.")
 with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen y Simulador de Impacto DEP")
     st.markdown("Carga los objetivos manuales de los jefes para ver el cambio elástico en el Dashboard:")
@@ -214,7 +220,7 @@ with tab_plan:
                     elif "5.1.1" in cod: st.session_state.sim_pilar_kinto = tg
                     elif "6.1.1" in cod: st.session_state.sim_pilar_tcfa = tg
                     elif "9.3.2" in cod or "9.3.3" in cod or "9.4.1" in cod or "Facilities" in ger or "RRHH" in ger: st.session_state.sim_pilar_general = tg
-            st.success("🎉 Simulación completada. Gráficos y Ranking actualizados de forma elástica.")
+            st.success("🎉 Simulación completada. Dashboard actualizado.")
             st.rerun()
             
     with col_btn2:
@@ -227,7 +233,7 @@ with tab_plan:
             st.session_state.sim_pilar_general = None
             if "db_dep_final_oficial_2026_v8" in st.session_state:
                 del st.session_state.db_dep_final_oficial_2026_v8
-            st.success("🧹 Valores de simulación limpiados correctamente.")
+            st.success("🧹 Valores de simulación limpiados.")
             st.rerun()
 
     buffer = io.BytesIO()
