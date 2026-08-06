@@ -34,7 +34,7 @@ if visitas_fm < 85:
 else: 
     st.sidebar.success("🟢 Compromisos Fieldman a salvo (≥85%).")
 
-# 3. VALORES BASE EXTRAÍDOS DEL POWER BI DE JUNIO (CON REAJUSTE DE PESOS)
+# 3. BASE DE DATOS ESTRATÉGICA EXTRACTADA DIRECTAMENTE DEL POWER BI TOYOTA
 base_ventas_lux = 55.7 if not penalidad_mov else (55.7 - 5.0)
 base_posventa_lux = 91.7 - (91.7 * (castigo_posventa_fieldman / 100))
 
@@ -66,14 +66,21 @@ else:
     score_global_final = score_global_final - puntos_a_restar_global
     if penalidad_mov: score_global_final -= 1.1
 
-# DATA COMPETITIVA COMPARTIDA CON LA COLUMNA GENERAL INTEGRADA AL FINAL DE LA SERIE
-data_competitiva = {
+# DATAFRAME OPERATIVO POR ÁREAS INDEPENDIENTES (EXCLUYE EL SCORE GLOBAL CONSOLIDADO)
+data_operativa = {
     "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "GENERAL"],
-    "Autolux (LUX) - Puesto 24": [v_simulada, 49.0, p_simulada, tpa_simulada, kinto_simulada, 75.8, tcfa_simulada, 25.0, g_simulada],
+    "Autolux (LUX)": [v_simulada, 49.0, p_simulada, tpa_simulada, kinto_simulada, 75.8, tcfa_simulada, 25.0, g_simulada],
     "DPQ - Puesto 5": [72.3, 55.0, 91.0, 85.0, 68.5, 78.0, 88.0, 25.0, 71.5],
     "GON - Puesto 10": [68.0, 50.0, 88.5, 71.0, 65.2, 74.0, 79.0, 26.0, 66.1]
 }
-df_bench = pd.DataFrame(data_competitiva)
+df_bench_op = pd.DataFrame(data_operativa)
+
+# DATAFRAME EXCLUSIVO PARA EL GRÁFICO DE PUESTO Y RANKING GLOBAL SOLICITADO
+data_ranking_global = {
+    "Concesionario": ["DPQ - Puesto 5", "GON - Puesto 10", "Autolux (LUX) - Puesto 24"],
+    "Porcentaje DEP Global": [72.3, 69.8, score_global_final]
+}
+df_bench_ranking = pd.DataFrame(data_ranking_global)
 
 # MOTOR DE RANKING ELÁSTICO CORRECTO DEL MANUAL CON BASE FIX EN 62.0% REAL
 if score_global_final <= 62.0:
@@ -105,15 +112,25 @@ with tab_dashboard:
             st.metric("Ranking General Red", f"Puesto 24 🚗", help="Posición base oficial de Autolux")
     with col3: st.metric("Pilar GENERAL Proyectado", f"{g_simulada:.1f}%")
 
-    # GRÁFICO ACTUALIZADO: Despliega las unidades de negocio e incluye el bloque operativo GENERAL al final de la serie
-    st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Incluyendo Pilar GENERAL)")
-    df_melted_op = df_bench.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
+    # GRÁFICO 1: Desempeño Operativo Puro por Columnas
+    st.subheader("🏁 Desempeño Operativo por Unidades de Negocio")
+    df_melted_op = df_bench_op.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
     fig_op = px.bar(
         df_melted_op, x="Área", y="Cumplimiento %", color="Concesionario", barmode="group", text_auto=".1f",
-        color_discrete_map={"Autolux (LUX) - Puesto 24": "#d62728", "DPQ - Puesto 5": "#1f77b4", "GON - Puesto 10": "#7f7f7f"}
+        color_discrete_map={"Autolux (LUX)": "#d62728", "DPQ - Puesto 5": "#1f77b4", "GON - Puesto 10": "#7f7f7f"}
     )
     fig_op.update_layout(xaxis_title="Eje del Concesionario / Unidad Operativa", yaxis_title="Efectividad %", yaxis=dict(range=[0, 100]))
     st.plotly_chart(fig_op, use_container_width=True)
+
+    # RESTAURADO - GRÁFICO 2: Vista Exclusiva del Puesto, Porcentaje y Competencia del Cierre General
+    st.subheader("🏆 Posicionamiento Estratégico: Resultado Consolidado RED")
+    fig_gen = px.bar(
+        df_bench_ranking, x="Concesionario", y="Porcentaje DEP Global", color="Concesionario", text_auto=".1f",
+        title="Evaluación DEP Acumulada a Junio - Posición y Porcentaje",
+        color_discrete_map={"Autolux (LUX) - Puesto 24": "#990000", "DPQ - Puesto 5": "#4A7ebb", "GON - Puesto 10": "#A6A6A6"}
+    )
+    fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 100]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
+    st.plotly_chart(fig_gen, use_container_width=True)
 
     # Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)
     st.divider()
@@ -138,9 +155,9 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     df_p = pd.DataFrame()
     df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    df_p["Jujuy_Menciones"] = [26, 14, 8, 4, 3, 5, 2, 5, 4, 0]
-    df_p["Salta_Menciones"] = [22, 15, 9, 12, 11, 4, 6, 4, 3, 3]
-    df_p["Tartagal_Menciones"] = [2, 1, 2, 2, 0, 3, 0, 0, 1, 0]
+    df_p["Jujuy_Menciones"] = [26, 14, 8, 5, 4, 3, 2, 2, 1, 1]
+    df_p["Salta_Menciones"] = [22, 15, 9, 12, 6, 7, 4, 3, 5, 2]
+    df_p["Tartagal_Menciones"] = [2, 1, 2, 2, 0, 3, 1, 0, 0, 0]
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
     col_menciones = f"{sucursal}_Menciones"
@@ -155,7 +172,7 @@ with tab_calidad:
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
     fig_pareto.update_layout(
         title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25),
-        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 105]),
+        yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 100]),
         legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550
     )
     st.plotly_chart(fig_pareto, use_container_width=True)
@@ -164,7 +181,6 @@ with tab_plan:
     st.markdown("Carga los objetivos manuales de los jefes para ver el cambio elástico en el Dashboard:")
 
     if "db_dep_final_oficial_2026_v8" not in st.session_state:
-        # ASIGNACIÓN DE FILAS SEGÚN EL BLOQUE GENERAL: Filas de RRHH y Facilities mapeadas a Pág. 76
         cods = ["", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.1.1 SSI (Pág. 5)", "1.2.2 KPIs (Pág. 5)", "6.1.1: USADOS (Pág. 63)", "4.3.1 Estructura (Pág. 41)", "9.3.2 CAPACITACIÓN (Pág. 76)", "9.3.3 ROTACIÓN (Pág. 76)", "9.4.1 INSTALACIONES (Pág. 76)", "9.4.1 INSTALACIONES (Pág. 76)", "2.1.2 CRM (Pág. 5)", "2.1.2 CRM (Pág. 5)", "2.1.2 CRM (Pág. 5)", "3.5.2 Airbags (Pág. 21)", "7.1.1: SEGUROS (Pág. 69)", "7.1.2: APP (Pág. 69)", "5.1.1: KINTO ONE (Pág. 50)"]
         secs = ["Coordinación", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "RRHH", "RRHH", "RRHH", "Facilities", "Facilities", "CRM", "CRM", "CRM", "Posventa", "TCFA", "TCFA", "KINTO"]
         tems = ["Programa DEP", "Ventas - Kits", "Ventas - Showroom", "Ventas - Fidelidad", "Ventas - Mystery", "Ventas - KPIs", "Usados Certificados", "Estructura TPA", "Capacitación TPA", "Rotación Personal", "Las Lajitas", "Reformas Salta", "Lista de Espera", "Tiempos Salesforce", "Limpieza Sistema", "Campañas Seguridad", "Cartera Seguros", "Servicios Conectados", "Gestión Siniestros"]
@@ -192,7 +208,6 @@ with tab_plan:
                 if tg > 0:
                     cod = str(r["Código Auditoría Manual"])
                     ger = str(r["Gerencia / Sector"])
-                    # ENLACE ELÁSTICO CORREGIDO: Inyecta los valores en las variables vivas del Bloque 1
                     if "1.1.1" in cod or "Ventas" in ger: st.session_state.sim_pilar_ventas = tg
                     elif "3.5.2" in cod or "Posventa" in ger: st.session_state.sim_pilar_posventa = tg
                     elif "4.3.1" in cod: st.session_state.sim_pilar_tpa = tg
