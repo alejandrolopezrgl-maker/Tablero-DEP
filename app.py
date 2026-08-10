@@ -110,13 +110,33 @@ if st.sidebar.button("🔄 Restablecer Valores Oficiales", key="btn_reset_latera
 tab_dashboard, tab_calidad, tab_plan = st.tabs(["📊 Dashboard del Dealer", "🕵️ Análisis de Calidad por Sucursal", "📋 Plan de Acción Interactiva"])
 
 with tab_dashboard:
+    # --- CÁLCULO DE BRECHA DE PUNTOS PARA OBJETIVOS ---
+    target_p10 = 69.8
+    target_p5 = 72.3
+    
+    pts_para_p10 = max(0.0, target_p10 - score_global_final)
+    pts_para_p5 = max(0.0, target_p5 - score_global_final)
+
     col1, col2, col3 = st.columns(3)
-    with col1: st.metric("Cumplimiento DEP Score Global", f"{score_global_final:.1f}%")
+    with col1: 
+        st.metric("Cumplimiento DEP Score Global", f"{score_global_final:.1f}%")
     with col2: 
-        if puesto_calculado < 24: st.metric("Ranking Proyectado Red", f"Puesto {puesto_calculado} 🏆", delta=f"¡Subiendo {24 - puesto_calculado} puestos!")
-        elif puesto_calculado > 24: st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🚨", delta=f"¡Bajando {puesto_calculado - 24} puestos!")
-        else: st.metric("Ranking General Red", f"Puesto 24 🚗", help="Posición base oficial de Autolux")
-    with col3: st.metric("Impacto Penalidad EMT", f"-{penalidad_estandar_emt:.1f} pts" if penalidad_estandar_emt > 0 else "0.0 pts (Ok)")
+        if puesto_calculado < 24: 
+            st.metric("Ranking Proyectado Red", f"Puesto {puesto_calculado} 🏆", delta=f"¡Subiendo {24 - puesto_calculado} puestos!")
+        elif puesto_calculado > 24: 
+            st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🚨", delta=f"¡Bajando {puesto_calculado - 24} puestos!")
+        else: 
+            st.metric("Ranking General Red", f"Puesto 24 🚗", help="Posición base oficial de Autolux")
+    with col3:
+        if pts_para_p5 == 0:
+            st.metric("Puntos para Meta Superlativa", "¡En Puesto 5 o superior! 🎉")
+        else:
+            st.metric(
+                label="Puntos Faltantes para Top 10 / Top 5", 
+                value=f"+{pts_para_p10:.1f} pts (P10)", 
+                delta=f"+{pts_para_p5:.1f} pts para Puesto 5 (DPQ)",
+                delta_color="inverse"
+            )
 
     st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Incluyendo Pilar GENERAL)")
     df_melted_op = df_bench_op.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
