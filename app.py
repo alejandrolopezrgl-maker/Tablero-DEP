@@ -152,7 +152,6 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     df_p = pd.DataFrame()
     df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    # Datos de ejemplo corregidos (reemplazar con los tuyos)
     df_p["Jujuy_Menciones"] = [35, 25, 12, 8, 6, 5, 4, 2, 2, 1]
     df_p["Salta_Menciones"] = [18, 32, 22, 10, 7, 4, 3, 2, 1, 1]
     df_p["Tartagal_Menciones"] = [28, 14, 8, 22, 5, 3, 3, 1, 1, 0]
