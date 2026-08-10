@@ -7,7 +7,7 @@ import io
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="DEP Autolux", layout="wide", page_icon="🚗")
 st.title("🚗 Tablero de Control y Dashboard Evolutivo DEP - Autolux")
-st.caption("Datos Oficiales e Informe de Calidad de la Red TASA (Acumulado Junio 2026)")
+st.caption("Datos Oficiales e Informe de Calidad de la Red TASA (Manual DEP 2026)")
 
 if "reestablecer" not in st.session_state:
     st.session_state.reestablecer = False
@@ -66,16 +66,16 @@ if (st.session_state.sim_pilar_ventas is None and st.session_state.sim_pilar_gen
     if penalidad_mov: score_global_final -= 1.1
 else:
     score_global_final = (
-        (p_simulada * 0.27) + (v_simulada * 0.22) + (g_simulada * 0.165) + 
+        (p_simulada * 0.27) + (v_simulada * 0.22) + (g_simulada * 0.20) + 
         (tpa_simulada * 0.09) + (kinto_simulada * 0.06) + (usd_simulada * 0.06) + 
         (esp_simulada * 0.05) + (tcfa_simulada * 0.04) + (esg_simulada * 0.01)
     )
     score_global_final = score_global_final - puntos_a_restar_global - penalidad_estandar_emt
     if penalidad_mov: score_global_final -= 1.1
 
-# DATAFRAME OPERATIVO COMPLETO SEGÚN PLANILLA OFICIAL TASA
+# DATAFRAME OPERATIVO COMPLETO SEGÚN PONDERACIÓN OFICIAL MANUAL 2026
 data_operativa = {
-    "Área": ["Ventas", "Ventas Especiales", "Posventa", "TPA", "KINTO", "Usados", "TCFA", "ESG", "GENERAL"],
+    "Área": ["Ventas (22%)", "Ventas Especiales (5%)", "Posventa (27%)", "TPA (9%)", "KINTO (6%)", "Usados (6%)", "TCFA (4%)", "ESG (1%)", "GENERAL (20%)"],
     "Autolux (LUX)": [v_simulada, esp_simulada, p_simulada, tpa_simulada, kinto_simulada, usd_simulada, tcfa_simulada, esg_simulada, g_simulada],
     "DPQ - Puesto 5": [61.1, 30.0, 92.5, 78.2, 50.0, 93.3, 100.0, 35.5, 59.8],
     "GON - Puesto 10": [26.8, 86.0, 96.0, 48.5, 58.3, 100.0, 100.0, 35.5, 79.0]
@@ -138,7 +138,7 @@ with tab_dashboard:
                 delta_color="inverse"
             )
 
-    st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Incluyendo Pilar GENERAL)")
+    st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Ponderaciones Manual 2026)")
     df_melted_op = df_bench_op.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
     fig_op = px.bar(df_melted_op, x="Área", y="Cumplimiento %", color="Concesionario", barmode="group", text_auto=".1f", color_discrete_map={"Autolux (LUX)": "#d62728", "DPQ - Puesto 5": "#1f77b4", "GON - Puesto 10": "#7f7f7f"})
     fig_op.update_layout(xaxis_title="Eje del Concesionario / Unidad Operativa", yaxis_title="Efectividad %", yaxis=dict(range=[0, 105]))
@@ -198,11 +198,11 @@ with tab_calidad:
 
 with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen (Evidencias de Auditoría)")
-    st.markdown("Ecosistema primario de seguimiento para los desvíos reales alineados fielmente a los **Códigos Oficiales TASA**:")
+    st.markdown("Ecosistema primario de seguimiento acoplado a los **Códigos Oficiales del Manual DEP 2026**:")
 
     if "db_plan_puro_19_v2" not in st.session_state or st.session_state.db_plan_puro_19_v2 is None:
         cods = [
-            "1.1.1", "1.1.1", "3.1.1", "1.1.1", "1.1.1", 
+            "1.1.1", "1.1.1", "3.1.1", "1.1.3", "1.1.1", 
             "1.5.6", "6.1.1", "4.3.1", "9.3.2", "9.3.3", 
             "9.4.1", "9.4.1", "1.5.5", "1.5.6", "1.5.5", 
             "3.5.2", "7.5.5", "9.5.3", "5.5.5"
@@ -214,21 +214,21 @@ with tab_plan:
             "Posventa", "TCFA", "General", "KINTO"
         ]
         tems = [
-            "Programa DEP - Gobernanza", "Ventas - SSI Kits de Entrega", "Posventa - CSI Taller y Servicio", "Ventas - SSI Fidelidad Encuestas", "Ventas - SSI Mystery Shopper", 
-            "Ventas - CRM Adopción Digital", "Usados - SSI Certificados UCT", "TPA - Estructura Adecuada Planes", "RRHH - Capacitación Red", "RRHH - Nivel de Rotación Personal", 
-            "Facilities - Instalaciones Las Lajitas", "Facilities - Reformas Salta Chapa/Pintura", "Ventas - Salesforce Lista Espera", "Ventas - CRM Tiempos de Respuesta", "Ventas - Salesforce Depuración Boletos", 
-            "Posventa - Campañas de Seguridad Airbags", "TCFA - Crecimiento Cartera Seguros", "General - Servicios Conectados App", "KINTO - Siniestros y Operación One"
+            "Programa DEP - Gobernanza", "Ventas - SSI Kits de Entrega", "Posventa - CSI Taller y Servicio", "Ventas - NPS Fidelidad Encuestas", "Ventas - SSI Mystery Shopper", 
+            "Ventas - CRM Adopción Digital", "Usados - SSI Certificados UCT", "TPA - Estructura Adecuada Adm.", "RRHH - Capacitación Matriz por Puesto", "RRHH - Rotación de Personal General", 
+            "Facilities - Instalaciones Las Lajitas", "Facilities - Reformas Salta Chapa/Pintura 2.0", "Ventas - Salesforce Lista Espera", "Ventas - CRM Tiempos de Respuesta", "Ventas - Salesforce Depuración Boletos", 
+            "Posventa - Campañas de Seguridad Airbags", "TCFA - Crecimiento Cartera Seguros", "General - Servicios Conectados App Onboarding", "KINTO - Gestión de Siniestros One"
         ]
         sits = [
-            "Desvinculación operativa", "Falta kit obsequio en entrega", "Tasa de quejas en servicio post-entrega", "Baja tasa respuesta encuestas", "Desvíos en atención de asesores", 
-            "Falta visibilidad avance leads", "Estándar flojo inspección UCT", "Sobrecarga en la administración TPA", "Riesgo incumplimiento horas YTD", "Inestabilidad en la nómina técnica", 
+            "Desvinculación operativa", "Falta kit obsequio en entrega", "Tasa de quejas en servicio post-entrega", "Baja tasa respuesta encuestas NPS", "Desvíos en atención de asesores", 
+            "Falta visibilidad avance leads", "Estándar flojo inspección UCT", "Sobrecarga en administración TPA", "Riesgo incumplimiento horas YTD", "Inestabilidad en la nómina general", 
             "Obras pendientes 2025", "Pendiente traslado físico lavaderos", "Boletos estancados en proceso", "Demoras atención prospectos digital", "Boletos vencidos sin actividad", 
             "Baja tasa contacto campañas masivas", "Desvío meta crecimiento pólizas", "Baja tasa activación de la app", "Procesos sueltos en unidades One"
         ]
         accs = [
             "Tablero único de control, calendario de vencimientos y evidencias transversales", "Kits de seguridad como obsequio de Autolux en las entregas de unidades", "Estandarización de recepción en taller y seguimiento post-servicio", "Campaña de fidelización con sorteos activos en encuestas de la red", "Implementación obligatoria de auditorías mystery shopper en salones", 
-            "Desarrollo de un tablero único de control de KPIs CRM centrales", "Reorganización completa de toma, entrega y venta de unidades UCT", "Incorporación de 2 colaboradores administrativos para el área de planes", "Plan de seguimiento semestral obligatorio junto a Recursos Humanos", "Control y estabilización de la nómina de personal técnico de taller", 
-            "Negociación con fieldman TASA sobre obras no hechas planteadas 2025", "Planificar reformas de Chapa, Pintura y traslado físico de lavaderos", "Seguimiento diario con foco crítico a cierre de mes en carpetas", "Garantizar atención de prospectos digitales en menos de 2 horas en CRM", "Eliminación activa de boletos vencidos sin actividad comercial en sistema", 
+            "Desarrollo de un tablero único de control de KPIs CRM centrales", "Reorganización completa de toma, entrega y venta de unidades UCT", "Incorporación de 2 colaboradores administrativos para el área de planes", "Plan de seguimiento semestral obligatorio junto a Recursos Humanos", "Control y estabilización de la nómina general", 
+            "Negociación con fieldman TASA sobre obras no hechas planteadas 2025", "Planificar reformas 2.0 de Chapa, Pintura y traslado de lavaderos", "Seguimiento diario con foco crítico a cierre de mes en carpetas", "Garantizar atención de prospectos digitales en menos de 2 horas en CRM", "Eliminación activa de boletos vencidos sin actividad comercial en sistema", 
             "Citaciones masivas Airbags ABI 414/415 para subir de escalón", "Revisar el método de cálculo para crecimiento de pólizas comerciales", "Seguimiento focalizado en revendedores y empresas para la activación app", "Revisar proceso de seguimiento junto al área de Posventa de flota"
         ]
         resps = [
@@ -246,9 +246,9 @@ with tab_plan:
     st.subheader("🚀 Ampliación de Simulación Estratégica (Para alcanzar el Puesto 1)")
     if "db_ampliacion_2_limpia" not in st.session_state or st.session_state.db_ampliacion_2_limpia is None:
         rows_a = [
-            [1, "2.5.1", "Ventas Especiales", "Licitaciones Corporativas", "Brecha en cumplimiento del plan de negocios", "Plan de reactivación de licitaciones corporativas y flotas", "ALTA", "Licitaciones ganadas", "Alfredo Aguilar", "", "", "EN PROCESO", 80.0], 
-            [2, "8.5.1", "ESG", "Reducción Emisiones CO2", "Plan de CO2 sin presentar", "Desarrollo del plan de acción para reducción de CO2 en salones y talleres", "ALTA", "Plan CO2 TASA", "Alejandro López", "", "", "EN PROCESO", 100.0],
-            [3, "8.5.3", "ESG", "Políticas ABAC y Gobernanza", "Reporte ABAC pendiente", "Confección y entrega del reporte formal de políticas ABAC y sustentabilidad", "ALTA", "Reporte ABAC TASA", "Alejandro López", "", "", "EN PROCESO", 100.0]
+            [1, "2.5.1", "Ventas Especiales", "Licitaciones Corporativas (VE + Kinto ONE)", "Brecha en cumplimiento del plan de negocios corporativo", "Plan de reactivación de licitaciones corporativas y flotas Kinto", "ALTA", "Licitaciones ganadas", "Alfredo Aguilar", "", "", "EN PROCESO", 80.0], 
+            [2, "8.5.1", "ESG", "E - Plan de Reducción Emisiones CO2", "Plan de CO2 sin presentar a TASA", "Desarrollo y presentación del plan de reducción de CO2 con metas medibles", "ALTA", "Plan CO2 presentado TASA", "Alejandro López", "", "", "EN PROCESO", 100.0],
+            [3, "8.5.3", "ESG", "G - Políticas ABAC y Sustentabilidad", "Reporte ABAC pendiente", "Confección y entrega del reporte formal de políticas ABAC y Compliance", "ALTA", "Reporte ABAC TASA", "Alejandro López", "", "", "EN PROCESO", 100.0]
         ]
         st.session_state.db_ampliacion_2_limpia = pd.DataFrame(rows_a, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
 
@@ -276,7 +276,7 @@ with tab_plan:
                     cod = str(r["Código Auditoría Manual"])
                     if "2.5" in cod: st.session_state.sim_pilar_especiales = tg
                     elif "8.5" in cod: st.session_state.sim_pilar_esg = tg
-            st.success("🎉 Simulación procesada con códigos oficiales TASA.")
+            st.success("🎉 Simulación procesada con ponderaciones exactas del Manual DEP 2026.")
             st.rerun()
             
     with c_btn2:
