@@ -3,8 +3,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import io
-from openpyxl.styles import Font, PatternFill, Border, Side
-from openpyxl.utils import get_column_letter
 
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="DEP Autolux", layout="wide", page_icon="🚗")
@@ -96,7 +94,7 @@ elif score_global_final >= 99.9: puesto_calculado = 1
 elif score_global_final >= 72.3: puesto_calculado = max(1, min(5, int(5 - ((score_global_final - 72.3)/(100.0 - 72.3))*(5 - 1))))
 else: puesto_calculado = max(5, min(24, int(24 - ((score_global_final - 62.0)/(72.3 - 62.0))*(24 - 5))))
 
-# ACCIÓN DE RESET CRUZADO: Vuelve obligatoriamente tanto las grillas como los sliders EMT al estado de fábrica limpio
+# ACCIÓN DE RESET CRUZADO: Vuelve obligatoriamente tanto las grillas como los sliders EMT al estado base oficial
 if st.sidebar.button("🔄 Restablecer Valores Oficiales", key="btn_reset_lateral"):
     for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_19_v2", "db_ampliacion_2_limpia"]: 
         if k in st.session_state: st.session_state[k] = None
@@ -116,12 +114,12 @@ with tab_dashboard:
     st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Incluyendo Pilar GENERAL)")
     df_melted_op = df_bench_op.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
     fig_op = px.bar(df_melted_op, x="Área", y="Cumplimiento %", color="Concesionario", barmode="group", text_auto=".1f", color_discrete_map={"Autolux (LUX)": "#d62728", "DPQ - Puesto 5": "#1f77b4", "GON - Puesto 10": "#7f7f7f"})
-    fig_op.update_layout(xaxis_title="Eje del Concesionario / Unidad Operativa", yaxis_title="Efectividad %", yaxis=dict(range=))
+    fig_op.update_layout(xaxis_title="Eje del Concesionario / Unidad Operativa", yaxis_title="Efectividad %", yaxis=dict(range=[0, 100]))
     st.plotly_chart(fig_op, use_container_width=True)
 
     st.subheader("🏆 Posicionamiento Estratégico: Resultado Consolidado RED")
     fig_gen = px.bar(df_bench_ranking, x="Concesionario", y="Porcentaje DEP Global", color="Concesionario", text_auto=".1f", color_discrete_map={"Autolux (LUX) - Puesto 24": "#990000", "DPQ - Puesto 5": "#4A7ebb", "GON - Puesto 10": "#A6A6A6"})
-    fig_gen.update_layout(showlegend=False, yaxis=dict(range=), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
+    fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 100]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
     st.plotly_chart(fig_gen, use_container_width=True)
 
     st.divider()
@@ -147,9 +145,9 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     df_p = pd.DataFrame()
     df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    df_p["Jujuy_Menciones"] =
-    df_p["Salta_Menciones"] =
-    df_p["Tartagal_Menciones"] =
+    df_p["Jujuy_Menciones"] = [42, 28, 19, 14, 8, 5, 3, 2, 1, 0]
+    df_p["Salta_Menciones"] = [15, 38, 22, 5, 12, 9, 2, 4, 1, 1]
+    df_p["Tartagal_Menciones"] = [25, 10, 8, 18, 5, 4, 1, 2, 0, 0]
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
     col_menciones = f"{sucursal}_Menciones"
@@ -162,7 +160,7 @@ with tab_calidad:
     fig_pareto = go.Figure()
     fig_pareto.add_trace(go.Bar(x=df_suc["Categoría"], y=df_suc[col_menciones], name="Cantidad de Menciones", marker_color="#1F4E78", text=df_suc[col_menciones], textposition="inside"))
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
-    fig_pareto.update_layout(title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25), yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=), legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550)
+    fig_pareto.update_layout(title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25), yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 100]), legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550)
     st.plotly_chart(fig_pareto, use_container_width=True)
 
     st.markdown("---")
@@ -174,7 +172,7 @@ with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen (Evidencias de Auditoría)")
     st.markdown("Ecosistema primario de seguimiento para los desvíos reales de las jefaturas:")
 
-    # HOMOLOGACIÓN ABSOLUTA: Se alineó la llave de sesión db_plan_puro_19_v2 para sanar el AttributeError de raíz
+    # SANEADO DE RAÍZ: Se corrigieron los identificadores para evitar colisiones de memoria en el servidor
     if "db_plan_puro_19_v2" not in st.session_state or st.session_state.db_plan_puro_19_v2 is None:
         cods = ["", "1.1.1 SSI", "3.1.1 CSI", "1.1.1 SSI", "1.1.1 SSI", "1.2.2 KPIs", "6.1.1 USADOS", "4.3.1 ESTRUCTURA", "9.3.2 CAPACITACIÓN", "9.3.3 ROTACIÓN", "9.4.1 INSTALACIONES", "9.4.1 INSTALACIONES", "2.1.2 CRM", "2.1.2 CRM", "2.1.2 CRM", "3.5.2 AIRBAGS", "7.1.1 SEGUROS", "7.1.2 APP", "5.1.1 KINTO ONE"]
         secs = ["Coordinación", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "Calidad", "RRHH", "RRHH", "RRHH", "Facilities", "Facilities", "CRM", "CRM", "CRM", "Posventa", "TCFA", "TCFA", "KINTO"]
@@ -185,7 +183,7 @@ with tab_plan:
         rows = [[i+1, cods[i], secs[i], tems[i], sits[i], accs[i], "ALTA", "Evidencia", resps[i], "", "", "EN PROCESO", 0.0] for i in range(19)]
         st.session_state.db_plan_puro_19_v2 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
 
-    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_19_v2, use_container_width=True, key="grilla1_oficial_v2", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=True), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
+    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_19_v2, use_container_width=True, key="grilla1_oficial_v3", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=True), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
 
     st.markdown("---")
     st.subheader("🚀 Ampliación de Simulación Estratégica (Para alcanzar el Puesto 1)")
@@ -193,7 +191,7 @@ with tab_plan:
         rows_a = [[1, "1.3.1 ESPECIALES", "Comercial", "Ventas Especiales", "Brecha corporativa", "Plan de reactivación de licitaciones corporativas", "ALTA", "Evidencia", "Alfredo Aguilar", "", "", "EN PROCESO", 0.0], [2, "9.6.1 ESG RED", "Dirección", "Sustentabilidad ESG", "Bajo score social", "Desarrollo de bitácora Kaizen ambiental", "ALTA", "Evidencia", "Alejandro López", "", "", "EN PROCESO", 0.0]]
         st.session_state.db_ampliacion_2_limpia = pd.DataFrame(rows_a, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
 
-    df_ed_2 = st.data_editor(st.session_state.db_ampliacion_2_limpia, use_container_width=True, key="grilla2_clean_v2", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=True), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
+    df_ed_2 = st.data_editor(st.session_state.db_ampliacion_2_limpia, use_container_width=True, key="grilla2_clean_v3", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=True), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
 
     c_btn1, c_btn2 = st.columns(2)
     with c_btn1:
@@ -225,8 +223,9 @@ with tab_plan:
             for ek in ["emt_a", "emt_b", "emt_c", "emt_d", "emt_e", "emt_f", "emt_g", "emt_h", "emt_i"]: st.session_state[ek] = 100
             st.success("🧹 Reset completado."); st.rerun()
 
+    # DETALLE MÁSTER: Motor de Excel re-diseñado a prueba de fallos de caché usando memoria dura
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        df_ed_1.to_excel(writer, sheet_name='Plan de Accion Oficial', index=False)
-        df_ed_2.to_excel(writer, sheet_name='Ampliacion DEP', index=False)
+        st.session_state.db_plan_puro_19_v2.to_excel(writer, sheet_name='Plan de Accion Oficial', index=False)
+        st.session_state.db_ampliacion_2_limpia.to_excel(writer, sheet_name='Ampliacion DEP', index=False)
     st.download_button(label="📥 Descargar Agenda en Excel", data=buffer.getvalue(), file_name="Plan_de_Accion_Oficial_Autolux.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
