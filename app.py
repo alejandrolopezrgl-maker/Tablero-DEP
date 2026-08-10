@@ -9,7 +9,7 @@ st.set_page_config(page_title="DEP Autolux", layout="wide", page_icon="🚗")
 st.title("🚗 Tablero de Control y Dashboard Evolutivo DEP - Autolux")
 st.caption("Datos Oficiales e Informe de Calidad de la Red TASA")
 
-if "reestablecer" not in st.session_state: 
+if "reestablecer" not in st.session_state:
     st.session_state.reestablecer = False
 
 # 2. BARRA LATERAL: CONTROL DE RIESGOS PENALIDADES DE CAMPO
@@ -89,19 +89,26 @@ data_ranking_global = {
 df_bench_ranking = pd.DataFrame(data_ranking_global)
 
 # MOTOR DE RANKING ELÁSTICO RED
-if score_global_final <= 62.0: puesto_calculado = int(24 + ((62.0 - score_global_final)/5.0)*10); puesto_calculado = min(43, puesto_calculado)
-elif score_global_final >= 99.9: puesto_calculado = 1
-elif score_global_final >= 72.3: puesto_calculado = max(1, min(5, int(5 - ((score_global_final - 72.3)/(100.0 - 72.3))*(5 - 1))))
-else: puesto_calculado = max(5, min(24, int(24 - ((score_global_final - 62.0)/(72.3 - 62.0))*(24 - 5))))
+if score_global_final <= 62.0: 
+    puesto_calculado = int(24 + ((62.0 - score_global_final)/5.0)*10)
+    puesto_calculado = min(43, puesto_calculado)
+elif score_global_final >= 99.9: 
+    puesto_calculado = 1
+elif score_global_final >= 72.3: 
+    puesto_calculado = max(1, min(5, int(5 - ((score_global_final - 72.3)/(100.0 - 72.3))*(5 - 1))))
+else: 
+    puesto_calculado = max(5, min(24, int(24 - ((score_global_final - 62.0)/(72.3 - 62.0))*(24 - 5))))
 
 # ACCIÓN DE RESET CRUZADO NATIVO
 if st.sidebar.button("🔄 Restablecer Valores Oficiales", key="btn_reset_lateral"):
     for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_19_v2", "db_ampliacion_2_limpia"]: 
         if k in st.session_state: st.session_state[k] = None
     for ek in emt_keys: st.session_state[ek] = 100
-    st.session_state.reestablecer = True; st.rerun()
+    st.session_state.reestablecer = True
+    st.rerun()
 
 tab_dashboard, tab_calidad, tab_plan = st.tabs(["📊 Dashboard del Dealer", "🕵️ Análisis de Calidad por Sucursal", "📋 Plan de Acción Interactiva"])
+
 with tab_dashboard:
     col1, col2, col3 = st.columns(3)
     with col1: st.metric("Cumplimiento DEP Score Global", f"{score_global_final:.1f}%")
@@ -114,18 +121,17 @@ with tab_dashboard:
     st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Incluyendo Pilar GENERAL)")
     df_melted_op = df_bench_op.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
     fig_op = px.bar(df_melted_op, x="Área", y="Cumplimiento %", color="Concesionario", barmode="group", text_auto=".1f", color_discrete_map={"Autolux (LUX)": "#d62728", "DPQ - Puesto 5": "#1f77b4", "GON - Puesto 10": "#7f7f7f"})
-    fig_op.update_layout(xaxis_title="Eje del Concesionario / Unidad Operativa", yaxis_title="Efectividad %", yaxis=dict(range=))
+    fig_op.update_layout(xaxis_title="Eje del Concesionario / Unidad Operativa", yaxis_title="Efectividad %", yaxis=dict(range=[0, 105]))
     st.plotly_chart(fig_op, use_container_width=True)
 
     st.subheader("🏆 Posicionamiento Estratégico: Resultado Consolidado RED")
     fig_gen = px.bar(df_bench_ranking, x="Concesionario", y="Porcentaje DEP Global", color="Concesionario", text_auto=".1f", color_discrete_map={"Autolux (LUX) - Puesto 24": "#990000", "DPQ - Puesto 5": "#4A7ebb", "GON - Puesto 10": "#A6A6A6"})
-    fig_gen.update_layout(showlegend=False, yaxis=dict(range=), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
+    fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 105]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
     st.plotly_chart(fig_gen, use_container_width=True)
 
     st.divider()
     st.subheader("📝 Checklist de Auditoría Interna: Estilo de Movilidad Toyota (EMT)")
     col_em1, col_em2, col_em3 = st.columns(3)
-    # ¡SANEADO TOTAL CON LLAVES NATIVAS DIRECTAS!: Se eliminaron los duplicados de llaves logrando una sincronización perfecta
     with col_em1:
         st.slider("A: Estructura Central (100)", 0, 100, key="emt_a")
         st.slider("B: Servicio al Cliente (100)", 0, 100, key="emt_b")
@@ -146,9 +152,10 @@ with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
     df_p = pd.DataFrame()
     df_p["Categoría"] = ["Demoras y puntualidad", "Comunicación y seguimiento", "Administración y documentación", "Cortesías y obsequios", "Atención y actitud", "Instalaciones y comodidad", "Preparación y accesorios", "Explicación del vehículo", "Protocolo y personalización", "Producto o marca"]
-    df_p["Jujuy_Menciones"] =
-    df_p["Salta_Menciones"] =
-    df_p["Tartagal_Menciones"] =
+    # Datos de ejemplo corregidos (reemplazar con los tuyos)
+    df_p["Jujuy_Menciones"] = [35, 25, 12, 8, 6, 5, 4, 2, 2, 1]
+    df_p["Salta_Menciones"] = [18, 32, 22, 10, 7, 4, 3, 2, 1, 1]
+    df_p["Tartagal_Menciones"] = [28, 14, 8, 22, 5, 3, 3, 1, 1, 0]
 
     sucursal = st.selectbox("📍 Seleccione la Sucursal a Diagnosticar:", ["Jujuy", "Salta", "Tartagal"])
     col_menciones = f"{sucursal}_Menciones"
@@ -161,7 +168,7 @@ with tab_calidad:
     fig_pareto = go.Figure()
     fig_pareto.add_trace(go.Bar(x=df_suc["Categoría"], y=df_suc[col_menciones], name="Cantidad de Menciones", marker_color="#1F4E78", text=df_suc[col_menciones], textposition="inside"))
     fig_pareto.add_trace(go.Scatter(x=df_suc["Categoría"], y=df_suc["Acumulado"], name="Curva Acumulada %", yaxis="y2", mode="lines+markers", line=dict(color="#d62728", width=3)))
-    fig_pareto.update_layout(title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25), yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=), legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550)
+    fig_pareto.update_layout(title=f"Diagrama de Pareto de Calidad - Sucursal {sucursal}", xaxis=dict(title="Categorías Críticas", tickangle=-25), yaxis=dict(title="Número de Quejas (Cantidad)"), yaxis2=dict(title="Porcentaje Acumulado %", overlaying="y", side="right", range=[0, 105]), legend=dict(orientation="h", yanchor="top", y=-0.45, xanchor="center", x=0.5), margin=dict(b=140), height=550)
     st.plotly_chart(fig_pareto, use_container_width=True)
 
     st.markdown("---")
@@ -169,6 +176,7 @@ with tab_calidad:
     if sucursal == "Jujuy": st.info("🎯 **Foco Crítico en Jujuy**: El 60% de los desvíos se concentran en **Demoras y Puntualidad** junto a **Comunicación y Seguimiento**. Es urgente atacar estos dos frentes en el taller para estabilizar el SSI operativo.")
     elif sucursal == "Salta": st.info("🎯 **Foco Crítico en Salta**: La debilidad principal radica en **Comunicación y Seguimiento** junto a **Administración de Documentos**. Se debe estandarizar el flujo administrativo en las entregas convencionales.")
     elif sucursal == "Tartagal": st.info("🎯 **Foco Crítico en Tartagal**: Los reclamos están liderados por **Demoras y Puntualidad** y **Cortesías u Obsequios**. Es clave sincronizar los tiempos de alistamiento y revisar la entrega de kits de seguridad.")
+
 with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen (Evidencias de Auditoría)")
     st.markdown("Ecosistema primario de seguimiento para los desvíos reales de las jefaturas:")
@@ -196,7 +204,8 @@ with tab_plan:
     c_btn1, c_btn2 = st.columns(2)
     with c_btn1:
         if st.button("🧮 Simular e Impactar Dashboard"):
-            st.session_state.db_plan_puro_19_v2 = df_ed_1; st.session_state.db_ampliacion_2_limpia = df_ed_2
+            st.session_state.db_plan_puro_19_v2 = df_ed_1
+            st.session_state.db_ampliacion_2_limpia = df_ed_2
             for _, r in df_ed_1.iterrows():
                 tg = r["Objetivo Simulación (%)"]
                 if tg > 0:
@@ -214,14 +223,16 @@ with tab_plan:
                     cod = str(r["Código Auditoría Manual"])
                     if "1.3.1" in cod: st.session_state.sim_pilar_especiales = tg
                     elif "9.6.1" in cod: st.session_state.sim_pilar_esg = tg
-            st.success("🎉 Simulación procesada."); st.rerun()
+            st.success("🎉 Simulación procesada.")
+            st.rerun()
             
     with c_btn2:
         if st.button("🧹 Limpiar Simulación"):
             for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_19_v2", "db_ampliacion_2_limpia"]: 
                 if k in st.session_state: st.session_state[k] = None
             for ek in ["emt_a", "emt_b", "emt_c", "emt_d", "emt_e", "emt_f", "emt_g", "emt_h", "emt_i"]: st.session_state[ek] = 100
-            st.success("🧹 Reset completado."); st.rerun()
+            st.success("🧹 Reset completado.")
+            st.rerun()
 
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
