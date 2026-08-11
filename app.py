@@ -16,12 +16,12 @@ if "reestablecer" not in st.session_state:
 st.sidebar.header("🚨 Zona de Control de Riesgos")
 if st.session_state.reestablecer:
     penalidad_fp = st.sidebar.toggle("Fair Play Global (-10 pts)", value=False, key="fp_real")
-    penalidad_mov = st.sidebar.toggle("Falta Movilidad (-5.0 pts)", value=False, key="mov_real")
+    penalidad_mov = st.sidebar.toggle("No Certificación EMT (-5.0 pts)", value=False, key="mov_real")
     visitas_fm = st.sidebar.slider("% Compromisos Fieldman", 0, 100, 85, key="fm_real")
     st.session_state.reestablecer = False  
 else:
     penalidad_fp = st.sidebar.toggle("Fair Play Global (-10 pts)", value=False)
-    penalidad_mov = st.sidebar.toggle("Falta Movilidad (-5.0 pts Ventas)", value=False)
+    penalidad_mov = st.sidebar.toggle("No Certificación EMT (-5.0 pts)", value=False)
     visitas_fm = st.sidebar.slider("% Compromisos Fieldman", 0, 100, 85)
 
 puntos_a_restar_global = 10.0 if penalidad_fp else 0.0
@@ -101,7 +101,7 @@ else:
 
 # ACCIÓN DE RESET CRUZADO NATIVO
 if st.sidebar.button("🔄 Restablecer Valores Oficiales", key="btn_reset_lateral"):
-    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v7", "db_ampliacion_v7"]: 
+    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v8", "db_ampliacion_v8"]: 
         if k in st.session_state: st.session_state[k] = None
     for ek in emt_keys: st.session_state[ek] = 100
     st.session_state.reestablecer = True
@@ -200,9 +200,7 @@ with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen (Evidencias de Auditoría)")
     st.markdown("Ecosistema primario de seguimiento acoplado a los **Códigos Oficiales del Manual DEP 2026**:")
 
-    # CAMBIO DE VARIABLE A db_plan_puro_v7 PARA REVENTAR LA MEMORIA CACHÉ VIEJA DE STREAMLIT
-    if "db_plan_puro_v7" not in st.session_state or st.session_state.db_plan_puro_v7 is None:
-        # PRIMER RENGLÓN CON CÓDIGO Y SITUACIÓN EN BLANCO ("")
+    if "db_plan_puro_v8" not in st.session_state or st.session_state.db_plan_puro_v8 is None:
         cods = [
             "", "1.1.1", "3.1.1", "1.1.3", "1.1.1", 
             "1.5.6", "6.1.1", "4.3.1", "9.3.2", "9.3.3", 
@@ -233,8 +231,6 @@ with tab_plan:
             "Negociación con fieldman TASA sobre obras no hechas planteadas 2025", "Planificar reformas 2.0 de Chapa, Pintura y traslado de lavaderos", "Seguimiento diario con foco crítico a cierre de mes en carpetas", "Garantizar atención de prospectos digitales en menos de 2 horas en CRM", "Eliminación activa de boletos vencidos sin actividad comercial en sistema", 
             "Citaciones masivas Airbags ABI 414/415 para subir de escalón", "Revisar el método de cálculo para crecimiento de pólizas comerciales", "Seguimiento focalizado en revendedores y empresas para la activación app", "Revisar proceso de seguimiento junto al área de Posventa de flota"
         ]
-        
-        # PRIMER RENGLÓN SIN ALEJANDRO LÓPEZ (RESPONSABLE "")
         resps = [
             "", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", 
             "Alfredo Aguilar", "Pablo Carrizo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Adrián Di Costanzo", 
@@ -243,29 +239,27 @@ with tab_plan:
         ]
         
         rows = [[i+1, cods[i], secs[i], tems[i], sits[i], accs[i], "ALTA", "Evidencia", resps[i], "", "", "EN PROCESO", 0.0] for i in range(19)]
-        st.session_state.db_plan_puro_v7 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
+        st.session_state.db_plan_puro_v8 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
 
-    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_v7, use_container_width=True, key="grilla1_v7", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=False), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=False), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
+    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_v8, use_container_width=True, key="grilla1_v8", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=False), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=False), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
 
     st.markdown("---")
     st.subheader("🚀 Ampliación de Simulación Estratégica (Para alcanzar el Puesto 1)")
-    # CAMBIO DE VARIABLE A db_ampliacion_v7 PARA REVENTAR LA MEMORIA CACHÉ VIEJA DE STREAMLIT
-    if "db_ampliacion_v7" not in st.session_state or st.session_state.db_ampliacion_v7 is None:
-        # FILAS DE ESG CON RESPONSABLE EN BLANCO ("")
+    if "db_ampliacion_v8" not in st.session_state or st.session_state.db_ampliacion_v8 is None:
         rows_a = [
             [1, "2.5.1", "Ventas Especiales", "Licitaciones Corporativas (VE + Kinto ONE)", "Brecha en cumplimiento del plan de negocios corporativo", "Plan de reactivación de licitaciones corporativas y flotas Kinto", "ALTA", "Licitaciones ganadas", "Alfredo Aguilar", "", "", "EN PROCESO", 80.0], 
             [2, "8.5.1", "ESG", "E - Plan de Reducción Emisiones CO2", "Plan de CO2 sin presentar a TASA", "Desarrollo y presentación del plan de reducción de CO2 con metas medibles", "ALTA", "Plan CO2 presentado TASA", "", "", "", "EN PROCESO", 100.0],
             [3, "8.5.3", "ESG", "G - Políticas ABAC y Sustentabilidad", "Reporte ABAC pendiente", "Confección y entrega del reporte formal de políticas ABAC y Compliance", "ALTA", "Reporte ABAC TASA", "", "", "", "EN PROCESO", 100.0]
         ]
-        st.session_state.db_ampliacion_v7 = pd.DataFrame(rows_a, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
+        st.session_state.db_ampliacion_v8 = pd.DataFrame(rows_a, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
 
-    df_ed_2 = st.data_editor(st.session_state.db_ampliacion_v7, use_container_width=True, key="grilla2_v7", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
+    df_ed_2 = st.data_editor(st.session_state.db_ampliacion_v8, use_container_width=True, key="grilla2_v8", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
 
     c_btn1, c_btn2 = st.columns(2)
     with c_btn1:
         if st.button("🧮 Simular e Impactar Dashboard"):
-            st.session_state.db_plan_puro_v7 = df_ed_1
-            st.session_state.db_ampliacion_v7 = df_ed_2
+            st.session_state.db_plan_puro_v8 = df_ed_1
+            st.session_state.db_ampliacion_v8 = df_ed_2
             for _, r in df_ed_1.iterrows():
                 tg = r["Objetivo Simulación (%)"]
                 if tg > 0:
@@ -288,7 +282,7 @@ with tab_plan:
             
     with c_btn2:
         if st.button("🧹 Limpiar Simulación"):
-            for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v7", "db_ampliacion_v7"]: 
+            for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v8", "db_ampliacion_v8"]: 
                 if k in st.session_state: st.session_state[k] = None
             for ek in ["emt_a", "emt_b", "emt_c", "emt_d", "emt_e", "emt_f", "emt_g", "emt_h", "emt_i"]: st.session_state[ek] = 100
             st.success("🧹 Reset completado.")
@@ -296,6 +290,6 @@ with tab_plan:
 
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        st.session_state.db_plan_puro_v7.to_excel(writer, sheet_name='Plan de Accion Oficial', index=False)
-        st.session_state.db_ampliacion_v7.to_excel(writer, sheet_name='Ampliacion DEP', index=False)
+        st.session_state.db_plan_puro_v8.to_excel(writer, sheet_name='Plan de Accion Oficial', index=False)
+        st.session_state.db_ampliacion_v8.to_excel(writer, sheet_name='Ampliacion DEP', index=False)
     st.download_button(label="📥 Descargar Agenda en Excel", data=buffer.getvalue(), file_name="Plan_de_Accion_Oficial_Autolux.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
