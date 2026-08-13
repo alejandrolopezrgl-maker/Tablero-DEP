@@ -101,7 +101,7 @@ else:
 
 # ACCIÓN DE RESET CRUZADO NATIVO
 if st.sidebar.button("🔄 Restablecer Valores Oficiales", key="btn_reset_lateral"):
-    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v10", "db_ampliacion_v10"]: 
+    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v11", "db_ampliacion_v11"]: 
         if k in st.session_state: st.session_state[k] = None
     for ek in emt_keys: st.session_state[ek] = 100
     st.session_state.reestablecer = True
@@ -193,7 +193,7 @@ with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen (Evidencias de Auditoría)")
     st.markdown("Ecosistema primario de seguimiento acoplado a los **Códigos Oficiales del Manual DEP 2026**:")
 
-    if "db_plan_puro_v10" not in st.session_state or st.session_state.db_plan_puro_v10 is None:
+    if "db_plan_puro_v11" not in st.session_state or st.session_state.db_plan_puro_v11 is None:
         cods = ["", "1.1.1", "3.1.1", "1.1.3", "1.1.1", "1.5.6", "6.1.1", "4.3.1", "9.3.2", "9.3.3", "9.4.1", "9.4.1", "1.5.5", "1.5.6", "1.5.5", "3.5.2", "7.5.5", "9.5.3", "5.5.5"]
         secs = ["Coordinación", "Ventas", "Posventa", "Ventas", "Ventas", "Ventas", "Usados", "TPA", "RRHH", "RRHH", "Facilities", "Facilities", "Ventas", "Ventas", "Ventas", "Posventa", "TCFA", "General", "KINTO"]
         tems = ["Programa DEP - Gobernanza", "Ventas - SSI Kits de Entrega", "Posventa - CSI Taller y Servicio", "Ventas - NPS Fidelidad Encuestas", "Ventas - SSI Mystery Shopper", "Ventas - CRM Adopción Digital", "Usados - SSI Certificados UCT", "TPA - Estructura Adecuada Adm.", "RRHH - Capacitación Matriz por Puesto", "RRHH - Rotación de Personal General", "Facilities - Instalaciones Las Lajitas", "Facilities - Reformas Salta Chapa/Pintura 2.0", "Ventas - Salesforce Lista Espera", "Ventas - CRM Tiempos de Respuesta", "Ventas - Salesforce Depuración Boletos", "Posventa - Campañas de Seguridad Airbags", "TCFA - Crecimiento Cartera Seguros", "General - Servicios Conectados App Onboarding", "KINTO - Gestión de Siniestros One"]
@@ -202,27 +202,27 @@ with tab_plan:
         resps = ["", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Pablo Carrizo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Daniel Colque", "Daniel Colque", "Alfredo Aguilar", "Lucía de los Ríos", "Lucía de los Ríos", "Daniel Colque", "Lucía de los Ríos", "Romina R.", "Aaron Martearena"]
         
         rows = [[i+1, cods[i], secs[i], tems[i], sits[i], accs[i], "ALTA", "Evidencia", resps[i], "", "", "EN PROCESO", 0.0] for i in range(19)]
-        st.session_state.db_plan_puro_v10 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
+        st.session_state.db_plan_puro_v11 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
 
-    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_v10, use_container_width=True, key="grilla1_v10", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=False), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=False), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
+    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_v11, use_container_width=True, key="grilla1_v11", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=False), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=False), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
 
     st.markdown("---")
     st.subheader("🚀 Ampliación de Simulación Estratégica (Para alcanzar el Puesto 1)")
-    if "db_ampliacion_v10" not in st.session_state or st.session_state.db_ampliacion_v10 is None:
+    if "db_ampliacion_v11" not in st.session_state or st.session_state.db_ampliacion_v11 is None:
         rows_a = [
             [1, "2.5.1", "Ventas Especiales", "Licitaciones Corporativas (VE + Kinto ONE)", "Brecha en cumplimiento del plan de negocios corporativo", "Plan de reactivación de licitaciones corporativas y flotas Kinto", "ALTA", "Licitaciones ganadas", "Alfredo Aguilar", "", "", "EN PROCESO", 80.0], 
             [2, "8.5.1", "ESG", "E - Plan de Reducción Emisiones CO2", "Plan de CO2 sin presentar a TASA", "Desarrollo y presentación del plan de reducción de CO2 con metas medibles", "ALTA", "Plan CO2 presentado TASA", "", "", "", "EN PROCESO", 100.0],
             [3, "8.5.3", "ESG", "G - Políticas ABAC y Sustentabilidad", "Reporte ABAC pendiente", "Confección y entrega del reporte formal de políticas ABAC y Compliance", "ALTA", "Reporte ABAC TASA", "", "", "", "EN PROCESO", 100.0]
         ]
-        st.session_state.db_ampliacion_v10 = pd.DataFrame(rows_a, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
+        st.session_state.db_ampliacion_v11 = pd.DataFrame(rows_a, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
 
-    df_ed_2 = st.data_editor(st.session_state.db_ampliacion_v10, use_container_width=True, key="grilla2_v10", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
+    df_ed_2 = st.data_editor(st.session_state.db_ampliacion_v11, use_container_width=True, key="grilla2_v11", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
 
     c_btn1, c_btn2 = st.columns(2)
     with c_btn1:
         if st.button("🧮 Simular e Impactar Dashboard"):
-            st.session_state.db_plan_puro_v10 = df_ed_1
-            st.session_state.db_ampliacion_v10 = df_ed_2
+            st.session_state.db_plan_puro_v11 = df_ed_1
+            st.session_state.db_ampliacion_v11 = df_ed_2
             for _, r in df_ed_1.iterrows():
                 tg = r["Objetivo Simulación (%)"]
                 if tg > 0:
@@ -245,7 +245,7 @@ with tab_plan:
             
     with c_btn2:
         if st.button("🧹 Limpiar Simulación"):
-            for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v10", "db_ampliacion_v10"]: 
+            for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v11", "db_ampliacion_v11"]: 
                 if k in st.session_state: st.session_state[k] = None
             for ek in ["emt_a", "emt_b", "emt_c", "emt_d", "emt_e", "emt_f", "emt_g", "emt_h", "emt_i"]: st.session_state[ek] = 100
             st.success("🧹 Reset completado.")
@@ -253,8 +253,8 @@ with tab_plan:
 
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-        st.session_state.db_plan_puro_v10.to_excel(writer, sheet_name='Plan de Accion Oficial', index=False)
-        st.session_state.db_ampliacion_v10.to_excel(writer, sheet_name='Ampliacion DEP', index=False)
+        st.session_state.db_plan_puro_v11.to_excel(writer, sheet_name='Plan de Accion Oficial', index=False)
+        st.session_state.db_ampliacion_v11.to_excel(writer, sheet_name='Ampliacion DEP', index=False)
     st.download_button(label="📥 Descargar Agenda en Excel", data=buffer.getvalue(), file_name="Plan_de_Accion_Oficial_Autolux.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 # --- NUEVA PESTAÑA: DOCUMENTACIÓN Y FUENTES DE DATOS ---
@@ -263,12 +263,34 @@ with tab_docs:
     st.markdown("Consulte las reglas metodológicas, las planillas de origen y la matriz completa de indicadores DEP 2026:")
 
     c_doc1, c_doc2 = st.columns(2)
+    
     with c_doc1:
         st.info("📄 **Manual Oficial DEP 2026**\n\nDocumento normativo de Toyota Argentina con la descripción, criterios de asignación de puntaje y ponderaciones por área.")
-        st.caption("Archivo de origen: `Manual DEP 2026.pdf` (94 páginas)")
+        try:
+            with open("Manual DEP 2026.pdf", "rb") as pdf_file:
+                st.download_button(
+                    label="📥 Descargar Manual DEP 2026 (PDF)",
+                    data=pdf_file,
+                    file_name="Manual DEP 2026.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
+        except FileNotFoundError:
+            st.warning("⚠️ No se encontró 'Manual DEP 2026.pdf' en el directorio raíz.")
+
     with c_doc2:
         st.success("📊 **Planilla Acumulada Oficial (Junio 2026)**\n\nResultados oficiales de la Red TASA extraídos directamente del sistema de auditoría Power BI.")
-        st.caption("Archivo de origen: `15437_DES015-26 DEP 2026 - ACUM. JUN 2.xlsx`")
+        try:
+            with open("15437_DES015-26 DEP 2026 - ACUM. JUN 2.xlsx", "rb") as excel_file:
+                st.download_button(
+                    label="📥 Descargar Planilla Acumulada (Excel)",
+                    data=excel_file,
+                    file_name="15437_DES015-26 DEP 2026 - ACUM. JUN 2.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
+        except FileNotFoundError:
+            st.warning("⚠️ No se encontró la planilla acumulada Excel en el directorio raíz.")
 
     st.divider()
     st.subheader("🔍 Catálogo Completo de Indicadores del Manual DEP 2026")
@@ -347,8 +369,6 @@ with tab_docs:
     ]
 
     df_cat = pd.DataFrame(items_manual, columns=["Código TASA", "Área", "Categoría", "Descripción Oficial TASA", "Frecuencia", "% Ponderado Total"])
-    
     filtro_area = st.multiselect("Filtrar por Área:", options=df_cat["Área"].unique(), default=df_cat["Área"].unique())
     df_filtrado = df_cat[df_cat["Área"].isin(filtro_area)]
-    
     st.dataframe(df_filtrado, use_container_width=True, hide_index=True)
