@@ -11,20 +11,24 @@ st.set_page_config(page_title="DEP Autolux", layout="wide", page_icon="🚗")
 st.title("🚗 Tablero de Control y Dashboard Evolutivo DEP - Autolux")
 st.caption("Datos Oficiales e Informe de Calidad de la Red TASA (Manual DEP 2026)")
 
+# LLAVES EMT DE CONTROL NATIVO
+emt_keys = ["emt_a", "emt_b", "emt_c", "emt_d", "emt_e", "emt_f", "emt_g", "emt_h", "emt_i"]
+for ek in emt_keys:
+    if ek not in st.session_state:
+        st.session_state[ek] = 100
+
+for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg"]:
+    if k not in st.session_state:
+        st.session_state[k] = 0.0
+
 if "reestablecer" not in st.session_state:
     st.session_state.reestablecer = False
 
 # 2. BARRA LATERAL: CONTROL DE RIESGOS PENALIDADES DE CAMPO
 st.sidebar.header("🚨 Zona de Control de Riesgos")
-if st.session_state.reestablecer:
-    penalidad_fp = st.sidebar.toggle("Fair Play Global (-10 pts)", value=False, key="fp_real")
-    penalidad_mov = st.sidebar.toggle("No Certificación EMT (-5.0 pts)", value=False, key="mov_real")
-    visitas_fm = st.sidebar.slider("% Compromisos Fieldman", 0, 100, 85, key="fm_real")
-    st.session_state.reestablecer = False  
-else:
-    penalidad_fp = st.sidebar.toggle("Fair Play Global (-10 pts)", value=False)
-    penalidad_mov = st.sidebar.toggle("No Certificación EMT (-5.0 pts)", value=False)
-    visitas_fm = st.sidebar.slider("% Compromisos Fieldman", 0, 100, 85)
+penalidad_fp = st.sidebar.toggle("Fair Play Global (-10 pts)", value=False)
+penalidad_mov = st.sidebar.toggle("No Certificación EMT (-5.0 pts)", value=False)
+visitas_fm = st.sidebar.slider("% Compromisos Fieldman", 0, 100, 85)
 
 puntos_a_restar_global = 10.0 if penalidad_fp else 0.0
 castigo_posventa_fieldman = 40.0 if visitas_fm < 85 else 0.0
@@ -34,48 +38,49 @@ if visitas_fm < 85:
 else: 
     st.sidebar.success("🟢 Compromisos Fieldman a salvo (≥85%).")
 
-# 3. BASE DE DATOS ESTRATÉGICA EXTRACTADA DIRECTAMENTE DEL POWER BI / EXCEL TOYOTA
-base_ventas_lux = 25.0 if not penalidad_mov else (25.0 - 5.0)
-base_posventa_lux = 95.18 - (95.18 * (castigo_posventa_fieldman / 100))
+# 3. VALORES BASE OFICIALES DE AUTOLUX
+b_ventas = 25.0 if not penalidad_mov else (25.0 - 5.0)
+b_posventa = 95.19 - (95.19 * (castigo_posventa_fieldman / 100))
+b_tpa = 72.78
+b_kinto = 35.83
+b_tcfa = 73.00
+b_general = 65.65
+b_especiales = 30.00
+b_usados = 73.33
+b_esg = 25.00
 
-# INICIALIZACIÓN DE PILARES OPERATIVOS
-for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg"]:
-    if k not in st.session_state: st.session_state[k] = None
+# FÓRMULA INCREMENTAL: Base + (Brecha hacia 100% * % Cumplimiento de Acción)
+def calcular_mejora(base, pct_avance):
+    if pct_avance is None or pct_avance <= 0:
+        return base
+    brecha = max(0.0, 100.0 - base)
+    return min(100.0, base + (brecha * (pct_avance / 100.0)))
 
-# INICIALIZACIÓN UNIFICADA DE LLAVES EMT DE CONTROL NATIVO
-emt_keys = ["emt_a", "emt_b", "emt_c", "emt_d", "emt_e", "emt_f", "emt_g", "emt_h", "emt_i"]
-for ek in emt_keys:
-    if ek not in st.session_state: st.session_state[ek] = 100
+v_simulada = calcular_mejora(b_ventas, st.session_state.sim_pilar_ventas)
+p_simulada = calcular_mejora(b_posventa, st.session_state.sim_pilar_posventa)
+tpa_simulada = calcular_mejora(b_tpa, st.session_state.sim_pilar_tpa)
+kinto_simulada = calcular_mejora(b_kinto, st.session_state.sim_pilar_kinto)
+tcfa_simulada = calcular_mejora(b_tcfa, st.session_state.sim_pilar_tcfa)
+g_simulada = calcular_mejora(b_general, st.session_state.sim_pilar_general)
+esp_simulada = calcular_mejora(b_especiales, st.session_state.sim_pilar_especiales)
+usd_simulada = calcular_mejora(b_usados, st.session_state.sim_pilar_usados)
+esg_simulada = calcular_mejora(b_esg, st.session_state.sim_pilar_esg)
 
-v_simulada = st.session_state.sim_pilar_ventas if st.session_state.sim_pilar_ventas is not None else base_ventas_lux
-p_simulada = st.session_state.sim_pilar_posventa if st.session_state.sim_pilar_posventa is not None else base_posventa_lux
-tpa_simulada = st.session_state.sim_pilar_tpa if st.session_state.sim_pilar_tpa is not None else 72.8
-kinto_simulada = st.session_state.sim_pilar_kinto if st.session_state.sim_pilar_kinto is not None else 35.8
-tcfa_simulada = st.session_state.sim_pilar_tcfa if st.session_state.sim_pilar_tcfa is not None else 73.0
-g_simulada = st.session_state.sim_pilar_general if st.session_state.sim_pilar_general is not None else 65.6
-esp_simulada = st.session_state.sim_pilar_especiales if st.session_state.sim_pilar_especiales is not None else 30.0
-usd_simulada = st.session_state.sim_pilar_usados if st.session_state.sim_pilar_usados is not None else 73.3
-esg_simulada = st.session_state.sim_pilar_esg if st.session_state.sim_pilar_esg is not None else 25.0
-
-# 4. CAPTURA Y CÁLCULO PREVIO DEL COMPROMISO EMT PARA ACOPLARLO A LA NOTA GLOBAL
-total_puntos_emt = sum([st.session_state[ek] for ek in emt_keys])
+# 4. CAPTURA Y CÁLCULO EMT
+total_puntos_emt = sum([st.session_state.get(ek, 100) for ek in emt_keys])
 porcentaje_emt = (total_puntos_emt / 900.0) * 100
 penalidad_estandar_emt = 0.0 if porcentaje_emt >= 80.0 else ((80.0 - porcentaje_emt) / 80.0) * 5.0
 
-if (st.session_state.sim_pilar_ventas is None and st.session_state.sim_pilar_general is None and 
-    st.session_state.sim_pilar_especiales is None and st.session_state.sim_pilar_usados is None and st.session_state.sim_pilar_esg is None):
-    score_global_final = 62.0 - puntos_a_restar_global - penalidad_estandar_emt
-    if penalidad_mov: score_global_final -= 1.1
-else:
-    score_global_final = (
-        (p_simulada * 0.27) + (v_simulada * 0.22) + (g_simulada * 0.20) + 
-        (tpa_simulada * 0.09) + (kinto_simulada * 0.06) + (usd_simulada * 0.06) + 
-        (esp_simulada * 0.05) + (tcfa_simulada * 0.04) + (esg_simulada * 0.01)
-    )
-    score_global_final = score_global_final - puntos_a_restar_global - penalidad_estandar_emt
-    if penalidad_mov: score_global_final -= 1.1
+score_global_final = (
+    (p_simulada * 0.27) + (v_simulada * 0.22) + (g_simulada * 0.20) + 
+    (tpa_simulada * 0.09) + (kinto_simulada * 0.06) + (usd_simulada * 0.06) + 
+    (esp_simulada * 0.05) + (tcfa_simulada * 0.04) + (esg_simulada * 0.01)
+) - puntos_a_restar_global - penalidad_estandar_emt
 
-# DATAFRAME OPERATIVO COMPLETO
+if penalidad_mov:
+    score_global_final -= 1.1
+
+# DATAFRAME OPERATIVO
 data_operativa = {
     "Área": ["Ventas (22%)", "Ventas Especiales (5%)", "Posventa (27%)", "TPA (9%)", "KINTO (6%)", "Usados (6%)", "TCFA (4%)", "ESG (1%)", "GENERAL (20%)"],
     "Autolux (LUX)": [v_simulada, esp_simulada, p_simulada, tpa_simulada, kinto_simulada, usd_simulada, tcfa_simulada, esg_simulada, g_simulada],
@@ -91,25 +96,23 @@ data_ranking_global = {
 df_bench_ranking = pd.DataFrame(data_ranking_global)
 
 # MOTOR DE RANKING ELÁSTICO RED
-if score_global_final <= 62.0: 
-    puesto_calculado = int(24 + ((62.0 - score_global_final)/5.0)*10)
+if score_global_final <= 61.97: 
+    puesto_calculado = int(24 + ((61.97 - score_global_final)/5.0)*10)
     puesto_calculado = min(43, puesto_calculado)
 elif score_global_final >= 99.9: 
     puesto_calculado = 1
 elif score_global_final >= 72.3: 
     puesto_calculado = max(1, min(5, int(5 - ((score_global_final - 72.3)/(100.0 - 72.3))*(5 - 1))))
 else: 
-    puesto_calculado = max(5, min(24, int(24 - ((score_global_final - 62.0)/(72.3 - 62.0))*(24 - 5))))
+    puesto_calculado = max(5, min(24, int(24 - ((score_global_final - 61.97)/(72.3 - 61.97))*(24 - 5))))
 
-# ACCIÓN DE RESET CRUZADO NATIVO
+# RESET CRUZADO
 if st.sidebar.button("🔄 Restablecer Valores Oficiales", key="btn_reset_lateral"):
-    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v14", "db_ampliacion_v14"]: 
+    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v16", "db_ampliacion_v16"]: 
         if k in st.session_state: st.session_state[k] = None
-    for ek in emt_keys: st.session_state[ek] = 100
-    st.session_state.reestablecer = True
     st.rerun()
 
-# --- AQUÍ SE DEFINEN LAS 5 PESTAÑAS VISIBLES ---
+# --- PESTAÑAS PRINCIPALES ---
 tab_dashboard, tab_regional, tab_calidad, tab_plan, tab_docs = st.tabs([
     "📊 Dashboard del Dealer", 
     "🗺️ Desempeño Regional y por Área",
@@ -278,18 +281,18 @@ with tab_calidad:
 
     st.markdown("---")
     st.subheader("📌 Diagnóstico Clínico de Foco Estratégico:")
-    if sucursal == "Jujuy": st.info("🎯 **Foco Crítico en Jujuy**: El 60% de los desvíos se concentran en **Demoras y Puntualidad** junto a **Comunicación y Seguimiento**. Es urgente atacar estos dos frentes en el taller para estabilizar el SSI operativo.")
-    elif sucursal == "Salta": st.info("🎯 **Foco Crítico en Salta**: La debilidad principal radica en **Comunicación y Seguimiento** junto a **Administración de Documentos**. Se debe estandarizar el flujo administrativo en las entregas convencionales.")
-    elif sucursal == "Tartagal": st.info("🎯 **Foco Crítico en Tartagal**: Los reclamos están liderados por **Demoras y Puntualidad** y **Cortesías u Obsequios**. Es clave sincronizar los tiempos de alistamiento y revisar la entrega de kits de seguridad.")
+    if sucursal == "Jujuy": st.info("🎯 **Foco Crítico en Jujuy**: El 60% de los desvíos se concentran en **Demoras y Puntualidad** junto a **Comunicación y Seguimiento**.")
+    elif sucursal == "Salta": st.info("🎯 **Foco Crítico en Salta**: La debilidad principal radica en **Comunicación y Seguimiento** junto a **Administración de Documentos**.")
+    elif sucursal == "Tartagal": st.info("🎯 **Foco Crítico en Tartagal**: Los reclamos están liderados por **Demoras y Puntualidad** y **Cortesías u Obsequios**.")
 
 # ==========================================
 # 4. PESTAÑA: PLAN DE ACCIÓN INTERACTIVO
 # ==========================================
 with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen (Evidencias de Auditoría)")
-    st.markdown("Ecosistema primario de seguimiento acoplado a los **Códigos Oficiales del Manual DEP 2026**:")
+    st.info("💡 **Simulador Incremental**: Ingrese el % de avance proyectado en cada acción (0% = Estado Actual). Cada mejora cerrará la brecha hacia el 100% y sumará puntos al score global.")
 
-    if "db_plan_puro_v14" not in st.session_state or st.session_state.db_plan_puro_v14 is None:
+    if "db_plan_puro_v16" not in st.session_state or st.session_state.db_plan_puro_v16 is None:
         cods = ["", "1.1.1", "3.1.1", "1.1.3", "1.1.1", "1.5.6", "6.1.1", "4.3.1", "9.3.2", "9.3.3", "9.4.1", "9.4.1", "1.5.5", "1.5.6", "1.5.5", "3.5.2", "7.5.5", "9.5.3", "5.5.5"]
         secs = ["Coordinación", "Ventas", "Posventa", "Ventas", "Ventas", "Ventas", "Usados", "TPA", "RRHH", "RRHH", "Facilities", "Facilities", "Ventas", "Ventas", "Ventas", "Posventa", "TCFA", "General", "KINTO"]
         tems = ["Programa DEP - Gobernanza", "Ventas - SSI Kits de Entrega", "Posventa - CSI Taller y Servicio", "Ventas - NPS Fidelidad Encuestas", "Ventas - SSI Mystery Shopper", "Ventas - CRM Adopción Digital", "Usados - SSI Certificados UCT", "TPA - Estructura Adecuada Adm.", "RRHH - Capacitación Matriz por Puesto", "RRHH - Rotación de Personal General", "Facilities - Instalaciones Las Lajitas", "Facilities - Reformas Salta Chapa/Pintura 2.0", "Ventas - Salesforce Lista Espera", "Ventas - CRM Tiempos de Respuesta", "Ventas - Salesforce Depuración Boletos", "Posventa - Campañas de Seguridad Airbags", "TCFA - Crecimiento Cartera Seguros", "General - Servicios Conectados App Onboarding", "KINTO - Gestión de Siniestros One"]
@@ -298,53 +301,59 @@ with tab_plan:
         resps = ["", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Pablo Carrizo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Daniel Colque", "Daniel Colque", "Alfredo Aguilar", "Lucía de los Ríos", "Lucía de los Ríos", "Daniel Colque", "Lucía de los Ríos", "Romina R.", "Aaron Martearena"]
         
         rows = [[i+1, cods[i], secs[i], tems[i], sits[i], accs[i], "ALTA", "Evidencia", resps[i], "", "", "EN PROCESO", 0.0] for i in range(19)]
-        st.session_state.db_plan_puro_v14 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
+        st.session_state.db_plan_puro_v16 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "% Avance Acción (Simulación)"])
 
-    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_v14, use_container_width=True, key="grilla1_v14", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=False), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=False), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
+    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_v16, use_container_width=True, key="grilla1_v16", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=False), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=False), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "% Avance Acción (Simulación)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
 
     st.markdown("---")
-    st.subheader("🚀 Ampliación de Simulación Estratégica (Para alcanzar el Puesto 1)")
-    if "db_ampliacion_v14" not in st.session_state or st.session_state.db_ampliacion_v14 is None:
+    st.subheader("🚀 Ampliación de Acciones Estratégicas")
+    if "db_ampliacion_v16" not in st.session_state or st.session_state.db_ampliacion_v16 is None:
         rows_a = [
-            [1, "2.5.1", "Ventas Especiales", "Licitaciones Corporativas (VE + Kinto ONE)", "Brecha en cumplimiento del plan de negocios corporativo", "Plan de reactivación de licitaciones corporativas y flotas Kinto", "ALTA", "Licitaciones ganadas", "Alfredo Aguilar", "", "", "EN PROCESO", 80.0], 
-            [2, "8.5.1", "ESG", "E - Plan de Reducción Emisiones CO2", "Plan de CO2 sin presentar a TASA", "Desarrollo y presentación del plan de reducción de CO2 con metas medibles", "ALTA", "Plan CO2 presentado TASA", "", "", "", "EN PROCESO", 100.0],
-            [3, "8.5.3", "ESG", "G - Políticas ABAC y Sustentabilidad", "Reporte ABAC pendiente", "Confección y entrega del reporte formal de políticas ABAC y Compliance", "ALTA", "Reporte ABAC TASA", "", "", "", "EN PROCESO", 100.0]
+            [1, "2.5.1", "Ventas Especiales", "Licitaciones Corporativas (VE + Kinto ONE)", "Brecha en cumplimiento del plan de negocios corporativo", "Plan de reactivación de licitaciones corporativas y flotas Kinto", "ALTA", "Licitaciones ganadas", "Alfredo Aguilar", "", "", "EN PROCESO", 0.0], 
+            [2, "8.5.1", "ESG", "E - Plan de Reducción Emisiones CO2", "Plan de CO2 sin presentar a TASA", "Desarrollo y presentación del plan de reducción de CO2 con metas medibles", "ALTA", "Plan CO2 presentado TASA", "", "", "", "EN PROCESO", 0.0],
+            [3, "8.5.3", "ESG", "G - Políticas ABAC y Sustentabilidad", "Reporte ABAC pendiente", "Confección y entrega del reporte formal de políticas ABAC y Compliance", "ALTA", "Reporte ABAC TASA", "", "", "", "EN PROCESO", 0.0]
         ]
-        st.session_state.db_ampliacion_v14 = pd.DataFrame(rows_a, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "Objetivo Simulación (%)"])
+        st.session_state.db_ampliacion_v16 = pd.DataFrame(rows_a, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "% Avance Acción (Simulación)"])
 
-    df_ed_2 = st.data_editor(st.session_state.db_ampliacion_v14, use_container_width=True, key="grilla2_v14", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "Objetivo Simulación (%)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
+    df_ed_2 = st.data_editor(st.session_state.db_ampliacion_v16, use_container_width=True, key="grilla2_v16", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "% Avance Acción (Simulación)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
 
     c_btn1, c_btn2 = st.columns(2)
     with c_btn1:
         if st.button("🧮 Simular e Impactar Dashboard"):
-            st.session_state.db_plan_puro_v14 = df_ed_1
-            st.session_state.db_ampliacion_v14 = df_ed_2
+            st.session_state.db_plan_puro_v16 = df_ed_1
+            st.session_state.db_ampliacion_v16 = df_ed_2
             for _, r in df_ed_1.iterrows():
-                tg = r["Objetivo Simulación (%)"]
-                if tg > 0:
-                    cod, ger = str(r["Código Auditoría Manual"]), str(r["Gerencia / Sector"])
-                    if "1.1" in cod or "1.5" in cod or "Ventas" in ger: st.session_state.sim_pilar_ventas = tg
-                    elif "3.1" in cod or "3.5" in cod or "Posventa" in ger: st.session_state.sim_pilar_posventa = tg
-                    elif "4.1" in cod or "4.3" in cod or "4.5" in cod: st.session_state.sim_pilar_tpa = tg
-                    elif "5.1" in cod or "5.5" in cod: st.session_state.sim_pilar_kinto = tg
-                    elif "7.5" in cod: st.session_state.sim_pilar_tcfa = tg
-                    elif "6.1" in cod or "6.5" in cod: st.session_state.sim_pilar_usados = tg
-                    elif "9.3" in cod or "9.4" in cod or "9.5" in cod or "Facilities" in ger or "RRHH" in ger: st.session_state.sim_pilar_general = tg
+                tg = r["% Avance Acción (Simulación)"]
+                cod, ger = str(r["Código Auditoría Manual"]), str(r["Gerencia / Sector"])
+                if "1.1" in cod or "1.5" in cod or "Ventas" in ger: 
+                    st.session_state.sim_pilar_ventas = max(st.session_state.sim_pilar_ventas or 0.0, tg)
+                elif "3.1" in cod or "3.5" in cod or "Posventa" in ger: 
+                    st.session_state.sim_pilar_posventa = max(st.session_state.sim_pilar_posventa or 0.0, tg)
+                elif "4.1" in cod or "4.3" in cod or "4.5" in cod: 
+                    st.session_state.sim_pilar_tpa = max(st.session_state.sim_pilar_tpa or 0.0, tg)
+                elif "5.1" in cod or "5.5" in cod: 
+                    st.session_state.sim_pilar_kinto = max(st.session_state.sim_pilar_kinto or 0.0, tg)
+                elif "7.5" in cod: 
+                    st.session_state.sim_pilar_tcfa = max(st.session_state.sim_pilar_tcfa or 0.0, tg)
+                elif "6.1" in cod or "6.5" in cod: 
+                    st.session_state.sim_pilar_usados = max(st.session_state.sim_pilar_usados or 0.0, tg)
+                elif "9.3" in cod or "9.4" in cod or "9.5" in cod or "Facilities" in ger or "RRHH" in ger: 
+                    st.session_state.sim_pilar_general = max(st.session_state.sim_pilar_general or 0.0, tg)
             for _, r in df_ed_2.iterrows():
-                tg = r["Objetivo Simulación (%)"]
-                if tg > 0:
-                    cod = str(r["Código Auditoría Manual"])
-                    if "2.5" in cod: st.session_state.sim_pilar_especiales = tg
-                    elif "8.5" in cod: st.session_state.sim_pilar_esg = tg
-            st.success("🎉 Simulación procesada con ponderaciones exactas del Manual DEP 2026.")
+                tg = r["% Avance Acción (Simulación)"]
+                cod = str(r["Código Auditoría Manual"])
+                if "2.5" in cod: 
+                    st.session_state.sim_pilar_especiales = max(st.session_state.sim_pilar_especiales or 0.0, tg)
+                elif "8.5" in cod: 
+                    st.session_state.sim_pilar_esg = max(st.session_state.sim_pilar_esg or 0.0, tg)
+            st.success("🎉 Simulación incremental procesada con éxito.")
             st.rerun()
             
     with c_btn2:
         if st.button("🧹 Limpiar Simulación"):
-            for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v14", "db_ampliacion_v14"]: 
+            for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v16", "db_ampliacion_v16"]: 
                 if k in st.session_state: st.session_state[k] = None
-            for ek in ["emt_a", "emt_b", "emt_c", "emt_d", "emt_e", "emt_f", "emt_g", "emt_h", "emt_i"]: st.session_state[ek] = 100
-            st.success("🧹 Reset completado.")
+            st.success("🧹 Simulación restablecida a valores base oficiales.")
             st.rerun()
 
     def generar_excel_formateado(df1, df2):
@@ -412,7 +421,7 @@ with tab_plan:
         wb.save(output)
         return output.getvalue()
 
-    excel_data = generar_excel_formateado(st.session_state.db_plan_puro_v14, st.session_state.db_ampliacion_v14)
+    excel_data = generar_excel_formateado(st.session_state.db_plan_puro_v16, st.session_state.db_ampliacion_v16)
     st.download_button(
         label="📥 Descargar Agenda en Excel Formateado", 
         data=excel_data, 
