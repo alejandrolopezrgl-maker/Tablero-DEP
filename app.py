@@ -122,7 +122,7 @@ df_bench_ranking = pd.DataFrame(data_ranking_global)
 
 # RESET CRUZADO
 if st.sidebar.button("🔄 Restablecer Valores Oficiales", key="btn_reset_lateral"):
-    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v17", "db_ampliacion_v17"]: 
+    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v19", "db_ampliacion_v19"]: 
         if k in st.session_state: st.session_state[k] = None
     st.rerun()
 
@@ -306,4 +306,257 @@ with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen (Evidencias de Auditoría)")
     st.info("💡 **Simulador Incremental**: Ingrese el % de avance proyectado en cada acción (0% = Estado Actual). Cada mejora cerrará la brecha hacia el 100% y sumará puntos al score global.")
 
-    if "db_plan_puro_v17" not in st.session_state or st.session_state.db_plan_puro_v17
+    if "db_plan_puro_v19" not in st.session_state or st.session_state.db_plan_puro_v19 is None:
+        cods = ["", "1.1.1", "3.1.1", "1.1.3", "1.1.1", "1.5.6", "6.1.1", "4.3.1", "9.3.2", "9.3.3", "9.4.1", "9.4.1", "1.5.5", "1.5.6", "1.5.5", "3.5.2", "7.5.5", "9.5.3", "5.5.5"]
+        secs = ["Coordinación", "Ventas", "Posventa", "Ventas", "Ventas", "Ventas", "Usados", "TPA", "RRHH", "RRHH", "Facilities", "Facilities", "Ventas", "Ventas", "Ventas", "Posventa", "TCFA", "General", "KINTO"]
+        tems = ["Programa DEP - Gobernanza", "Ventas - SSI Kits de Entrega", "Posventa - CSI Taller y Servicio", "Ventas - NPS Fidelidad Encuestas", "Ventas - SSI Mystery Shopper", "Ventas - CRM Adopción Digital", "Usados - SSI Certificados UCT", "TPA - Estructura Adecuada Adm.", "RRHH - Capacitación Matriz por Puesto", "RRHH - Rotación de Personal General", "Facilities - Instalaciones Las Lajitas", "Facilities - Reformas Salta Chapa/Pintura 2.0", "Ventas - Salesforce Lista Espera", "Ventas - CRM Tiempos de Respuesta", "Ventas - Salesforce Depuración Boletos", "Posventa - Campañas de Seguridad Airbags", "TCFA - Crecimiento Cartera Seguros", "General - Servicios Conectados App Onboarding", "KINTO - Gestión de Siniestros One"]
+        sits = ["", "Falta kit obsequio en entrega", "Tasa de quejas en servicio post-entrega", "Baja tasa respuesta encuestas NPS", "Desvíos en atención de asesores", "Falta visibilidad avance leads", "Estándar flojo inspección UCT", "Sobrecarga en administración TPA", "Riesgo incumplimiento horas YTD", "Inestabilidad en la nómina general", "Obras pendientes 2025", "Pendiente traslado físico lavaderos", "Boletos estancados en proceso", "Demoras atención prospectos digital", "Boletos vencidos sin actividad", "Baja tasa contacto campañas masivas", "Desvío meta crecimiento pólizas", "Baja tasa activación de la app", "Procesos sueltos en unidades One"]
+        accs = ["Tablero único de control, calendario de vencimientos y evidencias transversales", "Kits de seguridad como obsequio de Autolux en las entregas de unidades", "Estandarización de recepción en taller y seguimiento post-servicio", "Campaña de fidelización con sorteos activos en encuestas de la red", "Implementación obligatoria de auditorías mystery shopper en salones", "Desarrollo de un tablero único de control de KPIs CRM centrales", "Reorganización completa de toma, entrega y venta de unidades UCT", "Incorporación de 2 colaboradores administrativos para el área de planes", "Plan de seguimiento semestral obligatorio junto a Recursos Humanos", "Control y estabilización de la nómina general", "Negociación con fieldman TASA sobre obras no hechas planteadas 2025", "Planificar reformas 2.0 de Chapa, Pintura y traslado de lavaderos", "Seguimiento diario con foco crítico a cierre de mes en carpetas", "Garantizar atención de prospectos digitales en menos de 2 horas en CRM", "Eliminación activa de boletos vencidos sin actividad comercial en sistema", "Citaciones masivas Airbags ABI 414/415 para subir de escalón", "Revisar el método de cálculo para crecimiento de pólizas comerciales", "Seguimiento focalizado en revendedores y empresas para la activación app", "Revisar proceso de seguimiento junto al área de Posventa de flota"]
+        resps = ["", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Pablo Carrizo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Daniel Colque", "Daniel Colque", "Alfredo Aguilar", "Lucía de los Ríos", "Lucía de los Ríos", "Daniel Colque", "Lucía de los Ríos", "Romina R.", "Aaron Martearena"]
+        
+        rows = [[i+1, cods[i], secs[i], tems[i], sits[i], accs[i], "ALTA", "Evidencia", resps[i], "", "", "EN PROCESO", 0.0] for i in range(19)]
+        st.session_state.db_plan_puro_v19 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "% Avance Acción (Simulación)"])
+
+    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_v19, use_container_width=True, key="grilla1_v19", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=False), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=False), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "% Avance Acción (Simulación)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
+
+    st.markdown("---")
+    st.subheader("🚀 Ampliación de Acciones Estratégicas")
+    if "db_ampliacion_v19" not in st.session_state or st.session_state.db_ampliacion_v19 is None:
+        rows_a = [
+            [1, "2.5.1", "Ventas Especiales", "Licitaciones Corporativas (VE + Kinto ONE)", "Brecha en cumplimiento del plan de negocios corporativo", "Plan de reactivación de licitaciones corporativas y flotas Kinto", "ALTA", "Licitaciones ganadas", "Alfredo Aguilar", "", "", "EN PROCESO", 0.0], 
+            [2, "8.5.1", "ESG", "E - Plan de Reducción Emisiones CO2", "Plan de CO2 sin presentar a TASA", "Desarrollo y presentación del plan de reducción de CO2 con metas medibles", "ALTA", "Plan CO2 presentado TASA", "", "", "", "EN PROCESO", 0.0],
+            [3, "8.5.3", "ESG", "G - Políticas ABAC y Sustentabilidad", "Reporte ABAC pendiente", "Confección y entrega del reporte formal de políticas ABAC y Compliance", "ALTA", "Reporte ABAC TASA", "", "", "", "EN PROCESO", 0.0]
+        ]
+        st.session_state.db_ampliacion_v19 = pd.DataFrame(rows_a, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "% Avance Acción (Simulación)"])
+
+    df_ed_2 = st.data_editor(st.session_state.db_ampliacion_v19, use_container_width=True, key="grilla2_v19", hide_index=True, column_config={"#": st.column_config.NumberColumn(disabled=True), "Código Auditoría Manual": st.column_config.TextColumn(disabled=True), "Gerencia / Sector": st.column_config.TextColumn(disabled=True), "Tema / Proyecto": st.column_config.TextColumn(disabled=True), "Situación actual": st.column_config.TextColumn(disabled=True), "Acción Correctiva": st.column_config.TextColumn(disabled=True), "Prioridad": st.column_config.TextColumn(disabled=True), "Indicador / Entregable": st.column_config.TextColumn(disabled=True), "Responsable": st.column_config.TextColumn(disabled=False), "Estado": st.column_config.SelectboxColumn(options=["PENDIENTE", "EN PROCESO", "COMPLETADO"]), "% Avance Acción (Simulación)": st.column_config.NumberColumn(min_value=0.0, max_value=100.0, format="%.1f%%")})
+
+    c_btn1, c_btn2 = st.columns(2)
+    with c_btn1:
+        if st.button("🧮 Simular e Impactar Dashboard"):
+            st.session_state.db_plan_puro_v19 = df_ed_1
+            st.session_state.db_ampliacion_v19 = df_ed_2
+            for _, r in df_ed_1.iterrows():
+                tg = r["% Avance Acción (Simulación)"]
+                cod, ger = str(r["Código Auditoría Manual"]), str(r["Gerencia / Sector"])
+                if "1.1" in cod or "1.5" in cod or "Ventas" in ger: 
+                    st.session_state.sim_pilar_ventas = max(st.session_state.sim_pilar_ventas or 0.0, tg)
+                elif "3.1" in cod or "3.5" in cod or "Posventa" in ger: 
+                    st.session_state.sim_pilar_posventa = max(st.session_state.sim_pilar_posventa or 0.0, tg)
+                elif "4.1" in cod or "4.3" in cod or "4.5" in cod: 
+                    st.session_state.sim_pilar_tpa = max(st.session_state.sim_pilar_tpa or 0.0, tg)
+                elif "5.1" in cod or "5.5" in cod: 
+                    st.session_state.sim_pilar_kinto = max(st.session_state.sim_pilar_kinto or 0.0, tg)
+                elif "7.5" in cod: 
+                    st.session_state.sim_pilar_tcfa = max(st.session_state.sim_pilar_tcfa or 0.0, tg)
+                elif "6.1" in cod or "6.5" in cod: 
+                    st.session_state.sim_pilar_usados = max(st.session_state.sim_pilar_usados or 0.0, tg)
+                elif "9.3" in cod or "9.4" in cod or "9.5" in cod or "Facilities" in ger or "RRHH" in ger: 
+                    st.session_state.sim_pilar_general = max(st.session_state.sim_pilar_general or 0.0, tg)
+            for _, r in df_ed_2.iterrows():
+                tg = r["% Avance Acción (Simulación)"]
+                cod = str(r["Código Auditoría Manual"])
+                if "2.5" in cod: 
+                    st.session_state.sim_pilar_especiales = max(st.session_state.sim_pilar_especiales or 0.0, tg)
+                elif "8.5" in cod: 
+                    st.session_state.sim_pilar_esg = max(st.session_state.sim_pilar_esg or 0.0, tg)
+            st.success("🎉 Simulación incremental procesada con éxito.")
+            st.rerun()
+            
+    with c_btn2:
+        if st.button("🧹 Limpiar Simulación"):
+            for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v19", "db_ampliacion_v19"]: 
+                if k in st.session_state: st.session_state[k] = None
+            st.success("🧹 Simulación restablecida a valores base oficiales.")
+            st.rerun()
+
+    def generar_excel_formateado(df1, df2):
+        output = io.BytesIO()
+        wb = openpyxl.Workbook()
+        header_fill = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
+        header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+        data_font = Font(name="Calibri", size=10, bold=False, color="000000")
+        thin_border = Border(
+            left=Side(style='thin', color='D9D9D9'),
+            right=Side(style='thin', color='D9D9D9'),
+            top=Side(style='thin', color='D9D9D9'),
+            bottom=Side(style='thin', color='D9D9D9')
+        )
+        
+        ws1 = wb.active
+        ws1.title = "Plan de Accion Oficial"
+        ws1.append(list(df1.columns))
+        for cell in ws1[1]:
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            
+        for row in df1.itertuples(index=False):
+            ws1.append(list(row))
+            
+        for row in ws1.iter_rows(min_row=2, max_row=ws1.max_row, min_col=1, max_col=ws1.max_column):
+            for cell in row:
+                cell.font = data_font
+                cell.border = thin_border
+                if isinstance(cell.value, float) or isinstance(cell.value, int):
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+                else:
+                    cell.alignment = Alignment(horizontal="left", vertical="center")
+                    
+        for col in ws1.columns:
+            max_len = max(len(str(cell.value or '')) for cell in col)
+            col_letter = openpyxl.utils.get_column_letter(col[0].column)
+            ws1.column_dimensions[col_letter].width = max(max_len + 3, 12)
+
+        ws2 = wb.create_sheet(title="Ampliacion DEP")
+        ws2.append(list(df2.columns))
+        for cell in ws2[1]:
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            
+        for row in df2.itertuples(index=False):
+            ws2.append(list(row))
+            
+        for row in ws2.iter_rows(min_row=2, max_row=ws2.max_row, min_col=1, max_col=ws2.max_column):
+            for cell in row:
+                cell.font = data_font
+                cell.border = thin_border
+                if isinstance(cell.value, float) or isinstance(cell.value, int):
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+                else:
+                    cell.alignment = Alignment(horizontal="left", vertical="center")
+                    
+        for col in ws2.columns:
+            max_len = max(len(str(cell.value or '')) for cell in col)
+            col_letter = openpyxl.utils.get_column_letter(col[0].column)
+            ws2.column_dimensions[col_letter].width = max(max_len + 3, 12)
+
+        wb.save(output)
+        return output.getvalue()
+
+    excel_data = generar_excel_formateado(st.session_state.db_plan_puro_v19, st.session_state.db_ampliacion_v19)
+    st.download_button(
+        label="📥 Descargar Agenda en Excel Formateado", 
+        data=excel_data, 
+        file_name="Plan_de_Accion_Oficial_Autolux.xlsx", 
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+# ==========================================
+# 5. PESTAÑA: DOCUMENTACIÓN Y FUENTES
+# ==========================================
+with tab_docs:
+    st.subheader("📚 Centro de Documentación y Fuentes Oficiales TASA")
+    st.markdown("Consulte las reglas metodológicas, las planillas de origen y la matriz completa de indicadores DEP 2026:")
+
+    c_doc1, c_doc2 = st.columns(2)
+    
+    with c_doc1:
+        st.info("📄 **Manual Oficial DEP 2026**\n\nDocumento normativo de Toyota Argentina con la descripción, criterios de asignación de puntaje y ponderaciones por área.")
+        try:
+            with open("Manual DEP 2026.pdf", "rb") as pdf_file:
+                st.download_button(
+                    label="📥 Descargar Manual DEP 2026 (PDF)",
+                    data=pdf_file,
+                    file_name="Manual DEP 2026.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
+        except FileNotFoundError:
+            st.warning("⚠️ No se encontró 'Manual DEP 2026.pdf' en el directorio raíz.")
+
+    with c_doc2:
+        st.success("📊 **Planilla Acumulada Oficial (Junio 2026)**\n\nResultados oficiales de la Red TASA extraídos directamente del sistema de auditoría Power BI.")
+        try:
+            with open("15437_DES015-26 DEP 2026 - ACUM. JUN 2.xlsx", "rb") as excel_file:
+                st.download_button(
+                    label="📥 Descargar Planilla Acumulada (Excel)",
+                    data=excel_file,
+                    file_name="15437_DES015-26 DEP 2026 - ACUM. JUN 2.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
+        except FileNotFoundError:
+            st.warning("⚠️ No se encontró la planilla acumulada Excel en el directorio raíz.")
+
+    st.divider()
+    st.subheader("🔍 Catálogo Completo de Indicadores del Manual DEP 2026")
+
+    items_manual = [
+        ("1.1.1", "Ventas", "Calidad", "SSI - Sales Satisfaction Index", "Mensual", "4,5%"),
+        ("1.1.2", "Ventas", "Calidad", "ICQ - Índice de Contención de Quejas", "Cuatrimestral", "1,5%"),
+        ("1.1.3", "Ventas", "Calidad", "NPS - Net Promoter Score Ventas", "Mensual", "1,2%"),
+        ("1.4.1", "Ventas", "Facilities", "Imagen, Mantenimiento y 5S: Exterior e interior", "Semestral", "3,0%"),
+        ("1.5.1", "Ventas", "Targets", "Cumplimiento de objetivos acumulados Hilux, SW4 & Hiace", "Mensual", "3,0%"),
+        ("1.5.2", "Ventas", "Targets", "Cumplimiento de obj. acumulados Corolla, CCross, Yaris, Yaris Cross", "Mensual", "3,0%"),
+        ("1.5.3", "Ventas", "Targets", "Patentamientos vs declaración de ventas", "Mensual", "2,1%"),
+        ("1.5.4", "Ventas", "Targets", "Extrazona / Cobertura", "Mensual", "0,7%"),
+        ("1.5.5", "Ventas", "Targets", "Actualización Salesforce: Lista de Espera y Patentamientos", "Mensual", "1,5%"),
+        ("1.5.6", "Ventas", "Targets", "Gestión Digital y Adopción CRM", "Mensual", "1,5%"),
+        ("2.5.1", "Ventas Especiales", "Targets", "Cumplimiento de plan de negocios (VE + Kinto ONE)", "Cuatrimestral", "3,5%"),
+        ("2.5.2", "Ventas Especiales", "Targets", "Lista de espera actualizada", "Cuatrimestral", "1,5%"),
+        ("3.1.1", "Posventa", "Calidad", "CSI - Customer Satisfaction Index Posventa", "Mensual", "2,7%"),
+        ("3.1.2", "Posventa", "Calidad", "FIR - Fix It Right", "Mensual", "2,7%"),
+        ("3.1.3", "Posventa", "Calidad", "ICQ - Índice de Contención de Quejas Posventa", "Cuatrimestral", "1,0%"),
+        ("3.1.4", "Posventa", "Calidad", "NPS - Net Promoter Score Posventa", "Mensual", "1,4%"),
+        ("3.1.5", "Posventa", "Calidad", "CSI de Chapa y Pintura (B&P)", "Mensual", "0,7%"),
+        ("3.2.1", "Posventa", "Programas", "Certificación TSM-FIR", "Semestral", "1,4%"),
+        ("3.2.2", "Posventa", "Programas", "Programas de excelencia (Mantenimiento Express - Lavado)", "Semestral", "2,0%"),
+        ("3.2.3", "Posventa", "Programas", "EcoDealer / ISO 14001", "Semestral", "1,0%"),
+        ("3.2.4", "Posventa", "Programas", "Sostenimiento periódico de la operación (Visitas Fieldman)", "Mensual", "4,0%"),
+        ("3.3.1", "Posventa", "RRHH", "Índice de rotación del personal de posventa", "Anual", "1,4%"),
+        ("3.3.2", "Posventa", "RRHH", "Dotación de personal de posventa", "Semestral", "2,7%"),
+        ("3.5.1", "Posventa", "Targets", "CPUS - Unidades Atendidas en Taller", "Mensual", "1,7%"),
+        ("3.5.2", "Posventa", "Targets", "Campañas de Seguridad Airbags (ABI 414/415)", "Mensual", "1,4%"),
+        ("3.5.3", "Posventa", "Targets", "Objetivo de Accesorios", "Mensual", "1,0%"),
+        ("3.5.4", "Posventa", "Targets", "Objetivo de Neumáticos", "Mensual", "1,0%"),
+        ("3.5.5", "Posventa", "Targets", "Performance de garantías (RDG)", "Mensual", "0,6%"),
+        ("3.5.6", "Posventa", "Targets", "Nivelación de pedidos de repuestos", "Mensual", "0,3%"),
+        ("3.5.7", "Posventa", "Targets", "Puntos Negativos (Compromisos Fieldman / Obj. Cualitativos)", "Cuatrimestral", "-3,4%"),
+        ("4.1.1", "TPA", "Calidad", "ICQ - Índice de Contención de Quejas TPA", "Mensual", "0,8%"),
+        ("4.1.2", "TPA", "Calidad", "NPS Transaccional (Suscriptor - Adjudicado - Entregado)", "Cuatrimestral", "0,8%"),
+        ("4.3.1", "TPA", "RRHH", "Estructura de RRHH de administración TPA", "Semestral", "0,6%"),
+        ("4.5.1", "TPA", "Targets", "Suscripciones (Mix de modelos & Venta Online)", "Mensual", "2,0%"),
+        ("4.5.2", "TPA", "Targets", "Pedidos confirmados", "Mensual", "1,4%"),
+        ("4.5.3", "TPA", "Targets", "Caída temprana (Baja en primeros 6 meses)", "Mensual", "2,0%"),
+        ("4.5.4", "TPA", "Targets", "Cuotas emitidas (Crecimiento de cartera)", "Mensual", "1,4%"),
+        ("5.1.1", "KINTO", "Calidad", "ICQ - Share", "Mensual", "0,2%"),
+        ("5.1.2", "KINTO", "Calidad", "NPS - Share", "Mensual", "0,6%"),
+        ("5.1.3", "KINTO", "Calidad", "NPS - One", "Mensual", "0,6%"),
+        ("5.5.1", "KINTO", "Targets", "Porcentaje de ocupación - Share", "Mensual", "0,7%"),
+        ("5.5.2", "KINTO", "Targets", "Flota mínima - Share", "Mensual", "0,7%"),
+        ("5.5.3", "KINTO", "Targets", "Bookings - Share", "Mensual", "0,7%"),
+        ("5.5.4", "KINTO", "Targets", "Preparación y entregas de unidades - One", "Trimestral", "0,3%"),
+        ("5.5.5", "KINTO", "Targets", "Gestión de siniestros - One", "Trimestral", "0,3%"),
+        ("5.5.6", "KINTO", "Targets", "PN Corporativo - Bookings - One", "Mensual", "1,2%"),
+        ("5.5.7", "KINTO", "Targets", "Devolución y Venta de unidades - One", "Mensual", "0,7%"),
+        ("6.1.1", "Usados", "Calidad", "SSI - Sales Satisfaction Index Usados Certificados (UCT)", "Mensual", "0,8%"),
+        ("6.1.2", "Usados", "Calidad", "NPS - Net Promoter Score Usados Certificados (UCT)", "Mensual", "0,8%"),
+        ("6.5.1", "Usados", "Targets", "Ventas UCT (Oro y Plata)", "Mensual", "3,2%"),
+        ("6.5.2", "Usados", "Targets", "Trade In % (Toma/Compra vs Venta Convencional)", "Mensual", "1,2%"),
+        ("7.5.1", "TCFA", "Targets", "Financiación (M$ Liquidaciones 0km y Usados)", "Mensual", "1,7%"),
+        ("7.5.2", "TCFA", "Targets", "Seguros 0km", "Mensual", "0,8%"),
+        ("7.5.3", "TCFA", "Targets", "Seguros Usados", "Mensual", "0,6%"),
+        ("7.5.4", "TCFA", "Targets", "Fidelidad en 0km (Prendas inscriptas TCFA)", "Mensual", "0,6%"),
+        ("7.5.5", "TCFA", "Targets", "Crecimiento Cartera de seguros", "Mensual", "0,4%"),
+        ("8.5.1", "ESG", "Targets", "E: Envío de plan con actividades de reducción de emisiones de CO2", "Proyecto", "0,3%"),
+        ("8.5.2", "ESG", "Targets", "S: Iniciativa Social alineada a temas materiales de TMC", "Proyecto", "0,35%"),
+        ("8.5.3", "ESG", "Targets", "G: Políticas ABAC / Reporte Sustentabilidad", "Proyecto", "0,35%"),
+        ("9.1.1", "General", "Calidad", "Excelencia Calidad (Premio por cumplir NPS en todas las áreas)", "Semestral", "1,6%"),
+        ("9.2.1", "General", "Programas", "Estilo de Movilidad Toyota - EMT (Puntos Negativos)", "Semestral", "-5,0%"),
+        ("9.2.2", "General", "Programas", "Círculos Kaizen", "Anual", "0,4%"),
+        ("9.3.1", "General", "RRHH", "Dotación Adecuada (Estructura de Mkt, RRHH y Calidad)", "Semestral", "3,5%"),
+        ("9.3.2", "General", "RRHH", "Capacitación (Matriz de niveles aprobados por puesto)", "Semestral", "3,5%"),
+        ("9.3.3", "General", "RRHH", "Nivel de rotación de personal general", "Anual", "0,6%"),
+        ("9.3.4", "General", "RRHH", "Satisfacción de empleados (Encuesta Clima Laboral)", "Anual", "3,3%"),
+        ("9.4.1", "General", "Facilities", "Objetivos cualitativos de Infraestructura (Instalaciones 2.0)", "Anual", "4,5%"),
+        ("9.5.1", "General", "Targets", "Absorción de Costos Fijos", "Cuatrimestral", "0,9%"),
+        ("9.5.2", "General", "Targets", "Fair Play (Penalización sobreprecios / reventas)", "Anual", "-10,0%"),
+        ("9.5.3", "General", "Targets", "Vehículos con Full Onboarding de Servicios Conectados", "Mensual", "1,7%")
+    ]
+
+    df_cat = pd.DataFrame(items_manual, columns=["Código TASA", "Área", "Categoría", "Descripción Oficial TASA", "Frecuencia", "% Ponderado Total"])
+    filtro_area = st.multiselect("Filtrar por Área:", options=df_cat["Área"].unique(), default=df_cat["Área"].unique())
+    df_filtrado = df_cat[df_cat["Área"].isin(filtro_area)]
+    st.dataframe(df_filtrado, use_container_width=True, hide_index=True)
