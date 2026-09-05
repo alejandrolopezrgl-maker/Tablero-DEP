@@ -9,7 +9,7 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="DEP Autolux", layout="wide", page_icon="🚗")
 st.title("🚗 Tablero de Control y Dashboard Evolutivo DEP - Autolux")
-st.caption("Datos Oficiales e Informe de Calidad de la Red TASA (Manual DEP 2026)")
+st.caption("Datos Oficiales e Informe de Calidad de la Red TASA (Manual DEP 2026 - Corte Julio)")
 
 # LLAVES EMT DE CONTROL NATIVO
 emt_keys = ["emt_a", "emt_b", "emt_c", "emt_d", "emt_e", "emt_f", "emt_g", "emt_h", "emt_i"]
@@ -35,16 +35,16 @@ if visitas_fm < 85:
 else: 
     st.sidebar.success("🟢 Compromisos Fieldman a salvo (≥85%).")
 
-# 3. VALORES BASE OFICIALES DE AUTOLUX (CORTE JULIO 2026 OFICIAL)
+# 3. VALORES BASE OFICIALES AUTOLUX (JULIO 2026 OFICIAL)
 b_ventas = 38.0 if not penalidad_mov else (38.0 - 5.0)
-b_posventa = 96.00 - (96.00 * (castigo_posventa_fieldman / 100))
-b_tpa = 87.00
-b_kinto = 42.00
-b_tcfa = 83.00
-b_general = 72.00
-b_especiales = 30.00
-b_usados = 73.00
-b_esg = 36.00
+b_posventa = 96.1 - (96.1 * (castigo_posventa_fieldman / 100))
+b_tpa = 87.4
+b_kinto = 41.7
+b_tcfa = 83.0
+b_general = 72.3
+b_especiales = 30.0
+b_usados = 73.3
+b_esg = 35.5
 
 def calcular_mejora(base, pct_avance):
     if pct_avance is None or pct_avance <= 0:
@@ -62,7 +62,7 @@ esp_simulada = calcular_mejora(b_especiales, st.session_state.sim_pilar_especial
 usd_simulada = calcular_mejora(b_usados, st.session_state.sim_pilar_usados)
 esg_simulada = calcular_mejora(b_esg, st.session_state.sim_pilar_esg)
 
-# EMT
+# EVALUACIÓN EMT
 total_puntos_emt = sum([st.session_state.get(ek, 100) for ek in emt_keys])
 porcentaje_emt = (total_puntos_emt / 900.0) * 100
 penalidad_estandar_emt = 0.0 if porcentaje_emt >= 80.0 else ((80.0 - porcentaje_emt) / 80.0) * 5.0
@@ -79,8 +79,11 @@ hay_simulacion = any([
     (st.session_state.get("sim_pilar_esg") or 0) > 0
 ])
 
+target_p10 = 74.7  # SENNA (SEN)
+target_p5 = 76.9   # PRANA (PRN)
+
 if not hay_simulacion and not penalidad_fp and not penalidad_mov and visitas_fm >= 85 and porcentaje_emt >= 80.0:
-    score_global_final = 69.0
+    score_global_final = 68.6
     puesto_calculado = 21
 else:
     score_global_final = (
@@ -90,37 +93,40 @@ else:
     ) - puntos_a_restar_global - penalidad_estandar_emt
     if penalidad_mov: score_global_final -= 1.1
 
-    if score_global_final <= 69.0:
-        puesto_calculado = int(21 + ((69.0 - score_global_final) / 5.0) * 10)
-        puesto_calculado = min(43, max(21, puesto_calculado))
+    if score_global_final <= 68.6:
+        puesto_calculado = int(21 + ((68.6 - score_global_final) / 5.0) * 10)
+        puesto_calculado = min(44, max(21, puesto_calculado))
     elif score_global_final >= 99.9:
         puesto_calculado = 1
-    elif score_global_final >= 72.3:
-        puesto_calculado = max(1, min(5, int(5 - ((score_global_final - 72.3) / (100.0 - 72.3)) * (5 - 1))))
+    elif score_global_final >= target_p5:
+        puesto_calculado = max(1, min(5, int(5 - ((score_global_final - target_p5) / (100.0 - target_p5)) * (5 - 1))))
+    elif score_global_final >= target_p10:
+        puesto_calculado = max(6, min(10, int(10 - ((score_global_final - target_p10) / (target_p5 - target_p10)) * (10 - 6))))
     else:
-        puesto_calculado = max(5, min(21, int(21 - ((score_global_final - 69.0) / (72.3 - 69.0)) * (21 - 5))))
+        puesto_calculado = max(11, min(21, int(21 - ((score_global_final - 68.6) / (target_p10 - 68.6)) * (21 - 11))))
 
-# DATAFRAME OPERATIVO CORTE JULIO
+# BENCHMARK OFICIAL JULIO CONTRA P5 (PRN) Y P10 (SEN)
 data_operativa = {
     "Área": ["Ventas (22%)", "Ventas Especiales (5%)", "Posventa (27%)", "TPA (9%)", "KINTO (6%)", "Usados (6%)", "TCFA (4%)", "ESG (1%)", "GENERAL (20%)"],
     "Autolux (LUX)": [v_simulada, esp_simulada, p_simulada, tpa_simulada, kinto_simulada, usd_simulada, tcfa_simulada, esg_simulada, g_simulada],
-    "DPQ - Puesto 5": [61.1, 30.0, 92.5, 78.2, 50.0, 93.3, 100.0, 35.5, 59.8],
-    "GON - Puesto 10": [26.8, 86.0, 96.0, 48.5, 58.3, 100.0, 100.0, 35.5, 79.0]
+    "PRN - Puesto 5": [87.4, 30.0, 97.0, 56.9, 41.7, 96.7, 22.0, 35.5, 76.7],
+    "SEN - Puesto 10": [47.8, 30.0, 97.5, 87.3, 33.3, 96.7, 90.0, 35.5, 85.9],
+    "Promedio RED": [57.0, 51.4, 88.9, 58.8, 56.3, 62.3, 61.4, 33.2, 66.7]
 }
 df_bench_op = pd.DataFrame(data_operativa)
 
 data_ranking_global = {
-    "Concesionario": ["DPQ - Puesto 5", "GON - Puesto 10", "Autolux (LUX) - Puesto 21"],
-    "Porcentaje DEP Global": [72.3, 69.8, score_global_final]
+    "Concesionario": ["PRN - Puesto 5", "SEN - Puesto 10", "Autolux (LUX) - Puesto 21", "Promedio RED"],
+    "Porcentaje DEP Global": [76.9, 74.7, score_global_final, 67.7]
 }
 df_bench_ranking = pd.DataFrame(data_ranking_global)
 
 if st.sidebar.button("🔄 Restablecer Valores Oficiales", key="btn_reset_lateral"):
-    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v21"]: 
+    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v22"]: 
         if k in st.session_state: st.session_state[k] = None
     st.rerun()
 
-# --- AQUÍ SE CREAN LAS PESTAÑAS (INCLUYENDO TAB_DOCS) ---
+# --- DECLARACIÓN DE LAS 6 PESTAÑAS ---
 tab_dashboard, tab_evolucion, tab_regional, tab_calidad, tab_plan, tab_docs = st.tabs([
     "📊 Dashboard del Dealer", 
     "📈 Evolución Junio vs. Julio",
@@ -134,29 +140,52 @@ tab_dashboard, tab_evolucion, tab_regional, tab_calidad, tab_plan, tab_docs = st
 # 1. PESTAÑA: DASHBOARD DEL DEALER
 # ==========================================
 with tab_dashboard:
-    target_p10 = 69.8
-    target_p5 = 72.3
     pts_para_p10 = max(0.0, target_p10 - score_global_final)
     pts_para_p5 = max(0.0, target_p5 - score_global_final)
 
     col1, col2, col3 = st.columns(3)
-    with col1: st.metric("Cumplimiento DEP Score Global (Julio)", f"{score_global_final:.1f}%", delta="+7.0% vs Junio (62.0%)")
+    with col1: st.metric("Cumplimiento DEP Score Global (Julio)", f"{score_global_final:.1f}%", delta="+6.6% vs Junio (62.0%)")
     with col2: 
         if puesto_calculado < 21: st.metric("Ranking Proyectado Red", f"Puesto {puesto_calculado} 🏆", delta=f"¡Subiendo {21 - puesto_calculado} puestos!")
         elif puesto_calculado > 21: st.metric("Ranking General Red", f"Puesto {puesto_calculado} 🚨", delta=f"¡Bajando {puesto_calculado - 21} puestos!")
-        else: st.metric("Ranking General Red", f"Puesto 21 🚗", delta="Subió 3 puestos vs Junio (Puesto 24)")
+        else: st.metric("Ranking General Red", f"Puesto 21 🚗", delta="Subió 3 puestos vs Junio (P24)")
     with col3:
         if pts_para_p5 == 0: st.metric("Puntos para Meta Superlativa", "¡En Puesto 5 o superior! 🎉")
-        else: st.metric(label="Puntos Faltantes para Top 10 / Top 5", value=f"+{pts_para_p10:.1f} pts (P10 - GON)", delta=f"+{pts_para_p5:.1f} pts para Puesto 5 (DPQ)", delta_color="inverse")
+        else: st.metric(label="Puntos Faltantes para Top 10 / Top 5", value=f"+{pts_para_p10:.1f} pts (P10 - SEN)", delta=f"+{pts_para_p5:.1f} pts para Puesto 5 (PRN)", delta_color="inverse")
 
-    st.subheader("🏁 Desempeño Operativo por Unidades de Negocio (Corte Julio 2026)")
+    st.subheader("🏁 Desempeño Operativo vs. Benchmarks Oficiales (Julio 2026)")
     df_melted_op = df_bench_op.melt(id_vars=["Área"], var_name="Concesionario", value_name="Cumplimiento %")
-    fig_op = px.bar(df_melted_op, x="Área", y="Cumplimiento %", color="Concesionario", barmode="group", text_auto=".1f", color_discrete_map={"Autolux (LUX)": "#d62728", "DPQ - Puesto 5": "#1f77b4", "GON - Puesto 10": "#7f7f7f"})
-    fig_op.update_layout(xaxis_title="Eje del Concesionario / Unidad Operativa", yaxis_title="Efectividad %", yaxis=dict(range=[0, 105]))
+    fig_op = px.bar(
+        df_melted_op, 
+        x="Área", 
+        y="Cumplimiento %", 
+        color="Concesionario", 
+        barmode="group", 
+        text_auto=".1f", 
+        color_discrete_map={
+            "Autolux (LUX)": "#d62728", 
+            "PRN - Puesto 5": "#1F4E78", 
+            "SEN - Puesto 10": "#5B9BD5", 
+            "Promedio RED": "#70AD47"
+        }
+    )
+    fig_op.update_layout(xaxis_title="Unidad Operativa", yaxis_title="Efectividad %", yaxis=dict(range=[0, 110]))
     st.plotly_chart(fig_op, use_container_width=True)
 
-    st.subheader("🏆 Posicionamiento Consolidado RED (Julio 2026)")
-    fig_gen = px.bar(df_bench_ranking, x="Concesionario", y="Porcentaje DEP Global", color="Concesionario", text_auto=".1f", color_discrete_map={"Autolux (LUX) - Puesto 21": "#990000", "DPQ - Puesto 5": "#4A7ebb", "GON - Puesto 10": "#A6A6A6"})
+    st.subheader("🏆 Posicionamiento Estratégico Consolidado RED")
+    fig_gen = px.bar(
+        df_bench_ranking, 
+        x="Concesionario", 
+        y="Porcentaje DEP Global", 
+        color="Concesionario", 
+        text_auto=".1f", 
+        color_discrete_map={
+            "Autolux (LUX) - Puesto 21": "#d62728", 
+            "PRN - Puesto 5": "#1F4E78", 
+            "SEN - Puesto 10": "#5B9BD5", 
+            "Promedio RED": "#70AD47"
+        }
+    )
     fig_gen.update_layout(showlegend=False, yaxis=dict(range=[0, 105]), xaxis_title="Dealer Evaluado", yaxis_title="Score Global %")
     st.plotly_chart(fig_gen, use_container_width=True)
 
@@ -185,18 +214,18 @@ with tab_dashboard:
 with tab_evolucion:
     st.subheader("📈 Comparativo Evolutivo Oficial: Junio 2026 vs. Julio 2026")
     c_ev1, c_ev2, c_ev3 = st.columns(3)
-    with c_ev1: st.metric("Cumplimiento DEP Global", "69,0%", delta="+7,0% vs Junio (62,0%)")
+    with c_ev1: st.metric("Cumplimiento DEP Global", "68,6%", delta="+6,6% vs Junio (62,0%)")
     with c_ev2: st.metric("Posición Ranking Red", "Puesto 21", delta="Subió 3 puestos (era P24)")
-    with c_ev3: st.metric("Brecha para Top 10 (GON)", "0,8 pts", delta="-7,0 pts de brecha cerrada", delta_color="inverse")
+    with c_ev3: st.metric("Brecha para Top 10 (SEN)", "6,1 pts", delta="Superando el Promedio RED (67,7%)")
 
     st.markdown("---")
     df_comp = pd.DataFrame({
         "Área": ["TPA", "Ventas", "ESG", "TCFA", "General", "KINTO", "Posventa", "Ventas Esp.", "Usados"],
         "Junio 2026": [72.8, 25.0, 25.0, 73.0, 65.7, 35.8, 95.2, 30.0, 73.3],
-        "Julio 2026": [87.0, 38.0, 36.0, 83.0, 72.0, 42.0, 96.0, 30.0, 73.0],
-        "Variación (%)": [+14.2, +13.0, +11.0, +10.0, +6.3, +6.2, +0.8, 0.0, -0.3],
+        "Julio 2026": [87.4, 38.0, 35.5, 83.0, 72.3, 41.7, 96.1, 30.0, 73.3],
+        "Variación (%)": [+14.6, +13.0, +10.5, +10.0, +6.6, +5.9, +0.9, 0.0, 0.0],
         "Posición Red (Jun ➔ Jul)": ["P4 ➔ P5", "P42 ➔ P41", "P8 ➔ P7", "P18 ➔ P16", "P26 ➔ P20", "P41 ➔ P41", "P9 ➔ P9", "P21 ➔ P20", "P14 ➔ P16"],
-        "Estado": ["🟢 Mejoró", "🟢 Mejoró", "🟢 Mejoró", "🟢 Mejoró", "🟢 Mejoró", "🟢 Mejoró", "🟢 Mejoró", "🟡 Quedó Igual", "🔴 Empeoró"]
+        "Estado": ["🟢 Mejoró", "🟢 Mejoró", "🟢 Mejoró", "🟢 Mejoró", "🟢 Mejoró", "🟢 Mejoró", "🟢 Mejoró", "🟡 Quedó Igual", "🟡 Quedó Igual"]
     }).sort_values(by="Variación (%)", ascending=False)
 
     st.dataframe(df_comp, use_container_width=True, hide_index=True)
@@ -204,24 +233,38 @@ with tab_evolucion:
     fig_comp = go.Figure()
     fig_comp.add_trace(go.Bar(x=df_comp["Área"], y=df_comp["Junio 2026"], name="Junio 2026", marker_color="#A6A6A6", text=df_comp["Junio 2026"], textposition="outside"))
     fig_comp.add_trace(go.Bar(x=df_comp["Área"], y=df_comp["Julio 2026"], name="Julio 2026", marker_color="#1F4E78", text=df_comp["Julio 2026"], textposition="outside"))
-    fig_comp.update_layout(title="Comparativa de Cumplimiento por Unidad de Negocio (Junio vs Julio 2026)", barmode="group", yaxis=dict(range=[0, 110]))
+    fig_comp.update_layout(title="Comparativa de Cumplimiento por Unidad (Junio vs Julio 2026)", barmode="group", yaxis=dict(range=[0, 110]))
     st.plotly_chart(fig_comp, use_container_width=True)
 
 # =======================================================
 # 3. PESTAÑA: DESEMPEÑO REGIONAL Y POR ÁREA (POWER BI)
 # =======================================================
 with tab_regional:
-    st.subheader("🗺️ Diagnóstico Integral por Áreas y Benchmarking Regional (Power BI)")
+    st.subheader("🗺️ Diagnóstico Integral por Áreas y Benchmarking Regional (Julio 2026)")
+    
     data_area_lux = {
         "Área": ["POSVENTA", "TPA", "TCFA", "USADOS", "GENERAL", "KINTO", "VENTAS", "ESG", "VENTAS ESP."],
         "Posición Red": [9, 5, 16, 16, 20, 41, 41, 7, 20],
-        "% Ideal LUX": [96.00, 87.00, 83.00, 73.00, 72.00, 42.00, 38.00, 36.00, 30.00]
+        "% Ideal LUX": [96.1, 87.4, 83.0, 73.3, 72.3, 41.7, 38.0, 35.5, 30.0]
     }
     df_area_lux = pd.DataFrame(data_area_lux)
-    fig_area = px.bar(df_area_lux, x="% Ideal LUX", y="Área", orientation="h", text="% Ideal LUX", color="% Ideal LUX", color_continuous_scale=["#d62728", "#f39c12", "#27ae60"], title="Efectividad de Autolux por Unidad (Julio 2026)")
+
+    fig_area = px.bar(
+        df_area_lux, 
+        x="% Ideal LUX", 
+        y="Área", 
+        orientation="h", 
+        text="% Ideal LUX", 
+        color="% Ideal LUX", 
+        color_continuous_scale=["#d62728", "#f39c12", "#27ae60"], 
+        title="Efectividad de Autolux por Unidad (% Cumplimiento Oficial Julio)"
+    )
     fig_area.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
     fig_area.update_layout(xaxis=dict(range=[0, 115]), yaxis=dict(autorange="reversed"), coloraxis_showscale=False)
     st.plotly_chart(fig_area, use_container_width=True)
+
+    st.subheader("📋 Tabla Oficial Comparativa contra P5 (PRN) y P10 (SEN)")
+    st.dataframe(df_bench_op, use_container_width=True, hide_index=True)
 
 # ==========================================
 # 4. PESTAÑA: ANÁLISIS DE CALIDAD
@@ -252,7 +295,7 @@ with tab_calidad:
 # ==========================================
 with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen (Evidencias de Auditoría)")
-    if "db_plan_puro_v21" not in st.session_state or st.session_state.db_plan_puro_v21 is None:
+    if "db_plan_puro_v22" not in st.session_state or st.session_state.db_plan_puro_v22 is None:
         cods = ["", "1.1.1", "3.1.1", "1.1.3", "1.1.1", "1.5.6", "6.1.1", "4.3.1", "9.3.2", "9.3.3", "9.4.1", "9.4.1", "1.5.5", "1.5.6", "1.5.5", "3.5.2", "7.5.5", "9.5.3", "5.5.5"]
         secs = ["Coordinación", "Ventas", "Posventa", "Ventas", "Ventas", "Ventas", "Usados", "TPA", "RRHH", "RRHH", "Facilities", "Facilities", "Ventas", "Ventas", "Ventas", "Posventa", "TCFA", "General", "KINTO"]
         tems = ["Programa DEP - Gobernanza", "Ventas - SSI Kits de Entrega", "Posventa - CSI Taller y Servicio", "Ventas - NPS Fidelidad Encuestas", "Ventas - SSI Mystery Shopper", "Ventas - CRM Adopción Digital", "Usados - SSI Certificados UCT", "TPA - Estructura Adecuada Adm.", "RRHH - Capacitación Matriz por Puesto", "RRHH - Rotación de Personal General", "Facilities - Instalaciones Las Lajitas", "Facilities - Reformas Salta Chapa/Pintura 2.0", "Ventas - Salesforce Lista Espera", "Ventas - CRM Tiempos de Respuesta", "Ventas - Salesforce Depuración Boletos", "Posventa - Campañas de Seguridad Airbags", "TCFA - Crecimiento Cartera Seguros", "General - Servicios Conectados App Onboarding", "KINTO - Gestión de Siniestros One"]
@@ -260,14 +303,14 @@ with tab_plan:
         accs = ["Tablero único de control, calendario de vencimientos y evidencias transversales", "Kits de seguridad como obsequio de Autolux en las entregas de unidades", "Estandarización de recepción en taller y seguimiento post-servicio", "Campaña de fidelización con sorteos activos en encuestas de la red", "Implementación obligatoria de auditorías mystery shopper en salones", "Desarrollo de un tablero único de control de KPIs CRM centrales", "Reorganización completa de toma, entrega y venta de unidades UCT", "Incorporación de 2 colaboradores administrativos para el área de planes", "Plan de seguimiento semestral obligatorio junto a Recursos Humanos", "Control y estabilización de la nómina general", "Negociación con fieldman TASA sobre obras no hechas planteadas 2025", "Planificar reformas 2.0 de Chapa, Pintura y traslado de lavaderos", "Seguimiento diario con foco crítico a cierre de mes en carpetas", "Garantizar atención de prospectos digitales en menos de 2 horas en CRM", "Eliminación activa de boletos vencidos sin actividad comercial en sistema", "Citaciones masivas Airbags ABI 414/415 para subir de escalón", "Revisar el método de cálculo para crecimiento de pólizas comerciales", "Seguimiento focalizado en revendedores y empresas para la activación app", "Revisar proceso de seguimiento junto al área de Posventa de flota"]
         resps = ["", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Pablo Carrizo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Daniel Colque", "Daniel Colque", "Alfredo Aguilar", "Lucía de los Ríos", "Lucía de los Ríos", "Daniel Colque", "Lucía de los Ríos", "Romina R.", "Aaron Martearena"]
         rows = [[i+1, cods[i], secs[i], tems[i], sits[i], accs[i], "ALTA", "Evidencia", resps[i], "", "", "EN PROCESO", 0.0] for i in range(19)]
-        st.session_state.db_plan_puro_v21 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "% Avance Acción (Simulación)"])
+        st.session_state.db_plan_puro_v22 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "% Avance Acción (Simulación)"])
 
-    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_v21, use_container_width=True, key="grilla1_v21", hide_index=True)
+    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_v22, use_container_width=True, key="grilla1_v22", hide_index=True)
 
     c_btn1, c_btn2 = st.columns(2)
     with c_btn1:
         if st.button("🧮 Simular e Impactar Dashboard"):
-            st.session_state.db_plan_puro_v21 = df_ed_1
+            st.session_state.db_plan_puro_v22 = df_ed_1
             for _, r in df_ed_1.iterrows():
                 tg = r["% Avance Acción (Simulación)"]
                 cod, ger = str(r["Código Auditoría Manual"]), str(r["Gerencia / Sector"])
@@ -278,22 +321,22 @@ with tab_plan:
                 elif "7.5" in cod: st.session_state.sim_pilar_tcfa = max(st.session_state.sim_pilar_tcfa or 0.0, tg)
                 elif "6.1" in cod or "6.5" in cod: st.session_state.sim_pilar_usados = max(st.session_state.sim_pilar_usados or 0.0, tg)
                 elif "9.3" in cod or "9.4" in cod or "9.5" in cod or "Facilities" in ger or "RRHH" in ger: st.session_state.sim_pilar_general = max(st.session_state.sim_pilar_general or 0.0, tg)
-            st.success("🎉 Simulación procesada sobre base Julio.")
+            st.success("🎉 Simulación procesada contra el estándar de Julio.")
             st.rerun()
 
     with c_btn2:
         if st.button("🧹 Limpiar Simulación"):
-            for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v21"]: 
+            for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v22"]: 
                 if k in st.session_state: st.session_state[k] = None
-            st.success("🧹 Valores oficiales restablecidos a Julio (69.0% - P21).")
+            st.success("🧹 Valores restablecidos a Julio (68.6% - P21).")
             st.rerun()
 
 # ==========================================
-# 6. PESTAÑA: DOCUMENTACIÓN Y FUENTES (RESTAURADA)
+# 6. PESTAÑA: DOCUMENTACIÓN Y FUENTES
 # ==========================================
 with tab_docs:
     st.subheader("📚 Centro de Documentación y Fuentes Oficiales TASA")
-    st.markdown("Consulte las reglas normativas del manual, los archivos acumulados y el catálogo completo de indicadores:")
+    st.markdown("Consulte los archivos oficiales de Toyota Argentina y el catálogo de indicadores DEP 2026:")
 
     c_doc1, c_doc2 = st.columns(2)
     with c_doc1:
@@ -308,21 +351,21 @@ with tab_docs:
                     use_container_width=True
                 )
         except FileNotFoundError:
-            st.warning("⚠️ El archivo 'Manual DEP 2026.pdf' no se encuentra en el repositorio.")
+            st.warning("⚠️ 'Manual DEP 2026.pdf' no encontrado.")
 
     with c_doc2:
-        st.success("📊 **Planilla Acumulada Oficial (Red TASA)**\n\nResultados oficiales de la Red comercial extraídos directamente del sistema Power BI.")
+        st.success("📊 **Planilla Acumulada Oficial Julio 2026**\n\nResultados oficiales de la Red comercial (Acumulado Julio).")
         try:
-            with open("15437_DES015-26 DEP 2026 - ACUM. JUN 2.xlsx", "rb") as excel_file:
+            with open("15511_DES016 - DEP 2026 - Acum. Jul'26.xlsx", "rb") as excel_file:
                 st.download_button(
-                    label="📥 Descargar Planilla Acumulada (Excel)",
+                    label="📥 Descargar Planilla Julio 2026 (Excel)",
                     data=excel_file,
-                    file_name="15437_DES015-26 DEP 2026 - ACUM. JUN 2.xlsx",
+                    file_name="15511_DES016 - DEP 2026 - Acum. Jul'26.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     use_container_width=True
                 )
         except FileNotFoundError:
-            st.warning("⚠️ El archivo Excel acumulado no se encuentra en el repositorio.")
+            st.warning("⚠️ '15511_DES016 - DEP 2026 - Acum. Jul'26.xlsx' no encontrado.")
 
     st.divider()
     st.subheader("🔍 Catálogo Completo de Indicadores del Manual DEP 2026")
