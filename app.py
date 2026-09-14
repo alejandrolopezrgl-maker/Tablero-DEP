@@ -122,7 +122,7 @@ data_ranking_global = {
 df_bench_ranking = pd.DataFrame(data_ranking_global)
 
 if st.sidebar.button("🔄 Restablecer Valores Oficiales", key="btn_reset_lateral"):
-    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v23"]: 
+    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v24"]: 
         if k in st.session_state: st.session_state[k] = None
     st.rerun()
 
@@ -235,6 +235,34 @@ with tab_evolucion:
     fig_comp.add_trace(go.Bar(x=df_comp["Área"], y=df_comp["Julio 2026"], name="Julio 2026", marker_color="#1F4E78", text=df_comp["Julio 2026"], textposition="outside"))
     fig_comp.update_layout(title="Comparativa de Cumplimiento por Unidad (Junio vs Julio 2026)", barmode="group", yaxis=dict(range=[0, 110]))
     st.plotly_chart(fig_comp, use_container_width=True)
+
+    st.markdown("---")
+    st.subheader("🔍 Auditoría Quirúrgica de Indicadores Clave (Desvíos y Tolerancias)")
+
+    col_an1, col_an2 = st.columns(2)
+
+    with col_an1:
+        st.error("📉 **TCFA - Indicador 7.5.5: Crecimiento Cartera de Seguros**")
+        st.markdown("""
+        * **Resultado Auditado en Julio:** **-3,65%** (Meta: > 0%).
+        * **Impacto en Puntaje:** **0,00 de 0,40 pts posibles** (Calificación X).
+        * **Origen del Cálculo:** Toyota Financiera evalúa mensualmente el balance neto de pólizas activas:
+        $$\\frac{\\text{Pólizas Nuevas Altas} - \\text{Pólizas Bajas / Cancelaciones}}{\\text{Meta de Crecimiento del Mes}}$$
+        * **Diagnóstico Operativo:** El saldo negativo significa que se perdieron o cancelaron más seguros de los que se lograron suscribir. Para revertirlo se requiere retener renovaciones automáticas y asegurar que ningún 0km/Usado salga del salón sin póliza activa.
+        """)
+
+    with col_an2:
+        st.info("⚙️ **Posventa - Indicador 3.5.1: CPUS en Taller (Realidad vs Planilla)**")
+        st.markdown("""
+        * **Meta Oficial Acumulada:** **15.740 unidades**.
+        * **Volumen Atendido:** **15.603 unidades** (Faltante real de **137 vehículos** / **99,13%**).
+        * **Por qué figura 1,70 / 1,70 pts:** El manual aplica una banda de tolerancia escalonada (al alcanzar $\\ge$ 98% otorga el puntaje completo en esa celda específica).
+        * **¿De dónde provino entonces la mejora real de Posventa (+0,9%)?:**
+          * **Accesorios (3.5.3):** Sobrecumplimiento de \$817 M vs \$654 M (+124%).
+          * **Neumáticos (3.5.4):** 1.838 unidades vendidas vs meta de 1.504 (+122%).
+          * **Calidad y FIR:** CSI de taller en 94,67 pts y Fix It Right en 99,0%.
+          * **Programas TSM-FIR (3.2.1):** Certificación perfecta al 100%.
+        """)
 
 # =======================================================
 # 3. PESTAÑA: DESEMPEÑO REGIONAL Y POR ÁREA (POWER BI)
@@ -374,7 +402,7 @@ with tab_calidad:
 # ==========================================
 with tab_plan:
     st.subheader("📋 Matriz de Compromisos Kaizen (Evidencias de Auditoría)")
-    if "db_plan_puro_v23" not in st.session_state or st.session_state.db_plan_puro_v23 is None:
+    if "db_plan_puro_v24" not in st.session_state or st.session_state.db_plan_puro_v24 is None:
         cods = ["", "1.1.1", "3.1.1", "1.1.3", "1.1.1", "1.5.6", "6.1.1", "4.3.1", "9.3.2", "9.3.3", "9.4.1", "9.4.1", "1.5.5", "1.5.6", "1.5.5", "3.5.2", "7.5.5", "9.5.3", "5.5.5"]
         secs = ["Coordinación", "Ventas", "Posventa", "Ventas", "Ventas", "Ventas", "Usados", "TPA", "RRHH", "RRHH", "Facilities", "Facilities", "Ventas", "Ventas", "Ventas", "Posventa", "TCFA", "General", "KINTO"]
         tems = ["Programa DEP - Gobernanza", "Ventas - SSI Kits de Entrega", "Posventa - CSI Taller y Servicio", "Ventas - NPS Fidelidad Encuestas", "Ventas - SSI Mystery Shopper", "Ventas - CRM Adopción Digital", "Usados - SSI Certificados UCT", "TPA - Estructura Adecuada Adm.", "RRHH - Capacitación Matriz por Puesto", "RRHH - Rotación de Personal General", "Facilities - Instalaciones Las Lajitas", "Facilities - Reformas Salta Chapa/Pintura 2.0", "Ventas - Salesforce Lista Espera", "Ventas - CRM Tiempos de Respuesta", "Ventas - Salesforce Depuración Boletos", "Posventa - Campañas de Seguridad Airbags", "TCFA - Crecimiento Cartera Seguros", "General - Servicios Conectados App Onboarding", "KINTO - Gestión de Siniestros One"]
@@ -382,14 +410,14 @@ with tab_plan:
         accs = ["Tablero único de control, calendario de vencimientos y evidencias transversales", "Kits de seguridad como obsequio de Autolux en las entregas de unidades", "Estandarización de recepción en taller y seguimiento post-servicio", "Campaña de fidelización con sorteos activos en encuestas de la red", "Implementación obligatoria de auditorías mystery shopper en salones", "Desarrollo de un tablero único de control de KPIs CRM centrales", "Reorganización completa de toma, entrega y venta de unidades UCT", "Incorporación de 2 colaboradores administrativos para el área de planes", "Plan de seguimiento semestral obligatorio junto a Recursos Humanos", "Control y estabilización de la nómina general", "Negociación con fieldman TASA sobre obras no hechas planteadas 2025", "Planificar reformas 2.0 de Chapa, Pintura y traslado de lavaderos", "Seguimiento diario con foco crítico a cierre de mes en carpetas", "Garantizar atención de prospectos digitales en menos de 2 horas en CRM", "Eliminación activa de boletos vencidos sin actividad comercial en sistema", "Citaciones masivas Airbags ABI 414/415 para subir de escalón", "Revisar el método de cálculo para crecimiento de pólizas comerciales", "Seguimiento focalizado en revendedores y empresas para la activación app", "Revisar proceso de seguimiento junto al área de Posventa de flota"]
         resps = ["", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Pablo Carrizo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Daniel Colque", "Daniel Colque", "Alfredo Aguilar", "Lucía de los Ríos", "Lucía de los Ríos", "Daniel Colque", "Lucía de los Ríos", "Romina R.", "Aaron Martearena"]
         rows = [[i+1, cods[i], secs[i], tems[i], sits[i], accs[i], "ALTA", "Evidencia", resps[i], "", "", "EN PROCESO", 0.0] for i in range(19)]
-        st.session_state.db_plan_puro_v23 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "% Avance Acción (Simulación)"])
+        st.session_state.db_plan_puro_v24 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "% Avance Acción (Simulación)"])
 
-    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_v23, use_container_width=True, key="grilla1_v23", hide_index=True)
+    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_v24, use_container_width=True, key="grilla1_v24", hide_index=True)
 
     c_btn1, c_btn2 = st.columns(2)
     with c_btn1:
         if st.button("🧮 Simular e Impactar Dashboard"):
-            st.session_state.db_plan_puro_v23 = df_ed_1
+            st.session_state.db_plan_puro_v24 = df_ed_1
             for _, r in df_ed_1.iterrows():
                 tg = r["% Avance Acción (Simulación)"]
                 cod, ger = str(r["Código Auditoría Manual"]), str(r["Gerencia / Sector"])
@@ -405,7 +433,7 @@ with tab_plan:
 
     with c_btn2:
         if st.button("🧹 Limpiar Simulación"):
-            for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v23"]: 
+            for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v24"]: 
                 if k in st.session_state: st.session_state[k] = None
             st.success("🧹 Valores restablecidos a Julio (68.6% - P21).")
             st.rerun()
