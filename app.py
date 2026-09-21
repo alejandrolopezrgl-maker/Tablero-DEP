@@ -2,9 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import io
-import openpyxl
-from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 
 # 1. CONFIGURACIÓN DE LA PÁGINA
 st.set_page_config(page_title="DEP Autolux", layout="wide", page_icon="🚗")
@@ -122,11 +119,11 @@ data_ranking_global = {
 df_bench_ranking = pd.DataFrame(data_ranking_global)
 
 if st.sidebar.button("🔄 Restablecer Valores Oficiales", key="btn_reset_lateral"):
-    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v24"]: 
+    for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg"]: 
         if k in st.session_state: st.session_state[k] = None
     st.rerun()
 
-# --- DECLARACIÓN DE LAS 6 PESTAÑAS ---
+# DECLARACIÓN DE LAS PESTAÑAS
 tab_dashboard, tab_evolucion, tab_regional, tab_calidad, tab_plan, tab_docs = st.tabs([
     "📊 Dashboard del Dealer", 
     "📈 Evolución Junio vs. Julio",
@@ -392,54 +389,13 @@ with tab_calidad:
     st.plotly_chart(fig_pareto, use_container_width=True)
 
 # ==========================================
-# 5. PESTAÑA: PLAN DE ACCIÓN INTERACTIVO
+# 5. PESTAÑA: PLAN DE ACCIÓN INTERACTIVO (REESTRUCTURADO)
 # ==========================================
 with tab_plan:
-    st.subheader("📋 Matriz de Compromisos Kaizen (Evidencias de Auditoría)")
-    if "db_plan_puro_v24" not in st.session_state or st.session_state.db_plan_puro_v24 is None:
-        cods = ["", "1.1.1", "3.1.1", "1.1.3", "1.1.1", "1.5.6", "6.1.1", "4.3.1", "9.3.2", "9.3.3", "9.4.1", "9.4.1", "1.5.5", "1.5.6", "1.5.5", "3.5.2", "7.5.5", "9.5.3", "5.5.5"]
-        secs = ["Coordinación", "Ventas", "Posventa", "Ventas", "Ventas", "Ventas", "Usados", "TPA", "RRHH", "RRHH", "Facilities", "Facilities", "Ventas", "Ventas", "Ventas", "Posventa", "TCFA", "General", "KINTO"]
-        tems = ["Programa DEP - Gobernanza", "Ventas - SSI Kits de Entrega", "Posventa - CSI Taller y Servicio", "Ventas - NPS Fidelidad Encuestas", "Ventas - SSI Mystery Shopper", "Ventas - CRM Adopción Digital", "Usados - SSI Certificados UCT", "TPA - Estructura Adecuada Adm.", "RRHH - Capacitación Matriz por Puesto", "RRHH - Rotación de Personal General", "Facilities - Instalaciones Las Lajitas", "Facilities - Reformas Salta Chapa/Pintura 2.0", "Ventas - Salesforce Lista Espera", "Ventas - CRM Tiempos de Respuesta", "Ventas - Salesforce Depuración Boletos", "Posventa - Campañas de Seguridad Airbags", "TCFA - Crecimiento Cartera Seguros", "General - Servicios Conectados App Onboarding", "KINTO - Gestión de Siniestros One"]
-        sits = ["", "Falta kit obsequio en entrega", "Tasa de quejas en servicio post-entrega", "Baja tasa respuesta encuestas NPS", "Desvíos en atención de asesores", "Falta visibilidad avance leads", "Estándar flojo inspección UCT", "Sobrecarga en administración TPA", "Riesgo incumplimiento horas YTD", "Inestabilidad en la nómina general", "Obras pendientes 2025", "Pendiente traslado físico lavaderos", "Boletos estancados en proceso", "Demoras atención prospectos digital", "Boletos vencidos sin actividad", "Baja tasa contacto campañas masivas", "Desvío meta crecimiento pólizas", "Baja tasa activación de la app", "Procesos sueltos en unidades One"]
-        accs = ["Tablero único de control, calendario de vencimientos y evidencias transversales", "Kits de seguridad como obsequio de Autolux en las entregas de unidades", "Estandarización de recepción en taller y seguimiento post-servicio", "Campaña de fidelización con sorteos activos en encuestas de la red", "Implementación obligatoria de auditorías mystery shopper en salones", "Desarrollo de un tablero único de control de KPIs CRM centrales", "Reorganización completa de toma, entrega y venta de unidades UCT", "Incorporación de 2 colaboradores administrativos para el área de planes", "Plan de seguimiento semestral obligatorio junto a Recursos Humanos", "Control y estabilización de la nómina general", "Negociación con fieldman TASA sobre obras no hechas planteadas 2025", "Planificar reformas 2.0 de Chapa, Pintura y traslado de lavaderos", "Seguimiento diario con foco crítico a cierre de mes en carpetas", "Garantizar atención de prospectos digitales en menos de 2 horas en CRM", "Eliminación activa de boletos vencidos sin actividad comercial en sistema", "Citaciones masivas Airbags ABI 414/415 para subir de escalón", "Revisar el método de cálculo para crecimiento de pólizas comerciales", "Seguimiento focalizado en revendedores y empresas para la activación app", "Revisar proceso de seguimiento junto al área de Posventa de flota"]
-        resps = ["", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Alfredo Aguilar", "Pablo Carrizo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Adrián Di Costanzo", "Daniel Colque", "Daniel Colque", "Alfredo Aguilar", "Lucía de los Ríos", "Lucía de los Ríos", "Daniel Colque", "Lucía de los Ríos", "Romina R.", "Aaron Martearena"]
-        rows = [[i+1, cods[i], secs[i], tems[i], sits[i], accs[i], "ALTA", "Evidencia", resps[i], "", "", "EN PROCESO", 0.0] for i in range(19)]
-        st.session_state.db_plan_puro_v24 = pd.DataFrame(rows, columns=["#", "Código Auditoría Manual", "Gerencia / Sector", "Tema / Proyecto", "Situación actual", "Acción Correctiva", "Prioridad", "Indicador / Entregable", "Responsable", "Estimación de Cumplimiento", "Fecha Estimada Cumplimiento", "Estado", "% Avance Acción (Simulación)"])
+    st.header("🎯 Plan Estratégico y Proyección de Cierre de Agosto")
+    st.caption("Foco exclusivo en Posventa (PV), TCFA y KINTO: tres palancas con alto retorno en puntos y bajo esfuerzo de inversión.")
 
-    df_ed_1 = st.data_editor(st.session_state.db_plan_puro_v24, use_container_width=True, key="grilla1_v24", hide_index=True)
-
-    c_btn1, c_btn2 = st.columns(2)
-    with c_btn1:
-        if st.button("🧮 Simular e Impactar Dashboard"):
-            st.session_state.db_plan_puro_v24 = df_ed_1
-            for _, r in df_ed_1.iterrows():
-                tg = r["% Avance Acción (Simulación)"]
-                cod, ger = str(r["Código Auditoría Manual"]), str(r["Gerencia / Sector"])
-                if "1.1" in cod or "1.5" in cod or "Ventas" in ger: st.session_state.sim_pilar_ventas = max(st.session_state.sim_pilar_ventas or 0.0, tg)
-                elif "3.1" in cod or "3.5" in cod or "Posventa" in ger: st.session_state.sim_pilar_posventa = max(st.session_state.sim_pilar_posventa or 0.0, tg)
-                elif "4.1" in cod or "4.3" in cod or "4.5" in cod: st.session_state.sim_pilar_tpa = max(st.session_state.sim_pilar_tpa or 0.0, tg)
-                elif "5.1" in cod or "5.5" in cod: st.session_state.sim_pilar_kinto = max(st.session_state.sim_pilar_kinto or 0.0, tg)
-                elif "7.5" in cod: st.session_state.sim_pilar_tcfa = max(st.session_state.sim_pilar_tcfa or 0.0, tg)
-                elif "6.1" in cod or "6.5" in cod: st.session_state.sim_pilar_usados = max(st.session_state.sim_pilar_usados or 0.0, tg)
-                elif "9.3" in cod or "9.4" in cod or "9.5" in cod or "Facilities" in ger or "RRHH" in ger: st.session_state.sim_pilar_general = max(st.session_state.sim_pilar_general or 0.0, tg)
-            st.success("🎉 Simulación procesada contra el estándar de Julio.")
-            st.rerun()
-
-    with c_btn2:
-        if st.button("🧹 Limpiar Simulación"):
-            for k in ["sim_pilar_ventas", "sim_pilar_posventa", "sim_pilar_tpa", "sim_pilar_kinto", "sim_pilar_tcfa", "sim_pilar_general", "sim_pilar_especiales", "sim_pilar_usados", "sim_pilar_esg", "db_plan_puro_v24"]: 
-                if k in st.session_state: st.session_state[k] = None
-            st.success("🧹 Valores restablecidos a Julio (68.6% - P21).")
-            st.rerun()
-
-    # =========================================================================
-    # NUEVO MÓDULO AL FINAL DE LA HOJA: PROYECCIÓN CIERRE AGOSTO (PV + TCFA + KINTO)
-    # =========================================================================
-    st.markdown("---")
-    st.header("🎯 Proyección Estratégica Cierre Agosto: Avance Consolidado (Posventa, TCFA y KINTO)")
-    st.caption("Simulación matemática basada en las brechas oficiales cerradas a Julio 2026. Identificación de puntos de alto retorno y bajo esfuerzo.")
-
-    # 1. Métricas de Impacto Global
+    # 1. Tarjetas Métricas de Escenarios
     c_p1, c_p2, c_p3, c_p4 = st.columns(4)
     with c_p1:
         st.metric(label="📊 Score Actual (Julio)", value="68,56%", delta="66,16 pts (Puesto 21)")
@@ -450,7 +406,7 @@ with tab_plan:
     with c_p4:
         st.metric(label="🚀 Escenario 3: Óptimo", value="72,95%", delta="+4,23 pts ➔ Puesto 12 🏎️")
 
-    st.markdown(" ")
+    st.markdown("---")
 
     # 2. Gráficos Comparativos y Cascada de Puntos
     col_gr1, col_gr2 = st.columns(2)
@@ -496,7 +452,52 @@ with tab_plan:
         )
         st.plotly_chart(fig_aportes, use_container_width=True)
 
-    # 3. Matriz Operativa de Acción Rápida por Área
+    st.markdown("---")
+
+    # 3. Explicación Detallada de los 3 Escenarios de Proyección
+    st.subheader("💡 Explicación Estratégica de los 3 Escenarios de Proyección")
+
+    exp_col1, exp_col2, exp_col3 = st.columns(3)
+
+    with exp_col1:
+        st.success("### 🟢 Escenario 1: Táctico\n**Meta: +1,95 pts | Score: 70,59% (Puesto 17)**")
+        st.markdown("""
+        **Premisa:** Resolver los desvíos inmediatos y frenar fugas de puntos sin requerir nuevos contratos complejos.
+        
+        * **Posventa (+0,70 pts):** En Campañas Airbags (3.5.2) se sube del piso actual (0,35 pts) al escalón intermedio del 70-89% completando llamados pendientes. CPUS se preserva dentro de la tolerancia ($\ge$ 98%).
+        * **TCFA (+0,40 pts):** Neutralizar cancelaciones de seguros para que el Crecimiento de Cartera (7.5.5) pase de -3,65% a $>0\%$, recuperando los 0,40 pts íntegros.
+        * **KINTO (+0,85 pts):** Kinto Share alcanza el 100% de ocupación y bookings (+0,70 pts) usando autos para sustitución de taller. Se regulariza la gestión de siniestros (+0,15 pts).
+        
+        **Impacto:** Autolux escala 4 puestos en la red general, superando a Boston, Haimovich, De la Sobera y Zento.
+        """)
+
+    with exp_col2:
+        st.info("### 🟡 Escenario 2: Sólido\n**Meta: +3,25 pts | Score: 71,93% (Puesto 14)**")
+        st.markdown("""
+        **Premisa:** Cumplimiento consistente de las metas mensuales regulares en las tres áreas clave.
+        
+        * **Posventa (+1,05 pts):** Airbags alcanza el 100% del target mensual (1,40 / 1,40 pts). Posventa queda a décimas del puntaje ideal absoluto (27 pts).
+        * **TCFA (+0,60 pts):** Cartera en positivo (+0,40 pts) + aceleración en la liquidación de prendas Hilux/Corolla Cross (+0,12 pts) + penetración en seguros 0km (+0,08 pts).
+        * **KINTO (+1,60 pts):** Share al 100% (+0,70 pts) + alistamiento y siniestros al día (+0,30 pts) + 1ra encuesta NPS de Kinto One positiva auditada (+0,60 pts).
+        
+        **Impacto:** Se escalan 7 posiciones en la red nacional, sobrepasando a Luppieri, Kansai, Anzorena y Ricardo Pichetti.
+        """)
+
+    with exp_col3:
+        st.warning("### 🚀 Escenario 3: Óptimo\n**Meta: +4,23 pts | Score: 72,95% (Puesto 12)**")
+        st.markdown("""
+        **Premisa:** Desempeño perfecto en Posventa y TCFA sumado al despegue comercial corporativo de Kinto ONE.
+        
+        * **Posventa (+1,05 pts):** Certificación plena 27,00/27,00 pts en el área.
+        * **TCFA (+0,68 pts):** Puntaje perfecto 4,00/4,00 pts (se capturan las 5 metas).
+        * **KINTO (+2,50 pts):** Share perfecto (+0,70 pts) + alistamiento y siniestros (+0,30 pts) + NPS One (+0,60 pts) + cierre de los primeros contratos corporativos Kinto One (+0,90 pts).
+        
+        **Impacto:** Autolux se sitúa en el Puesto 12 y reduce la brecha con SENNA (Puesto 10: 74,74%) a sólo 1,79 puntos, dejando el Top 10 al alcance para el siguiente corte.
+        """)
+
+    st.markdown("---")
+
+    # 4. Matriz Táctica de Ejecución por Responsable (con Juan Vazquez en TCFA)
     st.subheader("📋 Matriz Táctica de Ejecución Agosto (¿Cómo se gana cada punto?)")
     
     df_proy_detalle = pd.DataFrame({
@@ -516,7 +517,7 @@ with tab_plan:
         "Julio Real": ["0,35 / 1,40 pts", "1,70 / 1,70 pts", "0,00 / 0,40 pts", "1,56 / 1,68 pts", "1,20 / 1,36 pts", "0,70 / 1,40 pts", "0,30 / 0,60 pts", "0,00 / 0,60 pts", "0,00 / 1,20 pts"],
         "Objetivo Agosto": ["1,40 pts (+1,05)", "1,70 pts (Sostener)", "0,40 pts (+0,40)", "1,68 pts (+0,12)", "1,36 pts (+0,16)", "1,40 pts (+0,70)", "0,60 pts (+0,30)", "0,60 pts (+0,60)", "0,80 pts (+0,80)"],
         "Ganancia Pts": ["+1,05 pts", "0,00 pts", "+0,40 pts", "+0,12 pts", "+0,16 pts", "+0,70 pts", "+0,30 pts", "+0,60 pts", "+0,80 pts"],
-        "Responsable": ["Daniel Colque", "Daniel Colque", "Lucía de los Ríos", "Lucía de los Ríos", "Lucía de los Ríos", "Aaron Martearena", "Aaron Martearena", "Aaron Martearena", "Aaron / Alfredo A."],
+        "Responsable": ["Daniel Colque", "Daniel Colque", "Juan Vazquez", "Juan Vazquez", "Juan Vazquez", "Aaron Martearena", "Aaron Martearena", "Aaron Martearena", "Aaron / Alfredo A."],
         "Acción Crítica Innegociable": [
             "Llamados proactivos masivos a clientes con infladores pendientes ABI 414/415.",
             "Mantener turnos al día para no caer del umbral de tolerancia del 98%.",
