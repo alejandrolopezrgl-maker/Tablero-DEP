@@ -105,7 +105,7 @@ else:
     else:
         puesto_calculado = max(11, min(21, int(21 - ((score_global_final - 68.6) / (target_p10 - 68.6)) * (21 - 11))))
 
-# BENCHMARK OFICIAL JULIO CONTRA P5 (PRN) Y P10 (SEN)
+# BENCHMARK OFICIAL JULIO
 data_operativa = {
     "Área": ["Ventas (22%)", "Ventas Especiales (5%)", "Posventa (27%)", "TPA (9%)", "KINTO (6%)", "Usados (6%)", "TCFA (4%)", "ESG (1%)", "GENERAL (20%)"],
     "Autolux (LUX)": [v_simulada, esp_simulada, p_simulada, tpa_simulada, kinto_simulada, usd_simulada, tcfa_simulada, esg_simulada, g_simulada],
@@ -240,7 +240,6 @@ with tab_evolucion:
     st.subheader("🔍 Auditoría Quirúrgica de Indicadores Clave (Desvíos y Tolerancias)")
 
     col_an1, col_an2 = st.columns(2)
-
     with col_an1:
         st.error("📉 **TCFA - Indicador 7.5.5: Crecimiento Cartera de Seguros**")
         st.markdown("""
@@ -272,17 +271,12 @@ with tab_regional:
     st.caption("Consolidado Oficial de Power BI: Áreas Operativas, Categorías Normativas y Benchmarking Regional")
 
     m1, m2, m3, m4 = st.columns(4)
-    with m1: 
-        st.metric("Score Global Autolux", "68,56 pts", "71,05% del Ideal (P21)")
-    with m2: 
-        st.metric("Región NOA (Líder)", "71,96 pts", "74,57% del Ideal")
-    with m3: 
-        st.metric("Pilar Líder en Calidad", "Programas (Puesto 1)", "100,0% Efectividad 🏆")
-    with m4: 
-        st.metric("Gestión del Capital", "RRHH (Puesto 6)", "91,89% Efectividad 🌟")
+    with m1: st.metric("Score Global Autolux", "68,56 pts", "71,05% del Ideal (P21)")
+    with m2: st.metric("Región NOA (Líder)", "71,96 pts", "74,57% del Ideal")
+    with m3: st.metric("Pilar Líder en Calidad", "Programas (Puesto 1)", "100,0% Efectividad 🏆")
+    with m4: st.metric("Gestión del Capital", "RRHH (Puesto 6)", "91,89% Efectividad 🌟")
 
     st.markdown("---")
-
     data_area_lux = {
         "Área": ["POSVENTA", "TPA", "TCFA", "USADOS", "GENERAL", "KINTO", "VENTAS", "ESG", "VENTAS ESPECIALES"],
         "Posición Red": [9, 5, 16, 16, 20, 37, 41, 7, 20],
@@ -437,6 +431,106 @@ with tab_plan:
                 if k in st.session_state: st.session_state[k] = None
             st.success("🧹 Valores restablecidos a Julio (68.6% - P21).")
             st.rerun()
+
+    # =========================================================================
+    # NUEVO MÓDULO AL FINAL DE LA HOJA: PROYECCIÓN CIERRE AGOSTO (PV + TCFA + KINTO)
+    # =========================================================================
+    st.markdown("---")
+    st.header("🎯 Proyección Estratégica Cierre Agosto: Avance Consolidado (Posventa, TCFA y KINTO)")
+    st.caption("Simulación matemática basada en las brechas oficiales cerradas a Julio 2026. Identificación de puntos de alto retorno y bajo esfuerzo.")
+
+    # 1. Métricas de Impacto Global
+    c_p1, c_p2, c_p3, c_p4 = st.columns(4)
+    with c_p1:
+        st.metric(label="📊 Score Actual (Julio)", value="68,56%", delta="66,16 pts (Puesto 21)")
+    with c_p2:
+        st.metric(label="🟢 Escenario 1: Táctico", value="70,59%", delta="+1,95 pts ➔ Puesto 17 🏆")
+    with c_p3:
+        st.metric(label="🟡 Escenario 2: Sólido", value="71,93%", delta="+3,25 pts ➔ Puesto 14 🌟")
+    with c_p4:
+        st.metric(label="🚀 Escenario 3: Óptimo", value="72,95%", delta="+4,23 pts ➔ Puesto 12 🏎️")
+
+    st.markdown(" ")
+
+    # 2. Gráficos Comparativos y Cascada de Puntos
+    col_gr1, col_gr2 = st.columns(2)
+    
+    with col_gr1:
+        escenarios = ["Julio Real (P21)", "Escenario 1 Táctico (P17)", "Escenario 2 Sólido (P14)", "Escenario 3 Óptimo (P12)", "SENNA (P10 - Top 10)", "PRANA (P5 - Top 5)"]
+        valores_esc = [68.56, 70.59, 71.93, 72.95, 74.74, 76.91]
+        colores_esc = ["#d62728", "#2ca02c", "#1f77b4", "#ff7f0e", "#5B9BD5", "#1F4E78"]
+        
+        fig_esc = go.Figure()
+        fig_esc.add_trace(go.Bar(
+            x=escenarios, 
+            y=valores_esc, 
+            marker_color=colores_esc, 
+            text=[f"{v:.2f}%" for v in valores_esc], 
+            textposition="inside"
+        ))
+        fig_esc.add_hline(y=74.74, line_dash="dash", line_color="#5B9BD5", annotation_text="Umbral Top 10 SENNA (74,74%)", annotation_position="top left")
+        fig_esc.update_layout(
+            title="<b>Evolución del Score Consolidado DEP vs. Benchmarks</b>",
+            yaxis=dict(title="Cumplimiento Global %", range=[60, 82]),
+            margin=dict(t=60, b=40),
+            height=430
+        )
+        st.plotly_chart(fig_esc, use_container_width=True)
+
+    with col_gr2:
+        pilares_aporte = ["Posventa (+1,05 pts)", "TCFA (+0,68 pts)", "KINTO (+2,50 pts)", "Ganancia Total Potencial"]
+        puntos_aporte = [1.05, 0.68, 2.50, 4.23]
+        
+        fig_aportes = go.Figure(go.Bar(
+            x=pilares_aporte,
+            y=puntos_aporte,
+            marker_color=["#1F4E78", "#5B9BD5", "#f39c12", "#27ae60"],
+            text=[f"+{v:.2f} pts" for v in puntos_aporte],
+            textposition="outside"
+        ))
+        fig_aportes.update_layout(
+            title="<b>Puntos Netos a Sumar en Agosto por Departamento</b>",
+            yaxis=dict(title="Puntos Directos Ganables", range=[0, 5.0]),
+            margin=dict(t=60, b=40),
+            height=430
+        )
+        st.plotly_chart(fig_aportes, use_container_width=True)
+
+    # 3. Matriz Operativa de Acción Rápida por Área
+    st.subheader("📋 Matriz Táctica de Ejecución Agosto (¿Cómo se gana cada punto?)")
+    
+    df_proy_detalle = pd.DataFrame({
+        "Área": ["Posventa", "Posventa", "TCFA", "TCFA", "TCFA", "KINTO", "KINTO", "KINTO", "KINTO"],
+        "Código": ["3.5.2", "3.5.1", "7.5.5", "7.5.1", "7.5.2 / 7.5.4", "5.5.1 / 5.5.3", "5.5.4 / 5.5.5", "5.1.3", "5.5.6"],
+        "Indicador TASA": [
+            "Campañas de Seguridad Airbags (ABI 414/415)", 
+            "CPUS (Mantenimiento de Volumen)", 
+            "Crecimiento Cartera de Seguros", 
+            "Financiación Prendaria ($ Liquidados)", 
+            "Seguros 0km y Fidelidad Prendaria", 
+            "Ocupación y Bookings Kinto Share", 
+            "Alistamiento y Gestión Siniestros One", 
+            "NPS Kinto One (Encuestas de Clientes)", 
+            "PN Corporativo Bookings Kinto One"
+        ],
+        "Julio Real": ["0,35 / 1,40 pts", "1,70 / 1,70 pts", "0,00 / 0,40 pts", "1,56 / 1,68 pts", "1,20 / 1,36 pts", "0,70 / 1,40 pts", "0,30 / 0,60 pts", "0,00 / 0,60 pts", "0,00 / 1,20 pts"],
+        "Objetivo Agosto": ["1,40 pts (+1,05)", "1,70 pts (Sostener)", "0,40 pts (+0,40)", "1,68 pts (+0,12)", "1,36 pts (+0,16)", "1,40 pts (+0,70)", "0,60 pts (+0,30)", "0,60 pts (+0,60)", "0,80 pts (+0,80)"],
+        "Ganancia Pts": ["+1,05 pts", "0,00 pts", "+0,40 pts", "+0,12 pts", "+0,16 pts", "+0,70 pts", "+0,30 pts", "+0,60 pts", "+0,80 pts"],
+        "Responsable": ["Daniel Colque", "Daniel Colque", "Lucía de los Ríos", "Lucía de los Ríos", "Lucía de los Ríos", "Aaron Martearena", "Aaron Martearena", "Aaron Martearena", "Aaron / Alfredo A."],
+        "Acción Crítica Innegociable": [
+            "Llamados proactivos masivos a clientes con infladores pendientes ABI 414/415.",
+            "Mantener turnos al día para no caer del umbral de tolerancia del 98%.",
+            "Retención preventiva de pólizas por vencer y emisión obligatoria antes del retiro 0km.",
+            "Acelerar liquidación prendaria de boletos cerrados en Hilux y Corolla Cross.",
+            "Vincular seguro TCFA en cada prenda cerrada en el salón comercial.",
+            "Poner flota ociosa de Share en reemplazo de taller y convenios corporativos.",
+            "Ajustar tiempos de taller a <10 días en fast track y <25 días en parciales.",
+            "Confirmar telefónicamente con administradores de flota la respuesta a la encuesta TASA.",
+            "Cerrar al menos 2 suscripciones Kinto One con empresas mineras/flotas de la región."
+        ]
+    })
+    
+    st.dataframe(df_proy_detalle, use_container_width=True, hide_index=True)
 
 # ==========================================
 # 6. PESTAÑA: DOCUMENTACIÓN Y FUENTES
