@@ -269,9 +269,9 @@ with tab_calidad:
 with tab_plan:
     st.header("🎯 Proyección Estratégica Cierre Agosto: Avance en el Resultado Consolidado")
     st.markdown("""
-    Esta proyección se basa en las brechas oficiales cerradas a **Julio 2026** (66,16 pts / 68,56% / Puesto 21)[cite: 2], 
-    enfocándose exclusivamente en indicadores con **corte mensual de alto retorno** (Posventa, TCFA, KINTO, Servicios Conectados y Cuotas TPA)[cite: 7, 8], 
-    descartando aquellos penalizados por el arrastre anual YTD (como CRM o encuestas UCT)[cite: 4].
+    Esta proyección se basa en las brechas oficiales de **Julio 2026** (66,16 pts / 68,56% / Puesto 21)[cite: 2], 
+    integrando las 5 palancas operativas directas de corte mensual: **Posventa, TCFA, KINTO, Servicios Conectados y Cuotas TPA**.
+    Se excluyen métricas bloqueadas por arrastre histórico anual (CRM y encuestas UCT)[cite: 4].
     """)
 
     # 1. Métricas de Impacto Global
@@ -279,53 +279,59 @@ with tab_plan:
     with c_p1:
         st.metric(label="📊 Score Actual (Julio)", value="68,56%", delta="66,16 pts (Puesto 21)")
     with c_p2:
-        st.metric(label="🟢 Escenario 1: Táctico", value="70,59%", delta="+1,95 pts ➔ Puesto 17 🏆")
+        st.metric(label="🟢 Escenario 1: Táctico", value="71,12%", delta="+2,47 pts ➔ Puesto 16 🏆")
     with c_p3:
-        st.metric(label="🟡 Escenario 2: Sólido", value="71,93%", delta="+3,25 pts ➔ Puesto 14 🌟")
+        st.metric(label="🟡 Escenario 2: Sólido", value="72,65%", delta="+3,94 pts ➔ Puesto 12 🌟")
     with c_p4:
-        st.metric(label="🚀 Escenario 3: Óptimo", value="72,95%", delta="+4,23 pts ➔ Puesto 12 🏎️")
+        st.metric(label="🚀 Escenario 3: Óptimo", value="73,35%", delta="+4,62 pts ➔ Puesto 12 🏎️")
 
     st.markdown("---")
 
-    # 2. Explicación Detallada de los 3 Escenarios
-    st.subheader("🔍 Desglose Explicativo de los 3 Posibles Escenarios")
+    # 2. Explicación Detallada de los 3 Escenarios (CON LOS 5 PILARES)
+    st.subheader("🔍 Desglose Explicativo de los 3 Posibles Escenarios (5 Palancas Clave)")
     
     col_esc1, col_esc2, col_esc3 = st.columns(3)
     
     with col_esc1:
-        st.success("### 🟢 Escenario 1: Táctico\n**Meta: +1,95 pts ➔ 68,11 pts (70,59% - P17)**")
+        st.success("### 🟢 Escenario 1: Táctico\n**Meta: +2,47 pts ➔ 68,63 pts (71,12% - P16)**")
         st.markdown("""
         **¿Cómo se construyó?:**
-        * **Posventa (+0,70 pts):** En Campañas Airbags (3.5.2)[cite: 2] se pasa de 0,35 a 1,05 pts (subiendo al escalón 70%-89% de cumplimiento).
-        * **TCFA (+0,40 pts):** En Crecimiento de Cartera de Seguros (7.5.5)[cite: 6] se revierte la fuga (-3,65%) pasando a saldo neto positivo (>0%).
-        * **KINTO (+0,85 pts):** Se regulariza la Ocupación y Bookings de Share[cite: 5] al 100% (+0,70 pts) y se gestionan los partes de Siniestros One (+0,15 pts)[cite: 5].
+        * **Posventa (+0,70 pts):** Campañas Airbags (3.5.2)[cite: 2] pasa de 0,35 a 1,05 pts (subiendo al escalón 70%-89%).
+        * **TCFA (+0,40 pts):** Cartera de Seguros (7.5.5)[cite: 6] revierte la fuga (-3,65%) pasando a saldo neto positivo (>0%).
+        * **KINTO (+0,70 pts):** Ocupación y Bookings de Kinto Share[cite: 5] suben al 100% (+0,70 pts).
+        * **Servicios Conectados (+0,51 pts):** Pasa de la franja 70-79% al escalón **80%-90% de Onboarding** (de 0,85 a 1,36 pts).
+        * **TPA Cuotas Emitidas (+0,16 pts):** Sube de la franja 6-9,99% al escalón **10%-13,99% de crecimiento** vs Dic'25 (de 0,96 a 1,12 pts).
         
         **Impacto en Ranking Red:**
-        Supera de forma inmediata a **BOS (P17), HOM (P18), DEC (P19) y ZEN (P20)**[cite: 2], ubicando a Autolux en el **Puesto 17**.
+        Supera de forma inmediata a **BOS (P17), HOM (P18), DEC (P19), ZEN (P20) y LUP (P16)**[cite: 2], posicionando a Autolux en el **Puesto 16**.
         """)
 
     with col_esc2:
-        st.info("### 🟡 Escenario 2: Sólido\n**Meta: +3,25 pts ➔ 69,41 pts (71,93% - P14)**")
+        st.info("### 🟡 Escenario 2: Sólido\n**Meta: +3,94 pts ➔ 70,10 pts (72,65% - P12)**")
         st.markdown("""
         **¿Cómo se construyó?:**
         * **Posventa (+1,05 pts):** Campañas Airbags alcanza el 100% de la meta mensual (1,40 / 1,40 pts)[cite: 2].
-        * **TCFA (+0,60 pts):** Cartera positiva (+0,40 pts)[cite: 6] + ajuste fino en volumen de financiación prendaria (+0,12 pts)[cite: 6] y seguros 0km (+0,08 pts)[cite: 6].
-        * **KINTO (+1,60 pts):** Share pleno (+0,70 pts)[cite: 5] + Siniestros y Alistamiento One (+0,30 pts)[cite: 5] + primer lote de encuestas NPS Kinto One positivas (+0,60 pts)[cite: 5].
+        * **TCFA (+0,60 pts):** Cartera positiva (+0,40 pts)[cite: 6] + volumen prendario (+0,12 pts)[cite: 6] + seguros 0km (+0,08 pts)[cite: 6].
+        * **KINTO (+1,00 pts):** Share pleno (+0,70 pts)[cite: 5] + regularización de Siniestros y Alistamiento One (+0,30 pts)[cite: 5].
+        * **Servicios Conectados (+0,85 pts):** Protocolo estricto en entregas: alcanza **≥90% de Full Onboarding** (100% de puntos: 1,70 / 1,70 pts).
+        * **TPA Cuotas Emitidas (+0,44 pts):** Recaudación de cobranzas alcanza **≥14% de crecimiento** vs Dic'25 (100% de puntos: 1,40 / 1,40 pts).
         
         **Impacto en Ranking Red:**
-        Autolux ingresa al **Top 14**, superando a competidores clave como **LUP (P16), KAI (P15) y ANZ (P14)**[cite: 2].
+        Autolux entra al **Top 12 nacional**, superando a competidores históricos como **KAI (P15), ANZ (P14), HAI (P13) y RIC (P12)**[cite: 2].
         """)
 
     with col_esc3:
-        st.warning("### 🚀 Escenario 3: Óptimo\n**Meta: +4,23 pts ➔ 70,39 pts (72,95% - P12)**")
+        st.warning("### 🚀 Escenario 3: Óptimo\n**Meta: +4,62 pts ➔ 70,78 pts (73,35% - P12)**")
         st.markdown("""
         **¿Cómo se construyó?:**
-        * **Posventa pleno (+1,05 pts):** Score perfecto de 27,00 sobre 27,00 en el área más pesada del dealer[cite: 2].
-        * **TCFA pleno (+0,68 pts):** 4,00 sobre 4,00 puntos posibles con liquidaciones y seguros al 100%[cite: 6].
-        * **KINTO pleno (+2,50 pts):** Cumplimiento total en Share[cite: 5] más el cierre y facturación del primer contrato corporativo Kinto One (+1,80 pts)[cite: 5].
+        * **Posventa pleno (+1,05 pts):** Score perfecto de 27,00 sobre 27,00 en el área de mayor peso del concesionario[cite: 2].
+        * **TCFA pleno (+0,68 pts):** 4,00 sobre 4,00 puntos con liquidaciones prendarias y seguros al 100%[cite: 6].
+        * **KINTO (+1,60 pts):** Share pleno (+0,70 pts)[cite: 5] + Siniestros One (+0,30 pts)[cite: 5] + primer lote de encuestas NPS Kinto One positivas (+0,60 pts)[cite: 5].
+        * **Servicios Conectados pleno (+0,85 pts):** Activación total de la App My Toyota en entregas (1,70 / 1,70 pts).
+        * **TPA Cuotas Emitidas pleno (+0,44 pts):** Crecimiento de emisión consolidado en el escalón máximo (1,40 / 1,40 pts).
         
         **Impacto en Ranking Red:**
-        Alcanza el **Puesto 12**, dejando a Autolux a tan solo **1,79 puntos de SENNA (Puesto 10 - 74,74%)** para meterse en el Top 10 nacional[cite: 2].
+        Consolida el **Puesto 12**, recortando la brecha con **DPQ (Puesto 11: 73,56%)** a solo 0,21 puntos y quedando a tiro del **Top 10 de SENNA (74,74%)**[cite: 2].
         """)
 
     st.markdown("---")
@@ -334,8 +340,8 @@ with tab_plan:
     col_gr1, col_gr2 = st.columns(2)
     
     with col_gr1:
-        escenarios = ["Julio Real (P21)", "Escenario 1 (P17)", "Escenario 2 (P14)", "Escenario 3 (P12)", "SENNA (P10 - Top 10)", "PRANA (P5 - Top 5)"]
-        valores_esc = [68.56, 70.59, 71.93, 72.95, 74.74, 76.91]
+        escenarios = ["Julio Real (P21)", "Escenario 1 (P16)", "Escenario 2 (P12)", "Escenario 3 (P12)", "SENNA (P10 - Top 10)", "PRANA (P5 - Top 5)"]
+        valores_esc = [68.56, 71.12, 72.65, 73.35, 74.74, 76.91]
         colores_esc = ["#d62728", "#2ca02c", "#1f77b4", "#ff7f0e", "#5B9BD5", "#1F4E78"]
         
         fig_esc = go.Figure()
@@ -356,19 +362,19 @@ with tab_plan:
         st.plotly_chart(fig_esc, use_container_width=True)
 
     with col_gr2:
-        pilares_aporte = ["Posventa (+1,05 pts)", "TCFA (+0,68 pts)", "KINTO (+2,50 pts)", "Ganancia Total Potencial"]
-        puntos_aporte = [1.05, 0.68, 2.50, 4.23]
+        pilares_aporte = ["Posventa (+1,05)", "TCFA (+0,68)", "KINTO (+1,60)", "Serv. Conect. (+0,85)", "TPA Cuotas (+0,44)", "Ganancia Total"]
+        puntos_aporte = [1.05, 0.68, 1.60, 0.85, 0.44, 4.62]
         
         fig_aportes = go.Figure(go.Bar(
             x=pilares_aporte,
             y=puntos_aporte,
-            marker_color=["#1F4E78", "#5B9BD5", "#f39c12", "#27ae60"],
-            text=[f"+{v:.2f} pts" for v in puntos_aporte],
+            marker_color=["#1F4E78", "#5B9BD5", "#f39c12", "#00A86B", "#9B59B6", "#27ae60"],
+            text=[f"+{v:.2f}" for v in puntos_aporte],
             textposition="outside"
         ))
         fig_aportes.update_layout(
-            title="<b>Puntos Netos a Sumar en Agosto por Departamento</b>",
-            yaxis=dict(title="Puntos Directos Ganables", range=[0, 5.0]),
+            title="<b>Aporte de Puntos por Indicador (Escenario Óptimo)</b>",
+            yaxis=dict(title="Puntos Directos Ganables", range=[0, 5.5]),
             margin=dict(t=60, b=40),
             height=430
         )
@@ -388,14 +394,26 @@ with tab_plan:
             "Seguros 0km y Fidelidad Prendaria", 
             "Ocupación y Bookings Kinto Share", 
             "Alistamiento y Gestión Siniestros One", 
-            "NPS y Bookings Corporativos Kinto One",
-            "Servicios Conectados (Full Onboarding App)",
+            "NPS y Bookings Corporativos Kinto One", 
+            "Servicios Conectados (Full Onboarding App)", 
             "Cuotas Emitidas TPA (Crecimiento vs Dic'25)"
         ],
         "Julio Real": ["0,35 / 1,40 pts", "1,70 / 1,70 pts", "0,00 / 0,40 pts", "1,56 / 1,68 pts", "1,20 / 1,36 pts", "0,70 / 1,40 pts", "0,30 / 0,60 pts", "0,00 / 1,80 pts", "0,85 / 1,70 pts", "0,96 / 1,40 pts"],
+        "Escala / Criterio Oficial": [
+            "Escalones: ≥90% (1,40 pts) | 70-89% (1,05 pts) | 50-69% (0,70 pts)",
+            "Tolerancia: ≥98% otorga 100% de puntos (1,70 pts)",
+            "Saldo neto mensual: Variación > 0% otorga 100% de puntos (0,40 pts)",
+            "M$ Liquidados sobre meta mensual asignada por TCFA",
+            "Penetración sobre ventas convencionales y prendas cerradas",
+            "Ocupación ≥70% y cumplimiento de bookings del mes",
+            "Fast track <10 días y regularización de siniestros pendientes",
+            "Encuestas NPS promotoras y contratos corporativos vigentes",
+            "Escalones: ≥90% (100% pts) | 80-89% (80% pts) | 70-79% (50% pts)",
+            "Escalones vs Dic'25: ≥14% (100% pts) | 10-13,99% (80% pts) | 6-9,99% (70% pts)"
+        ],
         "Objetivo Agosto": ["1,40 pts (+1,05)", "1,70 pts (Sostener)", "0,40 pts (+0,40)", "1,68 pts (+0,12)", "1,36 pts (+0,16)", "1,40 pts (+0,70)", "0,60 pts (+0,30)", "1,40 pts (+1,40)", "1,70 pts (+0,85)", "1,12 a 1,40 pts (+0,44)"],
         "Ganancia Pts": ["+1,05 pts", "0,00 pts", "+0,40 pts", "+0,12 pts", "+0,16 pts", "+0,70 pts", "+0,30 pts", "+1,40 pts", "+0,85 pts", "+0,44 pts"],
-        "Responsable": ["Daniel Colque", "Daniel Colque", "Juan Vazquez", "Juan Vazquez", "Juan Vazquez", "Aaron Martearena", "Aaron Martearena", "Aaron Martearena", "Romina R. / Salón", "Adrián Di Costanzo"],
+        "Responsable": ["Daniel Colque", "Daniel Colque", "Juan Vazquez", "Juan Vazquez", "Juan Vazquez", "Aaron Martearena", "Aaron Martearena", "Aaron Martearena", "Romina R. / Entregas", "Adrián Di Costanzo"],
         "Acción Crítica Innegociable": [
             "Llamados proactivos masivos a clientes con infladores pendientes ABI 414/415[cite: 2].",
             "Mantener turnos al día para no caer del umbral de tolerancia del 98%[cite: 2].",
@@ -405,8 +423,8 @@ with tab_plan:
             "Poner flota ociosa de Share en reemplazo de taller y convenios corporativos[cite: 5].",
             "Ajustar tiempos de taller a <10 días en fast track y regularizar partes[cite: 5].",
             "Confirmar telefónicamente encuestas positivas con administradores de flota[cite: 5].",
-            "Protocolo entrega: cliente sale con app My Toyota validada (Target ≥90% para 100% pts)[cite: 7].",
-            "Cobranza mora cuota 2 a 6 y reenganche de planes para sostener crecimiento de emisión[cite: 8]."
+            "Protocolo entrega: cliente sale con app My Toyota validada (Target ≥90% para 100% pts).",
+            "Cobranza mora cuota 2 a 6 y reenganche de planes para sostener crecimiento de emisión."
         ]
     })
     
