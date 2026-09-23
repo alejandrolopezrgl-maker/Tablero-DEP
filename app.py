@@ -229,15 +229,83 @@ with tab_evolucion:
     st.dataframe(df_comp, use_container_width=True, hide_index=True)
 
 # =======================================================
-# 3. PESTAÑA: DESEMPEÑO REGIONAL Y POR ÁREA
+# 3. PESTAÑA: DESEMPEÑO REGIONAL Y POR ÁREA (COMPLETA)
 # =======================================================
 with tab_regional:
     st.subheader("🗺️ Diagnóstico Integral Oficial (Corte Acumulado Julio 2026)")
     m1, m2, m3, m4 = st.columns(4)
-    with m1: st.metric("Score Global Autolux", "68,56 pts", "71,05% del Ideal (P21)")
-    with m2: st.metric("Región NOA (Líder)", "71,96 pts", "74,57% del Ideal")
+    with m1: st.metric("Score Global Autolux", "66,16 pts", "68,56% Efectividad (Puesto 21)")
+    with m2: st.metric("Líder Regional NOA", "Senna (SEN)", "74,74% Efectividad (Puesto 10)")
     with m3: st.metric("Pilar Líder en Calidad", "Programas (Puesto 1)", "100,0% Efectividad 🏆")
     with m4: st.metric("Gestión del Capital", "RRHH (Puesto 6)", "91,89% Efectividad 🌟")
+
+    st.markdown("---")
+
+    # 1. TABLA COMPARATIVA REGIONAL NOA
+    st.subheader("📍 Comparativa Regional: Concesionarios de la Región NOA")
+    st.markdown("Posicionamiento oficial de los tres concesionarios oficiales de la región en la Red TASA:")
+    
+    df_noa = pd.DataFrame({
+        "Concesionario": ["Senna Automotores (SEN)", "Line-Up (LUP)", "Autolux (LUX)"],
+        "Provincia Base": ["Santiago del Estero", "Tucumán", "Salta / Jujuy"],
+        "Puntos Obtenidos (DEP)": [72.13, 68.50, 66.16],
+        "% Efectividad": [74.74, 70.98, 68.56],
+        "Posición Red": [10, 16, 21],
+        "Diferencia vs LUX": ["+5.97 pts (Top 10)", "+2.34 pts", "Base Oficial"],
+        "Estado": ["🏆 Líder Regional (Top 10)", "🟢 En Puesto 16", "🚗 Puesto 21 (En escalada)"]
+    })
+    st.dataframe(df_noa, use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+
+    # 2. COMPARATIVA DE RENDIMIENTO POR CATEGORÍAS TRANSVERSALES
+    st.subheader("📊 Rendimiento por Categorías Oficiales TASA (Acumulado Julio)")
+    st.markdown("Comparativa del porcentaje de efectividad de Autolux frente a PRANA (Puesto 5) y SENNA (Puesto 10):")
+
+    df_cat_data = pd.DataFrame({
+        "Categoría TASA": ["Programas", "Recursos Humanos (RRHH)", "Instalaciones (Facilities)", "Targets y Objetivos", "Calidad y Satisfacción"],
+        "Autolux (LUX)": [100.0, 91.89, 82.00, 62.69, 55.71],
+        "PRANA (PRN - P5)": [100.0, 81.45, 100.0, 69.41, 78.42],
+        "SENNA (SEN - P10)": [100.0, 96.79, 100.0, 58.74, 82.08]
+    })
+
+    df_cat_melt = df_cat_data.melt(id_vars=["Categoría TASA"], var_name="Concesionario", value_name="% Cumplimiento")
+    fig_cat = px.bar(
+        df_cat_melt,
+        x="Categoría TASA",
+        y="% Cumplimiento",
+        color="Concesionario",
+        barmode="group",
+        text_auto=".1f",
+        color_discrete_map={
+            "Autolux (LUX)": "#d62728",
+            "PRANA (PRN - P5)": "#1F4E78",
+            "SENNA (SEN - P10)": "#5B9BD5"
+        }
+    )
+    fig_cat.update_layout(yaxis=dict(range=[0, 110], title="% Efectividad"), xaxis_title="Eje de Auditoría TASA", height=450)
+    st.plotly_chart(fig_cat, use_container_width=True)
+
+    st.markdown("---")
+
+    # 3. MATRIZ CLÍNICA DETALLADA POR CATEGORÍA
+    st.subheader("📋 Matriz de Auditoría Oficial por Categorías (Julio 2026)")
+    df_cat_detalle = pd.DataFrame({
+        "Categoría": ["Programas", "Recursos Humanos (RRHH)", "Instalaciones (Facilities)", "Targets y Objetivos", "Calidad y Satisfacción", "CONSOLIDADO GLOBAL"],
+        "Puntos Máximos": ["8,80 pts", "12,10 pts", "7,50 pts", "44,50 pts", "21,90 pts", "96,50 pts"],
+        "Puntos LUX": ["8,80 pts", "11,12 pts", "6,15 pts", "27,90 pts", "12,20 pts", "66,16 pts"],
+        "% Efectividad LUX": ["100,0%", "91,9%", "82,0%", "62,7%", "55,7%", "68,56%"],
+        "Posición Red LUX": ["Puesto 1 🏆", "Puesto 6 🌟", "Puesto 13", "Puesto 12", "Puesto 38 🚨", "Puesto 21"],
+        "Líder de la Red": ["Varios (100%)", "SENNA (96,8%)", "PRANA (100%)", "PRANA (69,4%)", "SENNA (82,1%)", "AMIUN (79,4%)"],
+        "Diagnóstico Operativo": [
+            "Liderazgo absoluto en programas de excelencia y auditorías de campo TASA.",
+            "Desempeño destacado en retención, clima laboral y matriz de capacitación por puesto.",
+            "Buen nivel general; pendiente resolver las reformas de Las Lajitas y lavaderos Salta.",
+            "Buen volumen en Usados y TPA; rezagado por unidades convencionales y CRM.",
+            "Principal debilidad: encuestas NPS y tiempos de respuesta digitales penalizados por arrastre anual."
+        ]
+    })
+    st.dataframe(df_cat_detalle, use_container_width=True, hide_index=True)
 
 # ==========================================
 # 4. PESTAÑA: ANÁLISIS DE CALIDAD
