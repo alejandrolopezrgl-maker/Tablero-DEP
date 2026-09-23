@@ -124,11 +124,10 @@ if st.sidebar.button("🔄 Restablecer Valores Oficiales", key="btn_reset_latera
         if k in st.session_state: st.session_state[k] = 0.0
     st.rerun()
 
-# --- DECLARACIÓN DE LAS PESTAÑAS ---
-tab_dashboard, tab_evolucion, tab_regional, tab_calidad, tab_plan, tab_docs = st.tabs([
+# --- DECLARACIÓN DE LAS PESTAÑAS (SIN DESEMPEÑO REGIONAL) ---
+tab_dashboard, tab_evolucion, tab_calidad, tab_plan, tab_docs = st.tabs([
     "📊 Dashboard del Dealer", 
     "📈 Evolución Junio vs. Julio",
-    "🗺️ Desempeño Regional y por Área",
     "🕵️ Análisis de Calidad por Sucursal", 
     "📋 Plan de Acción Interactiva",
     "📚 Documentación y Fuentes"
@@ -228,87 +227,8 @@ with tab_evolucion:
 
     st.dataframe(df_comp, use_container_width=True, hide_index=True)
 
-# =======================================================
-# 3. PESTAÑA: DESEMPEÑO REGIONAL Y POR ÁREA (COMPLETA)
-# =======================================================
-with tab_regional:
-    st.subheader("🗺️ Diagnóstico Integral Oficial (Corte Acumulado Julio 2026)")
-    m1, m2, m3, m4 = st.columns(4)
-    with m1: st.metric("Score Global Autolux", "66,16 pts", "68,56% Efectividad (Puesto 21)")
-    with m2: st.metric("Líder Regional NOA", "Senna (SEN)", "74,74% Efectividad (Puesto 10)")
-    with m3: st.metric("Pilar Líder en Calidad", "Programas (Puesto 1)", "100,0% Efectividad 🏆")
-    with m4: st.metric("Gestión del Capital", "RRHH (Puesto 6)", "91,89% Efectividad 🌟")
-
-    st.markdown("---")
-
-    # 1. TABLA COMPARATIVA REGIONAL NOA
-    st.subheader("📍 Comparativa Regional: Concesionarios de la Región NOA")
-    st.markdown("Posicionamiento oficial de los tres concesionarios oficiales de la región en la Red TASA:")
-    
-    df_noa = pd.DataFrame({
-        "Concesionario": ["Senna Automotores (SEN)", "Line-Up (LUP)", "Autolux (LUX)"],
-        "Provincia Base": ["Santiago del Estero", "Tucumán", "Salta / Jujuy"],
-        "Puntos Obtenidos (DEP)": [72.13, 68.50, 66.16],
-        "% Efectividad": [74.74, 70.98, 68.56],
-        "Posición Red": [10, 16, 21],
-        "Diferencia vs LUX": ["+5.97 pts (Top 10)", "+2.34 pts", "Base Oficial"],
-        "Estado": ["🏆 Líder Regional (Top 10)", "🟢 En Puesto 16", "🚗 Puesto 21 (En escalada)"]
-    })
-    st.dataframe(df_noa, use_container_width=True, hide_index=True)
-
-    st.markdown("---")
-
-    # 2. COMPARATIVA DE RENDIMIENTO POR CATEGORÍAS TRANSVERSALES
-    st.subheader("📊 Rendimiento por Categorías Oficiales TASA (Acumulado Julio)")
-    st.markdown("Comparativa del porcentaje de efectividad de Autolux frente a PRANA (Puesto 5) y SENNA (Puesto 10):")
-
-    df_cat_data = pd.DataFrame({
-        "Categoría TASA": ["Programas", "Recursos Humanos (RRHH)", "Instalaciones (Facilities)", "Targets y Objetivos", "Calidad y Satisfacción"],
-        "Autolux (LUX)": [100.0, 91.89, 82.00, 62.69, 55.71],
-        "PRANA (PRN - P5)": [100.0, 81.45, 100.0, 69.41, 78.42],
-        "SENNA (SEN - P10)": [100.0, 96.79, 100.0, 58.74, 82.08]
-    })
-
-    df_cat_melt = df_cat_data.melt(id_vars=["Categoría TASA"], var_name="Concesionario", value_name="% Cumplimiento")
-    fig_cat = px.bar(
-        df_cat_melt,
-        x="Categoría TASA",
-        y="% Cumplimiento",
-        color="Concesionario",
-        barmode="group",
-        text_auto=".1f",
-        color_discrete_map={
-            "Autolux (LUX)": "#d62728",
-            "PRANA (PRN - P5)": "#1F4E78",
-            "SENNA (SEN - P10)": "#5B9BD5"
-        }
-    )
-    fig_cat.update_layout(yaxis=dict(range=[0, 110], title="% Efectividad"), xaxis_title="Eje de Auditoría TASA", height=450)
-    st.plotly_chart(fig_cat, use_container_width=True)
-
-    st.markdown("---")
-
-    # 3. MATRIZ CLÍNICA DETALLADA POR CATEGORÍA
-    st.subheader("📋 Matriz de Auditoría Oficial por Categorías (Julio 2026)")
-    df_cat_detalle = pd.DataFrame({
-        "Categoría": ["Programas", "Recursos Humanos (RRHH)", "Instalaciones (Facilities)", "Targets y Objetivos", "Calidad y Satisfacción", "CONSOLIDADO GLOBAL"],
-        "Puntos Máximos": ["8,80 pts", "12,10 pts", "7,50 pts", "44,50 pts", "21,90 pts", "96,50 pts"],
-        "Puntos LUX": ["8,80 pts", "11,12 pts", "6,15 pts", "27,90 pts", "12,20 pts", "66,16 pts"],
-        "% Efectividad LUX": ["100,0%", "91,9%", "82,0%", "62,7%", "55,7%", "68,56%"],
-        "Posición Red LUX": ["Puesto 1 🏆", "Puesto 6 🌟", "Puesto 13", "Puesto 12", "Puesto 38 🚨", "Puesto 21"],
-        "Líder de la Red": ["Varios (100%)", "SENNA (96,8%)", "PRANA (100%)", "PRANA (69,4%)", "SENNA (82,1%)", "AMIUN (79,4%)"],
-        "Diagnóstico Operativo": [
-            "Liderazgo absoluto en programas de excelencia y auditorías de campo TASA.",
-            "Desempeño destacado en retención, clima laboral y matriz de capacitación por puesto.",
-            "Buen nivel general; pendiente resolver las reformas de Las Lajitas y lavaderos Salta.",
-            "Buen volumen en Usados y TPA; rezagado por unidades convencionales y CRM.",
-            "Principal debilidad: encuestas NPS y tiempos de respuesta digitales penalizados por arrastre anual."
-        ]
-    })
-    st.dataframe(df_cat_detalle, use_container_width=True, hide_index=True)
-
 # ==========================================
-# 4. PESTAÑA: ANÁLISIS DE CALIDAD
+# 3. PESTAÑA: ANÁLISIS DE CALIDAD
 # ==========================================
 with tab_calidad:
     st.subheader("🕵️ Informe Clínico de Calidad: Análisis de Pareto por Sucursal")
@@ -332,13 +252,13 @@ with tab_calidad:
     st.plotly_chart(fig_pareto, use_container_width=True)
 
 # ==========================================
-# 5. PESTAÑA: PLAN DE ACCIÓN INTERACTIVO
+# 4. PESTAÑA: PLAN DE ACCIÓN INTERACTIVO
 # ==========================================
 with tab_plan:
     st.header("🎯 Proyección Estratégica Cierre Agosto: Avance en el Resultado Consolidado")
     st.markdown("""
     Esta proyección se basa en las brechas oficiales de **Julio 2026** (66,16 pts / 68,56% / Puesto 21)[cite: 2], 
-    integrando las 5 palancas operativas directas de corte mensual: **Posventa, TCFA, KINTO, Servicios Conectados y Cuotas TPA**.
+    integrando las 5 palancas operativas directas de corte mensual: **Posventa, TCFA, KINTO, Servicios Conectados y Cuotas TPA**[cite: 2].
     Se excluyen métricas bloqueadas por arrastre histórico anual (CRM y encuestas UCT)[cite: 4].
     """)
 
@@ -365,10 +285,10 @@ with tab_plan:
         st.markdown("""
         **¿Cómo se construyó?:**
         * **Posventa (+0,70 pts):** Campañas Airbags (3.5.2)[cite: 2] pasa de 0,35 a 1,05 pts (subiendo al escalón 70%-89%).
-        * **TCFA (+0,40 pts):** Cartera de Seguros (7.5.5)[cite: 6] revierte la fuga (-3,65%) pasando a saldo neto positivo (>0%).
-        * **KINTO (+0,70 pts):** Ocupación y Bookings de Kinto Share[cite: 5] suben al 100% (+0,70 pts).
-        * **Servicios Conectados (+0,51 pts):** Pasa de la franja 70-79% al escalón **80%-90% de Onboarding** (de 0,85 a 1,36 pts).
-        * **TPA Cuotas Emitidas (+0,16 pts):** Sube de la franja 6-9,99% al escalón **10%-13,99% de crecimiento** vs Dic'25 (de 0,96 a 1,12 pts).
+        * **TCFA (+0,40 pts):** Cartera de Seguros (7.5.5)[cite: 2] revierte la fuga (-3,65%) pasando a saldo neto positivo (>0%).
+        * **KINTO (+0,70 pts):** Ocupación y Bookings de Kinto Share suben al 100% (+0,70 pts)[cite: 2].
+        * **Servicios Conectados (+0,51 pts):** Pasa de la franja 70-79% al escalón **80%-90% de Onboarding** (de 0,85 a 1,36 pts)[cite: 2, 5].
+        * **TPA Cuotas Emitidas (+0,16 pts):** Sube de la franja 6-9,99% al escalón **10%-13,99% de crecimiento** vs Dic'25 (de 0,96 a 1,12 pts)[cite: 2, 6].
         
         **Impacto en Ranking Red:**
         Supera de forma inmediata a **BOS (P17), HOM (P18), DEC (P19), ZEN (P20) y LUP (P16)**[cite: 2], posicionando a Autolux en el **Puesto 16**.
@@ -379,10 +299,10 @@ with tab_plan:
         st.markdown("""
         **¿Cómo se construyó?:**
         * **Posventa (+1,05 pts):** Campañas Airbags alcanza el 100% de la meta mensual (1,40 / 1,40 pts)[cite: 2].
-        * **TCFA (+0,60 pts):** Cartera positiva (+0,40 pts)[cite: 6] + volumen prendario (+0,12 pts)[cite: 6] + seguros 0km (+0,08 pts)[cite: 6].
-        * **KINTO (+1,00 pts):** Share pleno (+0,70 pts)[cite: 5] + regularización de Siniestros y Alistamiento One (+0,30 pts)[cite: 5].
-        * **Servicios Conectados (+0,85 pts):** Protocolo estricto en entregas: alcanza **≥90% de Full Onboarding** (100% de puntos: 1,70 / 1,70 pts).
-        * **TPA Cuotas Emitidas (+0,44 pts):** Recaudación de cobranzas alcanza **≥14% de crecimiento** vs Dic'25 (100% de puntos: 1,40 / 1,40 pts).
+        * **TCFA (+0,60 pts):** Cartera positiva (+0,40 pts)[cite: 2] + volumen prendario (+0,12 pts)[cite: 2] + seguros 0km (+0,08 pts)[cite: 2].
+        * **KINTO (+1,00 pts):** Share pleno (+0,70 pts)[cite: 2] + regularización de Siniestros y Alistamiento One (+0,30 pts)[cite: 2].
+        * **Servicios Conectados (+0,85 pts):** Protocolo estricto en entregas: alcanza **≥90% de Full Onboarding** (100% de puntos: 1,70 / 1,70 pts)[cite: 2, 5].
+        * **TPA Cuotas Emitidas (+0,44 pts):** Recaudación de cobranzas alcanza **≥14% de crecimiento** vs Dic'25 (100% de puntos: 1,40 / 1,40 pts)[cite: 2, 6].
         
         **Impacto en Ranking Red:**
         Autolux entra al **Top 12 nacional**, superando a competidores históricos como **KAI (P15), ANZ (P14), HAI (P13) y RIC (P12)**[cite: 2].
@@ -393,10 +313,10 @@ with tab_plan:
         st.markdown("""
         **¿Cómo se construyó?:**
         * **Posventa pleno (+1,05 pts):** Score perfecto de 27,00 sobre 27,00 en el área de mayor peso del concesionario[cite: 2].
-        * **TCFA pleno (+0,68 pts):** 4,00 sobre 4,00 puntos con liquidaciones prendarias y seguros al 100%[cite: 6].
-        * **KINTO (+1,60 pts):** Share pleno (+0,70 pts)[cite: 5] + Siniestros One (+0,30 pts)[cite: 5] + primer lote de encuestas NPS Kinto One positivas (+0,60 pts)[cite: 5].
-        * **Servicios Conectados pleno (+0,85 pts):** Activación total de la App My Toyota en entregas (1,70 / 1,70 pts).
-        * **TPA Cuotas Emitidas pleno (+0,44 pts):** Crecimiento de emisión consolidado en el escalón máximo (1,40 / 1,40 pts).
+        * **TCFA pleno (+0,68 pts):** 4,00 sobre 4,00 puntos con liquidaciones prendarias y seguros al 100%[cite: 2].
+        * **KINTO (+1,60 pts):** Share pleno (+0,70 pts)[cite: 2] + Siniestros One (+0,30 pts)[cite: 2] + primer lote de encuestas NPS Kinto One positivas (+0,60 pts)[cite: 2].
+        * **Servicios Conectados pleno (+0,85 pts):** Activación total de la App My Toyota en entregas (1,70 / 1,70 pts)[cite: 2, 5].
+        * **TPA Cuotas Emitidas pleno (+0,44 pts):** Crecimiento de emisión consolidado en el escalón máximo (1,40 / 1,40 pts)[cite: 2, 6].
         
         **Impacto en Ranking Red:**
         Consolida el **Puesto 12**, recortando la brecha con **DPQ (Puesto 11: 73,56%)** a solo 0,21 puntos y quedando a tiro del **Top 10 de SENNA (74,74%)**[cite: 2].
@@ -485,21 +405,21 @@ with tab_plan:
         "Acción Crítica Innegociable": [
             "Llamados proactivos masivos a clientes con infladores pendientes ABI 414/415[cite: 2].",
             "Mantener turnos al día para no caer del umbral de tolerancia del 98%[cite: 2].",
-            "Retención preventiva de renovaciones y emisión obligatoria antes del retiro 0km[cite: 6].",
-            "Acelerar liquidación prendaria de boletos cerrados en Hilux y Corolla Cross[cite: 6].",
-            "Vincular seguro TCFA en cada prenda cerrada en el salón comercial[cite: 6].",
-            "Poner flota ociosa de Share en reemplazo de taller y convenios corporativos[cite: 5].",
-            "Ajustar tiempos de taller a <10 días en fast track y regularizar partes[cite: 5].",
-            "Confirmar telefónicamente encuestas positivas con administradores de flota[cite: 5].",
-            "Protocolo entrega: cliente sale con app My Toyota validada (Target ≥90% para 100% pts).",
-            "Cobranza mora cuota 2 a 6 y reenganche de planes para sostener crecimiento de emisión."
+            "Retención preventiva de renovaciones y emisión obligatoria antes del retiro 0km[cite: 2].",
+            "Acelerar liquidación prendaria de boletos cerrados en Hilux y Corolla Cross[cite: 2].",
+            "Vincular seguro TCFA en cada prenda cerrada en el salón comercial[cite: 2].",
+            "Poner flota ociosa de Share en reemplazo de taller y convenios corporativos[cite: 2].",
+            "Ajustar tiempos de taller a <10 días en fast track y regularizar partes[cite: 2].",
+            "Confirmar telefónicamente encuestas positivas con administradores de flota[cite: 2].",
+            "Protocolo entrega: cliente sale con app My Toyota validada (Target ≥90% para 100% pts)[cite: 5].",
+            "Cobranza mora cuota 2 a 6 y reenganche de planes para sostener crecimiento de emisión[cite: 6]."
         ]
     })
     
     st.dataframe(df_proy_detalle, use_container_width=True, hide_index=True)
 
 # ==========================================
-# 6. PESTAÑA: DOCUMENTACIÓN Y FUENTES
+# 5. PESTAÑA: DOCUMENTACIÓN Y FUENTES
 # ==========================================
 with tab_docs:
     st.subheader("📚 Centro de Documentación y Fuentes Oficiales TASA")
