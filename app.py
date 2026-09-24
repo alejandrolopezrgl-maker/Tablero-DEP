@@ -252,15 +252,16 @@ with tab_calidad:
     st.plotly_chart(fig_pareto, use_container_width=True)
 
 # ==========================================
-# 4. PESTAÑA: PLAN DE ACCIÓN INTERACTIVO (CRONOGRAMA SEP / NOV / DIC)
+# 4. PESTAÑA: PLAN DE ACCIÓN INTERACTIVO (CRONOGRAMA SEP / NOV / DIC CON FEEDBACK REAL)
 # ==========================================
 with tab_plan:
     st.header("🎯 Plan Estratégico Evolutivo: Cronograma de Cumplimiento")
     st.markdown("""
     Este plan sincroniza los compromisos operativos oficiales con las curvas reales de maduración:
-    * **Posventa:** Vaticina alcanzar en **diciembre el 70% del target de campañas de Airbags (ABI 414/415)**, lo que asegura el **50% de los puntos DEP (0,70 pts)**[cite: 2].
+    * **Servicios Conectados (Feedback Oficial):** Actualmente en **76%** (franja 50% de pts = 0,85 pts)[cite: 2]. El objetivo es **$\ge 90\%$ (1,70 pts plenos = +0,85 pts directos)**[cite: 2]. La estrategia combina **100% de efectividad en entregas nuevas** y el **recupero retroactivo de ~15-20 clientes entregados en 2026** para saltar de escalón rápidamente.
+    * **Posventa:** Vaticina alcanzar en **diciembre el 70% del target de campañas de Airbags (ABI 414/415)**, lo que asegura el **50% de los puntos DEP (0,70 pts = +0,35 pts netos)**[cite: 2].
     * **Calidad y Ventas:** Ejecuta el operativo de **35 encuestas promotoras continuas (Septiembre a Diciembre)** para elevar el SSI de Ventas al **95,6%** (promedio Red 96,1%)[cite: 2].
-    * **Palancas Mensuales Inmediatas:** TCFA, KINTO Share, Servicios Conectados, Cuotas TPA y Depuración Salesforce aportan puntos directos mes a mes[cite: 2, 5, 6].
+    * **Palancas Mensuales Inmediatas:** TCFA, KINTO Share, Cuotas TPA y Depuración Salesforce aportan puntos directos mes a mes[cite: 2].
     """)
 
     # 1. Métricas de Impacto Global
@@ -285,10 +286,10 @@ with tab_plan:
         st.success("### 🟢 Septiembre: Táctico (Corto Plazo)\n**Meta: +2,22 pts ➔ 68,38 pts (70,86% - P17)**")
         st.markdown("""
         **Foco: Victorias Rápidas Mensuales (Sin inercia anual)**
-        * **Servicios Conectados (+0,51 pts):** Pasa de la franja 70-79% al escalón **80%-90% de Onboarding** (de 0,85 a 1,36 pts)[cite: 2, 5].
+        * **Servicios Conectados (+0,51 pts):** Pasa del 76% al escalón **80%-89% de Onboarding** (de 0,85 a 1,36 pts)[cite: 2] mediante 100% de efectividad en las entregas nuevas de septiembre.
         * **TCFA Cartera (+0,40 pts):** Cartera de Seguros (7.5.5)[cite: 2] revierte la fuga (-3,65%) pasando a saldo neto positivo (>0%).
         * **KINTO Share (+0,70 pts):** Ocupación $\ge 70\%$ y bookings al 100% (de 0,70 a 1,40 pts)[cite: 2].
-        * **TPA Cuotas (+0,16 pts):** Freno a la mora temprana; escala a variación 10%-13,99% vs Dic'25 (de 0,96 a 1,12 pts)[cite: 2, 6].
+        * **TPA Cuotas (+0,16 pts):** Freno a la mora temprana; escala a variación 10%-13,99% vs Dic'25 (de 0,96 a 1,12 pts)[cite: 2].
         * **Salesforce Ventas (+0,45 pts):** Depuración y sincronización de boletos vencidos (1.5.5: de 1,05 a 1,50 pts)[cite: 2].
         
         *Calidad y Airbags se mantienen en base mientras inician su curva de recupero.*
@@ -301,10 +302,10 @@ with tab_plan:
         st.info("### 🟡 Noviembre: Sólido (Mediano Plazo)\n**Meta: +5,52 pts ➔ 71,68 pts (74,28% - P11)**")
         st.markdown("""
         **Foco: Consolidación y Primer Impacto de Encuestas**
-        * **Servicios Conectados (+0,85 pts):** Protocolo estricto de entrega: alcanza **$\ge 90\%$ Full Onboarding** (1,70 / 1,70 pts)[cite: 2, 5].
+        * **Servicios Conectados (+0,85 pts):** Se quiebra la barrera del **$\ge 90\%$ Full Onboarding** (1,70 / 1,70 pts)[cite: 2] sumando el 100% de entregas nuevas + campaña de recupero de clientes pasados.
         * **TCFA Pleno (+0,68 pts):** Cartera positiva (+0,40)[cite: 2] + Financiación Prendaria (+0,12)[cite: 2] + Seguros (+0,16)[cite: 2].
         * **KINTO Share + One (+1,00 pts):** Share al 100% (+0,70)[cite: 2] + Siniestros y Alistamiento One regularizados (+0,30)[cite: 2].
-        * **TPA Cuotas Pleno (+0,44 pts):** Supera el 14% de crecimiento de emisión vs Dic'25 (1,40 / 1,40 pts)[cite: 2, 6].
+        * **TPA Cuotas Pleno (+0,44 pts):** Supera el 14% de crecimiento de emisión vs Dic'25 (1,40 / 1,40 pts)[cite: 2].
         * **Posventa Campañas (+0,35 pts):** Airbags avanza al ritmo del plan hacia el 70% de cumplimiento (alcanza el escalón de 50% de pts = 0,70 pts)[cite: 2].
         * **Calidad SSI Ventas (+1,75 pts):** Las primeras 20 encuestas promotoras consecutivas logran mover el promedio YTD hacia el escalón intermedio[cite: 2].
         
@@ -318,8 +319,9 @@ with tab_plan:
         **Foco: Maduración Total de Compromisos**
         * **Posventa Campañas 70% (+0,35 pts consolidado):** Cumple con el vaticinio del 70% del target de Airbags, asegurando 0,70 / 1,40 pts[cite: 2].
         * **Calidad SSI al 95,6% (+2,70 pts):** Se completan las **35 encuestas promotoras**, llevando el SSI acumulado de Ventas a 95,6% (muy cerca del promedio Red 96,1%)[cite: 2]. Asegura escalón de puntaje sustancial en 1.1.1[cite: 2].
+        * **Servicios Conectados Blindado:** Sostenido de forma permanente por encima del 90% (1,70 pts asegurados)[cite: 2].
         * **Kinto One Corporativo (+1,40 pts):** Cierre y facturación de contratos corporativos de flota + encuestas NPS promotoras de empresas[cite: 2].
-        * **Todas las palancas tácticas sostenidas al 100%:** Servicios Conectados, TCFA, TPA y Salesforce consolidados[cite: 2].
+        * **Todas las palancas tácticas sostenidas al 100%:** TCFA, TPA y Salesforce consolidados[cite: 2].
         
         **Impacto en Ranking Red:**
         Autolux entra triunfalmente al **Top 10 superando a SENNA (74,74%)** y pelea mano a mano el **Puesto 5 con PRANA (76,91%)**[cite: 2].
@@ -375,12 +377,12 @@ with tab_plan:
     st.subheader("📋 Matriz Operativa de Compromisos Oficiales (Septiembre - Diciembre)")
     
     df_cronograma_detalle = pd.DataFrame({
-        "Área": ["Ventas / Calidad", "Posventa", "General", "TCFA", "TCFA", "KINTO", "KINTO", "TPA", "Ventas CRM"],
-        "Código": ["1.1.1", "3.5.2", "9.5.3", "7.5.5", "7.5.1 / 7.5.2", "5.5.1 / 5.5.3", "5.1.3 / 5.5.6", "4.5.4", "1.5.5"],
+        "Área": ["General", "Ventas / Calidad", "Posventa", "TCFA", "TCFA", "KINTO", "KINTO", "TPA", "Ventas CRM"],
+        "Código": ["9.5.3", "1.1.1", "3.5.2", "7.5.5", "7.5.1 / 7.5.2", "5.5.1 / 5.5.3", "5.1.3 / 5.5.6", "4.5.4", "1.5.5"],
         "Indicador Oficial": [
+            "Servicios Conectados (Full Onboarding App)",
             "SSI Ventas (Satisfacción de Entrega)",
             "Campañas Airbags (ABI 414/415)",
-            "Servicios Conectados (Full Onboarding)",
             "Crecimiento Cartera de Seguros",
             "Financiación y Seguros 0km",
             "Ocupación y Bookings Kinto Share",
@@ -388,11 +390,21 @@ with tab_plan:
             "Cuotas Emitidas TPA vs Dic'25",
             "Salesforce: Depuración Boletos y Listas"
         ],
-        "Base Julio": ["0,00 / 4,50 pts", "0,35 / 1,40 pts", "0,85 / 1,70 pts", "0,00 / 0,40 pts", "2,76 / 3,04 pts", "0,70 / 1,40 pts", "0,00 / 1,80 pts", "0,96 / 1,40 pts", "1,05 / 1,50 pts"],
+        "Base Julio": [
+            "0,85 / 1,70 pts (76% Real)",
+            "0,00 / 4,50 pts", 
+            "0,35 / 1,40 pts", 
+            "0,00 / 0,40 pts", 
+            "2,76 / 3,04 pts", 
+            "0,70 / 1,40 pts", 
+            "0,00 / 1,80 pts", 
+            "0,96 / 1,40 pts", 
+            "1,05 / 1,50 pts"
+        ],
         "Meta & Horizonte": [
+            "76% ➔ ≥90% (80-89% en Sep | ≥90% en Nov)",
             "35 promotoras ➔ 95,6% SSI (Diciembre)",
             "70% de objetivo ➔ 50% pts (0,70 pts - Diciembre)",
-            "≥90% Onboarding (Octubre / Noviembre)",
             "Saldo neto positivo >0% (Septiembre)",
             "100% de liquidaciones y seguros (Noviembre)",
             "Ocupación ≥70% sostenida (Septiembre)",
@@ -400,11 +412,11 @@ with tab_plan:
             "Crecimiento ≥14% (Octubre / Noviembre)",
             "Backlog saneado a cero (Septiembre)"
         ],
-        "Aporte DEP": ["+2,70 pts", "+0,35 pts", "+0,85 pts", "+0,40 pts", "+0,28 pts", "+0,70 pts", "+1,40 pts", "+0,44 pts", "+0,45 pts"],
+        "Aporte DEP": ["+0,85 pts", "+2,70 pts", "+0,35 pts", "+0,40 pts", "+0,28 pts", "+0,70 pts", "+1,40 pts", "+0,44 pts", "+0,45 pts"],
         "Responsable": [
+            "Romina R. / Entregas",
             "Alfredo Aguilar / Calidad",
             "Daniel Colque",
-            "Romina R. / Entregas",
             "Juan Vazquez",
             "Juan Vazquez",
             "Aaron Martearena",
@@ -413,14 +425,14 @@ with tab_plan:
             "Alfredo Aguilar"
         ],
         "Plan de Acción Táctico Innegociable": [
+            "1) 100% en entregas nuevas: vehículo no sale sin app My Toyota vinculada. 2) Operativo recupero: contactar base 2026 inactiva (~15-20 clientes) para quebrar la barrera del 90%.",
             "Asegurar 35 encuestas promotoras en entregas para alcanzar 95,6% de SSI y diluir desvíos pasados.",
             "Plan de citación proactiva para completar el 70% de las unidades afectadas con infladores ABI 414/415[cite: 2].",
-            "Protocolo de salón: vehículo no se retira sin app My Toyota instalada y validada (Meta ≥90%)[cite: 5].",
             "Control diario de renovaciones de pólizas para evitar fugas y garantizar saldo mensual positivo[cite: 2].",
             "Vincular crédito TCFA y seguro en cada unidad Hilux y Corolla Cross adjudicada o vendida[cite: 2].",
             "Volcar flota ociosa de Share a reemplazos de taller y convenios con empresas de la zona[cite: 2].",
             "Concretar cotización corporativa Kinto One y confirmar encuestas NPS con administradores de flota[cite: 2].",
-            "Cobranza intensiva de mora temprana (cuotas 2 a 6) para sostener emisión de cupones $\ge 14\%$[cite: 6].",
+            "Cobranza intensiva de mora temprana (cuotas 2 a 6) para sostener emisión de cupones $\ge 14\%$.",
             "Limpieza de boletos vencidos sin actividad comercial y carga al día en Salesforce[cite: 2]."
         ]
     })
