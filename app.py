@@ -252,16 +252,16 @@ with tab_calidad:
     st.plotly_chart(fig_pareto, use_container_width=True)
 
 # ==========================================
-# 4. PESTAÑA: PLAN DE ACCIÓN INTERACTIVO (CRONOGRAMA SEP / NOV / DIC CON FEEDBACK REAL)
+# 4. PESTAÑA: PLAN DE ACCIÓN INTERACTIVO (ESCENARIOS TÁCTICO / SÓLIDO / ÓPTIMO)
 # ==========================================
 with tab_plan:
-    st.header("🎯 Plan Estratégico Evolutivo: Cronograma de Cumplimiento")
+    st.header("🎯 Plan Estratégico: Escenarios de Mejora DEP")
     st.markdown("""
-    Este plan sincroniza los compromisos operativos oficiales con las curvas reales de maduración:
+    Este plan consolida los compromisos operativos oficiales distribuidos en 3 escenarios de avance:
     * **Servicios Conectados (Feedback Oficial):** Actualmente en **76%** (franja 50% de pts = 0,85 pts)[cite: 2]. El objetivo es **$\ge 90\%$ (1,70 pts plenos = +0,85 pts directos)**[cite: 2]. La estrategia combina **100% de efectividad en entregas nuevas** y el **recupero retroactivo de ~15-20 clientes entregados en 2026** para saltar de escalón rápidamente.
-    * **Posventa:** Vaticina alcanzar en **diciembre el 70% del target de campañas de Airbags (ABI 414/415)**, lo que asegura el **50% de los puntos DEP (0,70 pts = +0,35 pts netos)**[cite: 2].
-    * **Calidad y Ventas:** Ejecuta el operativo de **35 encuestas promotoras continuas (Septiembre a Diciembre)** para elevar el SSI de Ventas al **95,6%** (promedio Red 96,1%)[cite: 2].
-    * **Palancas Mensuales Inmediatas:** TCFA, KINTO Share, Cuotas TPA y Depuración Salesforce aportan puntos directos mes a mes[cite: 2].
+    * **Posventa:** Vaticina alcanzar el **70% del target de campañas de Airbags (ABI 414/415)**, lo que asegura el **50% de los puntos DEP (0,70 pts = +0,35 pts netos)**[cite: 2].
+    * **Calidad y Ventas:** Ejecuta el operativo de **35 encuestas promotoras continuas** para elevar el SSI de Ventas al **95,6%** (promedio Red 96,1%)[cite: 2].
+    * **Palancas Mensuales Inmediatas:** TCFA, KINTO Share, Cuotas TPA y Depuración Salesforce aportan puntos directos[cite: 2].
     """)
 
     # 1. Métricas de Impacto Global
@@ -269,24 +269,24 @@ with tab_plan:
     with c_p1:
         st.metric(label="📊 Base Julio (Real)", value="68,56%", delta="66,16 pts (Puesto 21)")
     with c_p2:
-        st.metric(label="🟢 Táctico (Septiembre)", value="70,86%", delta="+2,22 pts ➔ Puesto 17 🏆")
+        st.metric(label="🟢 Táctico", value="70,86%", delta="+2,22 pts ➔ Puesto 17 🏆")
     with c_p3:
-        st.metric(label="🟡 Sólido (Noviembre)", value="74,28%", delta="+5,52 pts ➔ Puesto 11 🌟")
+        st.metric(label="🟡 Sólido", value="74,28%", delta="+5,52 pts ➔ Puesto 11 🌟")
     with c_p4:
-        st.metric(label="🚀 Óptimo (Diciembre)", value="76,20%", delta="+7,37 pts ➔ Puesto 6 / Top 5 🏎️")
+        st.metric(label="🚀 Óptimo", value="76,20%", delta="+7,37 pts ➔ Puesto 6 / Top 5 🏎️")
 
     st.markdown("---")
 
-    # 2. Explicación Detallada de los 3 Escenarios Temporales
-    st.subheader("🔍 Desglose Explicativo de los 3 Horizontes Temporales")
+    # 2. Explicación Detallada de los 3 Escenarios
+    st.subheader("🔍 Desglose Explicativo de los 3 Escenarios")
     
     col_esc1, col_esc2, col_esc3 = st.columns(3)
     
     with col_esc1:
-        st.success("### 🟢 Septiembre: Táctico (Corto Plazo)\n**Meta: +2,22 pts ➔ 68,38 pts (70,86% - P17)**")
+        st.success("### 🟢 Táctico\n**Meta: +2,22 pts ➔ 68,38 pts (70,86% - P17)**")
         st.markdown("""
         **Foco: Victorias Rápidas Mensuales (Sin inercia anual)**
-        * **Servicios Conectados (+0,51 pts):** Pasa del 76% al escalón **80%-89% de Onboarding** (de 0,85 a 1,36 pts)[cite: 2] mediante 100% de efectividad en las entregas nuevas de septiembre.
+        * **Servicios Conectados (+0,51 pts):** Pasa del 76% al escalón **80%-89% de Onboarding** (de 0,85 a 1,36 pts)[cite: 2] mediante 100% de efectividad en las entregas nuevas.
         * **TCFA Cartera (+0,40 pts):** Cartera de Seguros (7.5.5)[cite: 2] revierte la fuga (-3,65%) pasando a saldo neto positivo (>0%).
         * **KINTO Share (+0,70 pts):** Ocupación $\ge 70\%$ y bookings al 100% (de 0,70 a 1,40 pts)[cite: 2].
         * **TPA Cuotas (+0,16 pts):** Freno a la mora temprana; escala a variación 10%-13,99% vs Dic'25 (de 0,96 a 1,12 pts)[cite: 2].
@@ -299,7 +299,7 @@ with tab_plan:
         """)
 
     with col_esc2:
-        st.info("### 🟡 Noviembre: Sólido (Mediano Plazo)\n**Meta: +5,52 pts ➔ 71,68 pts (74,28% - P11)**")
+        st.info("### 🟡 Sólido\n**Meta: +5,52 pts ➔ 71,68 pts (74,28% - P11)**")
         st.markdown("""
         **Foco: Consolidación y Primer Impacto de Encuestas**
         * **Servicios Conectados (+0,85 pts):** Se quiebra la barrera del **$\ge 90\%$ Full Onboarding** (1,70 / 1,70 pts)[cite: 2] sumando el 100% de entregas nuevas + campaña de recupero de clientes pasados.
@@ -314,7 +314,7 @@ with tab_plan:
         """)
 
     with col_esc3:
-        st.warning("### 🚀 Diciembre: Óptimo (Cierre Anual)\n**Meta: +7,37 pts ➔ 73,53 pts (76,20% - P6 / Top 5)**")
+        st.warning("### 🚀 Óptimo\n**Meta: +7,37 pts ➔ 73,53 pts (76,20% - P6 / Top 5)**")
         st.markdown("""
         **Foco: Maduración Total de Compromisos**
         * **Posventa Campañas 70% (+0,35 pts consolidado):** Cumple con el vaticinio del 70% del target de Airbags, asegurando 0,70 / 1,40 pts[cite: 2].
@@ -333,21 +333,21 @@ with tab_plan:
     col_gr1, col_gr2 = st.columns(2)
     
     with col_gr1:
-        hitos_temporales = ["Julio Real (P21)", "Septiembre (P17)", "Noviembre (P11)", "Diciembre (P6)", "SENNA (P10 - Top 10)", "PRANA (P5 - Top 5)"]
-        valores_hitos = [68.56, 70.86, 74.28, 76.20, 74.74, 76.91]
-        colores_hitos = ["#d62728", "#2ca02c", "#1f77b4", "#ff7f0e", "#5B9BD5", "#1F4E78"]
+        escenarios_labels = ["Julio Real (P21)", "Táctico (P17)", "Sólido (P11)", "Óptimo (P6)", "SENNA (P10 - Top 10)", "PRANA (P5 - Top 5)"]
+        valores_esc = [68.56, 70.86, 74.28, 76.20, 74.74, 76.91]
+        colores_esc = ["#d62728", "#2ca02c", "#1f77b4", "#ff7f0e", "#5B9BD5", "#1F4E78"]
         
         fig_cronograma = go.Figure()
         fig_cronograma.add_trace(go.Bar(
-            x=hitos_temporales, 
-            y=valores_hitos, 
-            marker_color=colores_hitos, 
-            text=[f"{v:.2f}%" for v in valores_hitos], 
+            x=escenarios_labels, 
+            y=valores_esc, 
+            marker_color=colores_esc, 
+            text=[f"{v:.2f}%" for v in valores_esc], 
             textposition="inside"
         ))
         fig_cronograma.add_hline(y=74.74, line_dash="dash", line_color="#5B9BD5", annotation_text="Umbral Top 10 SENNA (74,74%)", annotation_position="top left")
         fig_cronograma.update_layout(
-            title="<b>Curva de Avance Temporal DEP: Septiembre a Diciembre</b>",
+            title="<b>Proyección de Avance DEP por Escenarios</b>",
             yaxis=dict(title="Cumplimiento Global %", range=[60, 82]),
             margin=dict(t=60, b=40),
             height=430
@@ -355,26 +355,26 @@ with tab_plan:
         st.plotly_chart(fig_cronograma, use_container_width=True)
 
     with col_gr2:
-        pilares_dic = ["Calidad SSI (+2,70)", "Kinto One (+1,40)", "Serv. Conect. (+0,85)", "TCFA Pleno (+0,68)", "Salesforce (+0,45)", "TPA Cuotas (+0,44)", "Airbags 70% (+0,35)", "Ganancia Total"]
-        puntos_dic = [2.70, 1.40, 0.85, 0.68, 0.45, 0.44, 0.35, 7.37]
+        pilares_opt = ["Calidad SSI (+2,70)", "Kinto One (+1,40)", "Serv. Conect. (+0,85)", "TCFA Pleno (+0,68)", "Salesforce (+0,45)", "TPA Cuotas (+0,44)", "Airbags 70% (+0,35)", "Ganancia Total"]
+        puntos_opt = [2.70, 1.40, 0.85, 0.68, 0.45, 0.44, 0.35, 7.37]
         
-        fig_aportes_dic = go.Figure(go.Bar(
-            x=pilares_dic,
-            y=puntos_dic,
+        fig_aportes_opt = go.Figure(go.Bar(
+            x=pilares_opt,
+            y=puntos_opt,
             marker_color=["#27ae60", "#f39c12", "#00A86B", "#5B9BD5", "#e74c3c", "#9B59B6", "#1F4E78", "#2c3e50"],
-            text=[f"+{v:.2f}" for v in puntos_dic],
+            text=[f"+{v:.2f}" for v in puntos_opt],
             textposition="outside"
         ))
-        fig_aportes_dic.update_layout(
-            title="<b>Distribución de Puntos Netos Ganables a Diciembre</b>",
+        fig_aportes_opt.update_layout(
+            title="<b>Distribución de Puntos Netos Ganables (Escenario Óptimo)</b>",
             yaxis=dict(title="Puntos Directos DEP", range=[0, 8.5]),
             margin=dict(t=60, b=40),
             height=430
         )
-        st.plotly_chart(fig_aportes_dic, use_container_width=True)
+        st.plotly_chart(fig_aportes_opt, use_container_width=True)
 
-    # 4. Matriz Táctica de Ejecución Sincronizada
-    st.subheader("📋 Matriz Operativa de Compromisos Oficiales (Septiembre - Diciembre)")
+    # 4. Matriz Táctica de Ejecución
+    st.subheader("📋 Matriz Operativa de Compromisos Oficiales")
     
     df_cronograma_detalle = pd.DataFrame({
         "Área": ["General", "Ventas / Calidad", "Posventa", "TCFA", "TCFA", "KINTO", "KINTO", "TPA", "Ventas CRM"],
@@ -401,16 +401,16 @@ with tab_plan:
             "0,96 / 1,40 pts", 
             "1,05 / 1,50 pts"
         ],
-        "Meta & Horizonte": [
-            "76% ➔ ≥90% (80-89% en Sep | ≥90% en Nov)",
-            "35 promotoras ➔ 95,6% SSI (Diciembre)",
-            "70% de objetivo ➔ 50% pts (0,70 pts - Diciembre)",
-            "Saldo neto positivo >0% (Septiembre)",
-            "100% de liquidaciones y seguros (Noviembre)",
-            "Ocupación ≥70% sostenida (Septiembre)",
-            "Contrato corporativo cerrado (Diciembre)",
-            "Crecimiento ≥14% (Octubre / Noviembre)",
-            "Backlog saneado a cero (Septiembre)"
+        "Meta del Escenario": [
+            "76% ➔ ≥90% (80-89% Táctico | ≥90% Sólido)",
+            "35 promotoras ➔ 95,6% SSI (Óptimo)",
+            "70% de objetivo ➔ 50% pts (0,70 pts - Óptimo)",
+            "Saldo neto positivo >0% (Táctico)",
+            "100% de liquidaciones y seguros (Sólido)",
+            "Ocupación ≥70% sostenida (Táctico)",
+            "Contrato corporativo cerrado (Óptimo)",
+            "Crecimiento ≥14% (Sólido)",
+            "Backlog saneado a cero (Táctico)"
         ],
         "Aporte DEP": ["+0,85 pts", "+2,70 pts", "+0,35 pts", "+0,40 pts", "+0,28 pts", "+0,70 pts", "+1,40 pts", "+0,44 pts", "+0,45 pts"],
         "Responsable": [
@@ -424,7 +424,7 @@ with tab_plan:
             "Adrián Di Costanzo",
             "Alfredo Aguilar"
         ],
-        "Plan de Acción Táctico Innegociable": [
+        "Plan de Acción Innegociable": [
             "1) 100% en entregas nuevas: vehículo no sale sin app My Toyota vinculada. 2) Operativo recupero: contactar base 2026 inactiva (~15-20 clientes) para quebrar la barrera del 90%.",
             "Asegurar 35 encuestas promotoras en entregas para alcanzar 95,6% de SSI y diluir desvíos pasados.",
             "Plan de citación proactiva para completar el 70% de las unidades afectadas con infladores ABI 414/415[cite: 2].",
