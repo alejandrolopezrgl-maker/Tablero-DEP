@@ -12,13 +12,12 @@ st.set_page_config(
 st.title("🏆 Autolux S.A. - Tablero Estratégico DEP 2026")
 st.caption("Programa de Excelencia de Concesionarios Toyota (DEP) | Auditoría Oficial Septiembre & Comparativo P5/P10")
 
-# --- NAVEGACIÓN PRINCIPAL ---
+# --- NAVEGACIÓN PRINCIPAL (4 PESTAÑAS ESTRATÉGICAS) ---
 tabs = st.tabs([
     "📊 Comparativo Puesto 5 y 10",
     "📈 Evolución Histórica (Jul-Ago-Sep)",
     "🔍 Proyección vs. Real Septiembre",
-    "🎯 Plan Táctico de Cierre Q4",
-    "🔧 Avance Posventa Octubre"
+    "🎯 Plan Táctico de Cierre Q4"
 ])
 
 # ==========================================
@@ -27,7 +26,7 @@ tabs = st.tabs([
 with tabs[0]:
     st.subheader("Dashboard Comparativo: Autolux vs. Puesto 10 y Puesto 5 (Septiembre 2026)")
     
-    # Métricas principales
+    # Métricas principales de brecha
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Autolux Actual", "68,05 pts (70,52%)", "Puesto #26")
     c2.metric("Puesto 10 (Prana)", "75,18 pts (77,91%)", "Línea Top 10")
@@ -66,7 +65,7 @@ with tabs[0]:
           - **General:** Autolux (13,27 pts) supera a Prana (12,66 pts).
           - **TPA:** Autolux (5,88 pts) supera a Prana (5,80 pts).
         * **El 100% del déficit (-7,13 pts) está en Ventas Convencionales:**
-          - Prana suma **19,83 pts** en Ventas frente a los **9,63 pts** de Autolux (diferencia de **10,20 pts**).
+          - Prana suma **19,83 pts** en Ventas frente a los **9,63 pts** de Autolux (diferencia de **-10,20 puntos**).
         """)
 
     st.write("#### Comparativa Detallada por Área (Puntos Reales DEP Septiembre)")
@@ -189,79 +188,4 @@ with tabs[2]:
         {"Indicador": "6.1.1 SSI Usados", "Proyectado": "+0,60 pts", "Real TASA": "+0,60 pts", "Estado": "Exacto", "Comentario": "75% capturado"},
         {"Indicador": "1.5.6 CRM Tiempos de Respuesta", "Proyectado": "+1,50 pts", "Real TASA": "0,00 pts", "Estado": "Diferido", "Comentario": "TASA tomó acumulado 4,3 hs"},
         {"Indicador": "Área KINTO", "Proyectado": "+1,66 pts", "Real TASA": "+0,65 pts", "Estado": "Parcial", "Comentario": "TASA computó 3,15 pts en vez de 4,16"},
-        {"Indicador": "TPA (Cuotas y Caída)", "Proyectado": "0,00 pts", "Real TASA": "-1,96 pts", "Estado": "Retroceso", "Comentario": "Caída temprana cayó a 0,50 pts"},
-    ])
-    st.dataframe(df_detalle_comp, use_container_width=True)
-
-# ==========================================
-# 4. PLAN TÁCTICO DE CIERRE Q4
-# ==========================================
-with tabs[3]:
-    st.subheader("🎯 Plan Táctico Q4: Cómo cerrar los 7,13 Puntos hacia el Top 10")
-    
-    st.markdown("""
-    ### La Brecha al Top 10: -7,13 Puntos
-    Para alcanzar a Prana (Puesto 10 con 75,18 pts) antes del 31 de diciembre, la estrategia ejecutiva se apoya en 4 palancas:
-    
-    1. **CRM Acumulado en menos de 2 hs (Recuperación: +1,50 pts):**
-       * Sostener la guardia comercial activa en octubre, noviembre y diciembre para bajar el promedio general YTD y destrabar el 1.5.6.
-    2. **Campañas de Recall Airbags al 70% (Recuperación: +0,70 pts):**
-       * Pasar de 241 a 388 infladores en Posventa. Faltan 147 vehículos para cobrar el 75% del ítem 3.5.2.
-    3. **Calidad 0km: Sorteos y Tasa de Respuesta (Recuperación: +2,25 pts):**
-       * El SSI puro cerró en 95,0 (a solo 0,6 pts del target). Al ampliar la muestra de encuestas, se salta del 25% al 75% en SSI.
-    4. **Contención de Caída Temprana en TPA (Recuperación: +1,30 pts):**
-       * Revertir la penalización en 4.5.3 acompañando al ahorrista en las primeras 3 cuotas.
-    5. **KINTO One Corporativo (Recuperación: +1,20 pts):**
-       * Subir contratos corporativos activos a plataforma para cobrar el indicador 5.5.6.
-    """)
-
-# ==========================================
-# 5. AVANCE POSVENTA OCTUBRE (DATOS REALES)
-# ==========================================
-with tabs[4]:
-    st.subheader("🔧 Avance Operativo de Posventa (Corte al 26 de Octubre 2026)")
-    st.caption("Consolidado de cumplimiento en Repuestos, Servicios y Total por Sucursal.")
-
-    df_pv = pd.DataFrame([
-        {"Sucursal": "Lux Salta", "Pct_Repuestos": 66.4, "Pct_Servicios": 72.2, "Pct_Total": 69.30, "Color": "#e63946"},
-        {"Sucursal": "Lux Jujuy", "Pct_Repuestos": 70.3, "Pct_Servicios": 63.2, "Pct_Total": 66.75, "Color": "#2a9d8f"},
-        {"Sucursal": "Lux Tartagal", "Pct_Repuestos": 50.5, "Pct_Servicios": 70.5, "Pct_Total": 60.50, "Color": "#1d3557"},
-        {"Sucursal": "Lux Las Lajitas", "Pct_Repuestos": 41.4, "Pct_Servicios": 62.3, "Pct_Total": 51.85, "Color": "#e9c46a"},
-    ])
-
-    col_pv1, col_pv2 = st.columns(2)
-    with col_pv1:
-        st.write("#### Cumplimiento Total por Sucursal al 26 de Octubre (%)")
-        fig_pv = px.bar(
-            df_pv, x="Sucursal", y="Pct_Total", text="Pct_Total",
-            color="Sucursal", color_discrete_map={r["Sucursal"]: r["Color"] for _, r in df_pv.iterrows()}
-        )
-        fig_pv.update_traces(
-            texttemplate="%{text:.2f}%", textposition="inside",
-            textfont=dict(size=14, color="white", family="Arial Black")
-        )
-        fig_pv.update_layout(showlegend=False, yaxis_range=[0, 100], yaxis_title="% Cumplimiento")
-        st.plotly_chart(fig_pv, use_container_width=True)
-
-    with col_pv2:
-        st.write("#### Desglose Repuestos vs. Servicios")
-        df_melt_pv = df_pv.melt(
-            id_vars=["Sucursal"], value_vars=["Pct_Repuestos", "Pct_Servicios"],
-            var_name="Rubro", value_name="Cumplimiento"
-        )
-        fig_grouped = px.bar(
-            df_melt_pv, x="Sucursal", y="Cumplimiento", color="Rubro", barmode="group",
-            text="Cumplimiento", color_discrete_map={"Pct_Repuestos": "#3498db", "Pct_Servicios": "#e67e22"}
-        )
-        fig_grouped.update_traces(texttemplate="%{text:.1f}%", textposition="inside")
-        fig_grouped.update_layout(yaxis_range=[0, 100])
-        st.plotly_chart(fig_grouped, use_container_width=True)
-
-    st.dataframe(
-        df_pv[["Sucursal", "Pct_Repuestos", "Pct_Servicios", "Pct_Total"]].style.format({
-            "Pct_Repuestos": "{:.1f}%",
-            "Pct_Servicios": "{:.1f}%",
-            "Pct_Total": "{:.2f}%"
-        }),
-        use_container_width=True
-    )
+        {"Indicador": "TPA (Cuotas y Caída)", "Proyectado": "0,00 pts", "Real TASA
