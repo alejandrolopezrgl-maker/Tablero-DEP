@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 
 st.set_page_config(
     page_title="Autolux - Tablero Estratégico DEP", 
@@ -44,11 +43,16 @@ with tabs[0]:
             {"Entidad": "Puesto 5 (Sakura)", "Puntos": 78.47, "Puesto": "#5", "Color": "#2ecc71"}
         ])
         fig_bench_total = px.bar(
-            df_bench_total, x="Entidad", y="Puntos", text="Puntos",
-            color="Entidad", color_discrete_map={r["Entidad"]: r["Color"] for _, r in df_bench_total.iterrows()}
+            df_bench_total, 
+            x="Entidad", 
+            y="Puntos", 
+            text="Puntos",
+            color="Entidad", 
+            color_discrete_map={r["Entidad"]: r["Color"] for _, r in df_bench_total.iterrows()}
         )
         fig_bench_total.update_traces(
-            texttemplate="%{text:.2f} pts", textposition="inside",
+            texttemplate="%{text:.2f} pts", 
+            textposition="inside",
             textfont=dict(size=14, color="white", family="Arial Black")
         )
         fig_bench_total.update_layout(showlegend=False, yaxis_range=[50, 85], yaxis_title="Puntos DEP")
@@ -70,12 +74,12 @@ with tabs[0]:
 
     st.write("#### Comparativa Detallada por Área (Puntos Reales DEP Septiembre)")
     df_areas_gap = pd.DataFrame([
-        {"Área": "Posventa", "Ponderado": 27.0, "Autolux": 25.95, "Puesto 10 (Prana)": 25.86, "Gap vs P10": +0.09, "Puesto 5 (Sakura)": 25.81, "Gap vs P5": +0.14},
-        {"Área": "General", "Ponderado": 16.5, "Autolux": 13.27, "Puesto 10 (Prana)": 12.66, "Gap vs P10": +0.62, "Puesto 5 (Sakura)": 14.12, "Gap vs P5": -0.85},
-        {"Área": "Usados", "Ponderado": 6.0, "Autolux": 5.00, "Puesto 10 (Prana)": 4.72, "Gap vs P10": +0.28, "Puesto 5 (Sakura)": 4.40, "Gap vs P5": +0.60},
-        {"Área": "KINTO", "Ponderado": 6.0, "Autolux": 3.15, "Puesto 10 (Prana)": 2.35, "Gap vs P10": +0.80, "Puesto 5 (Sakura)": 3.96, "Gap vs P5": -0.81},
-        {"Área": "TCFA (Financiera)", "Ponderado": 4.0, "Autolux": 3.32, "Puesto 10 (Prana)": 2.12, "Gap vs P10": +1.20, "Puesto 5 (Sakura)": 2.52, "Gap vs P5": +0.80},
-        {"Área": "Toyota Plan (TPA)", "Ponderado": 9.0, "Autolux": 5.88, "Puesto 10 (Prana)": 5.80, "Gap vs P10": +0.08, "Puesto 5 (Sakura)": 8.60, "Gap vs P5": -2.72},
+        {"Área": "Posventa", "Ponderado": 27.0, "Autolux": 25.95, "Puesto 10 (Prana)": 25.86, "Gap vs P10": 0.09, "Puesto 5 (Sakura)": 25.81, "Gap vs P5": 0.14},
+        {"Área": "General", "Ponderado": 16.5, "Autolux": 13.27, "Puesto 10 (Prana)": 12.66, "Gap vs P10": 0.62, "Puesto 5 (Sakura)": 14.12, "Gap vs P5": -0.85},
+        {"Área": "Usados", "Ponderado": 6.0, "Autolux": 5.00, "Puesto 10 (Prana)": 4.72, "Gap vs P10": 0.28, "Puesto 5 (Sakura)": 4.40, "Gap vs P5": 0.60},
+        {"Área": "KINTO", "Ponderado": 6.0, "Autolux": 3.15, "Puesto 10 (Prana)": 2.35, "Gap vs P10": 0.80, "Puesto 5 (Sakura)": 3.96, "Gap vs P5": -0.81},
+        {"Área": "TCFA (Financiera)", "Ponderado": 4.0, "Autolux": 3.32, "Puesto 10 (Prana)": 2.12, "Gap vs P10": 1.20, "Puesto 5 (Sakura)": 2.52, "Gap vs P5": 0.80},
+        {"Área": "Toyota Plan (TPA)", "Ponderado": 9.0, "Autolux": 5.88, "Puesto 10 (Prana)": 5.80, "Gap vs P10": 0.08, "Puesto 5 (Sakura)": 8.60, "Gap vs P5": -2.72},
         {"Área": "ESG", "Ponderado": 1.0, "Autolux": 0.36, "Puesto 10 (Prana)": 0.36, "Gap vs P10": 0.00, "Puesto 5 (Sakura)": 0.64, "Gap vs P5": -0.28},
         {"Área": "Ventas Especiales", "Ponderado": 5.0, "Autolux": 1.50, "Puesto 10 (Prana)": 1.50, "Gap vs P10": 0.00, "Puesto 5 (Sakura)": 4.30, "Gap vs P5": -2.80},
         {"Área": "Ventas Convencionales", "Ponderado": 22.0, "Autolux": 9.63, "Puesto 10 (Prana)": 19.83, "Gap vs P10": -10.20, "Puesto 5 (Sakura)": 14.13, "Gap vs P5": -4.50},
@@ -109,11 +113,16 @@ with tabs[1]:
     with col_h1:
         st.write("#### Evolución de Puntos Acumulados")
         fig_bar_pts = px.bar(
-            df_hist, x="Mes", y="Puntos", text="Puntos",
-            color="Mes", color_discrete_map={r["Mes"]: r["Color"] for _, r in df_hist.iterrows()}
+            df_hist, 
+            x="Mes", 
+            y="Puntos", 
+            text="Puntos",
+            color="Mes", 
+            color_discrete_map={r["Mes"]: r["Color"] for _, r in df_hist.iterrows()}
         )
         fig_bar_pts.update_traces(
-            texttemplate="%{text:.2f} pts", textposition="inside",
+            texttemplate="%{text:.2f} pts", 
+            textposition="inside",
             textfont=dict(size=14, color="white", family="Arial Black")
         )
         fig_bar_pts.update_layout(showlegend=False, yaxis_range=[55, 75], yaxis_title="Puntos DEP")
@@ -122,11 +131,16 @@ with tabs[1]:
     with col_h2:
         st.write("#### Evolución del Puesto en el Ranking Nacional")
         fig_bar_rk = px.bar(
-            df_hist, x="Mes", y="Ranking", text="Ranking",
-            color="Mes", color_discrete_map={r["Mes"]: r["Color"] for _, r in df_hist.iterrows()}
+            df_hist, 
+            x="Mes", 
+            y="Ranking", 
+            text="Ranking",
+            color="Mes", 
+            color_discrete_map={r["Mes"]: r["Color"] for _, r in df_hist.iterrows()}
         )
         fig_bar_rk.update_traces(
-            texttemplate="Puesto #%{text}", textposition="inside",
+            texttemplate="Puesto #%{text}", 
+            textposition="inside",
             textfont=dict(size=14, color="white", family="Arial Black")
         )
         fig_bar_rk.update_layout(showlegend=False, yaxis_range=[0, 30], yaxis_title="Posición (Menor es mejor)")
@@ -161,8 +175,12 @@ with tabs[2]:
             {"Concepto": "Real TASA Sept.", "Puntos": 68.05, "Tipo": "Real"}
         ])
         fig_proy = px.bar(
-            df_comp_proy, x="Concepto", y="Puntos", text="Puntos",
-            color="Tipo", color_discrete_map={"Histórico": "#95a5a6", "Proyectado": "#f39c12", "Real": "#2ecc71"}
+            df_comp_proy, 
+            x="Concepto", 
+            y="Puntos", 
+            text="Puntos",
+            color="Tipo", 
+            color_discrete_map={"Histórico": "#95a5a6", "Proyectado": "#f39c12", "Real": "#2ecc71"}
         )
         fig_proy.update_traces(texttemplate="%{text:.2f} pts", textposition="inside")
         fig_proy.update_layout(yaxis_range=[60, 75], showlegend=False)
@@ -183,9 +201,69 @@ with tabs[2]:
 
     st.write("#### Balance Comparativo Ítem por Ítem")
     df_detalle_comp = pd.DataFrame([
-        {"Indicador": "1.4.1 / 9.4.1 Facilities", "Proyectado": "+1,35 pts", "Real TASA": "+1,35 pts", "Estado": "Exacto", "Comentario": "Puntaje perfecto 100%"},
-        {"Indicador": "1.5.3 Patentes vs. Ventas", "Proyectado": "+1,05 pts", "Real TASA": "+1,05 pts", "Estado": "Exacto", "Comentario": "90,9% cumplido"},
-        {"Indicador": "6.1.1 SSI Usados", "Proyectado": "+0,60 pts", "Real TASA": "+0,60 pts", "Estado": "Exacto", "Comentario": "75% capturado"},
-        {"Indicador": "1.5.6 CRM Tiempos de Respuesta", "Proyectado": "+1,50 pts", "Real TASA": "0,00 pts", "Estado": "Diferido", "Comentario": "TASA tomó acumulado 4,3 hs"},
-        {"Indicador": "Área KINTO", "Proyectado": "+1,66 pts", "Real TASA": "+0,65 pts", "Estado": "Parcial", "Comentario": "TASA computó 3,15 pts en vez de 4,16"},
-        {"Indicador": "TPA (Cuotas y Caída)", "Proyectado": "0,00 pts", "Real TASA
+        {
+            "Indicador": "1.4.1 / 9.4.1 Facilities", 
+            "Proyectado": "+1,35 pts", 
+            "Real TASA": "+1,35 pts", 
+            "Estado": "Exacto", 
+            "Comentario": "Puntaje perfecto 100%"
+        },
+        {
+            "Indicador": "1.5.3 Patentes vs. Ventas", 
+            "Proyectado": "+1,05 pts", 
+            "Real TASA": "+1,05 pts", 
+            "Estado": "Exacto", 
+            "Comentario": "90,9% cumplido"
+        },
+        {
+            "Indicador": "6.1.1 SSI Usados", 
+            "Proyectado": "+0,60 pts", 
+            "Real TASA": "+0,60 pts", 
+            "Estado": "Exacto", 
+            "Comentario": "75% capturado"
+        },
+        {
+            "Indicador": "1.5.6 CRM Tiempos de Respuesta", 
+            "Proyectado": "+1,50 pts", 
+            "Real TASA": "0,00 pts", 
+            "Estado": "Diferido", 
+            "Comentario": "TASA tomó acumulado 4,3 hs"
+        },
+        {
+            "Indicador": "Área KINTO", 
+            "Proyectado": "+1,66 pts", 
+            "Real TASA": "+0,65 pts", 
+            "Estado": "Parcial", 
+            "Comentario": "TASA computó 3,15 pts en vez de 4,16"
+        },
+        {
+            "Indicador": "TPA (Cuotas y Caída)", 
+            "Proyectado": "0,00 pts", 
+            "Real TASA": "-1,96 pts", 
+            "Estado": "Retroceso", 
+            "Comentario": "Caída temprana cayó a 0,50 pts"
+        }
+    ])
+    st.dataframe(df_detalle_comp, use_container_width=True)
+
+# ==========================================
+# 4. PLAN TÁCTICO DE CIERRE Q4
+# ==========================================
+with tabs[3]:
+    st.subheader("🎯 Plan Táctico Q4: Cómo cerrar los 7,13 Puntos hacia el Top 10")
+    
+    st.markdown("""
+    ### La Brecha al Top 10: -7,13 Puntos
+    Para alcanzar a Prana (Puesto 10 con 75,18 pts) antes del 31 de diciembre, la estrategia ejecutiva se apoya en 4 palancas:
+    
+    1. **CRM Acumulado en menos de 2 hs (Recuperación: +1,50 pts):**
+       * Sostener la guardia comercial activa en octubre, noviembre y diciembre para bajar el promedio general YTD y destrabar el 1.5.6.
+    2. **Campañas de Recall Airbags al 70% (Recuperación: +0,70 pts):**
+       * Pasar de 241 a 388 infladores en Posventa. Faltan 147 vehículos para cobrar el 75% del ítem 3.5.2.
+    3. **Calidad 0km: Sorteos y Tasa de Respuesta (Recuperación: +2,25 pts):**
+       * El SSI puro cerró en 95,0 (a solo 0,6 pts del target). Al ampliar la muestra de encuestas, se salta del 25% al 75% en SSI.
+    4. **Contención de Caída Temprana en TPA (Recuperación: +1,30 pts):**
+       * Revertir la penalización en 4.5.3 acompañando al ahorrista en las primeras 3 cuotas.
+    5. **KINTO One Corporativo (Recuperación: +1,20 pts):**
+       * Subir contratos corporativos activos a plataforma para cobrar el indicador 5.5.6.
+    """)
