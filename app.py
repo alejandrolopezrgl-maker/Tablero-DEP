@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 
 st.set_page_config(
     page_title="Autolux - Tablero Estratégico DEP", 
@@ -9,13 +10,14 @@ st.set_page_config(
 )
 
 st.title("🏆 Autolux S.A. - Tablero Estratégico DEP 2026")
-st.caption("Programa de Excelencia de Concesionarios Toyota (DEP) | Auditoría Oficial Septiembre & Comparativo P5/P10")
+st.caption("Programa de Excelencia de Concesionarios Toyota (DEP) | Auditoría Oficial Septiembre & Proyección Octubre")
 
-# --- NAVEGACIÓN PRINCIPAL (4 PESTAÑAS ESTRATÉGICAS) ---
+# --- NAVEGACIÓN PRINCIPAL (5 PESTAÑAS ESTRATÉGICAS) ---
 tabs = st.tabs([
     "📊 Comparativo Puesto 5 y 10",
-    "📈 Evolución Histórica (Jul-Ago-Sep)",
-    "🔍 Proyección vs. Real Septiembre",
+    "🔮 Proyección Octubre 2026",
+    "📈 Evolución Histórica (Jul-Ago-Sep-Oct)",
+    "🔍 Auditoría Real Septiembre",
     "🎯 Plan Táctico de Cierre Q4"
 ])
 
@@ -23,7 +25,7 @@ tabs = st.tabs([
 # 1. COMPARATIVO PUESTO 5 Y 10
 # ==========================================
 with tabs[0]:
-    st.subheader("Dashboard Comparativo: Autolux vs. Puesto 10 y Puesto 5 (Septiembre 2026)")
+    st.subheader("Dashboard Comparativo: Autolux vs. Puesto 10 y Puesto 5 (Cierre Septiembre)")
     
     # Métricas principales de brecha
     c1, c2, c3, c4 = st.columns(4)
@@ -97,16 +99,87 @@ with tabs[0]:
     )
 
 # ==========================================
-# 2. EVOLUCIÓN HISTÓRICA Y GAPS (BARRAS)
+# 2. PROYECCIÓN OCTUBRE 2026
 # ==========================================
 with tabs[1]:
-    st.subheader("📈 Evolución Histórica: Julio, Agosto y Septiembre 2026")
-    st.caption("Análisis comparativo de los últimos tres meses de medición oficial TASA mediante gráficos de barras.")
+    st.subheader("🔮 Proyección DEP Octubre 2026 (Consolidado Drive)")
+    st.caption("Simulación proyectada basada en los planes de acción de Octubre: recuperación de Ventas, TPA, TCFA y General.")
+
+    co1, co2, co3, co4 = st.columns(4)
+    co1.metric("Score Septiembre Real", "68,05 pts (70,5%)", "Puesto #26")
+    co2.metric("Score Octubre Proyectado", "71,64 pts (74,2%)", "+3,58 pts netos", delta_color="normal")
+    co3.metric("Posición Proyectada", "Puesto #16", "+10 puestos de ascenso", delta_color="normal")
+    co4.metric("Brecha Restante Top 10", "-3,54 pts", "Meta Puesto 10 (75,18 pts)", delta_color="inverse")
+
+    st.markdown("---")
+
+    col_po1, col_po2 = st.columns(2)
+    with col_po1:
+        st.write("#### Cascada de Crecimiento para Octubre (+3,58 pts)")
+        fig_oct_waterfall = go.Figure(go.Waterfall(
+            name="Octubre",
+            orientation="v",
+            measure=["absolute", "relative", "relative", "relative", "relative", "total"],
+            x=["Septiembre Real", "Ventas (+2,03)", "TPA (+1,30)", "General (+0,18)", "TCFA (+0,08)", "Octubre Proy."],
+            textposition="outside",
+            text=["68.05", "+2.03", "+1.30", "+0.18", "+0.08", "71.64"],
+            y=[68.05, 2.03, 1.30, 0.18, 0.08, 0],
+            connector={"line": {"color": "#7f8c8d"}},
+            decreasing={"marker": {"color": "#e74c3c"}},
+            increasing={"marker": {"color": "#2ecc71"}},
+            totals={"marker": {"color": "#3498db"}}
+        ))
+        fig_oct_waterfall.update_layout(yaxis_title="Puntos DEP", yaxis_range=[65, 74])
+        st.plotly_chart(fig_oct_waterfall, use_container_width=True)
+
+    with col_po2:
+        st.write("#### Palancas Específicas de Octubre")
+        st.markdown("""
+        * **Ventas (+2,03 pts):**
+          - **SSI 0km (1.1.1):** Pasa de 1,13 a **2,25 pts (+1,12 pts)** alcanzando el escalón del 50% gracias a la mayor tasa de respuesta.
+          - **Salesforce (1.5.5):** Pasa de 0,60 a **1,50 pts plenos (+0,90 pts)** al normalizar la lista de espera y legajos.
+        * **Toyota Plan (+1,30 pts):**
+          - **Caída temprana (4.5.3):** Recupera de 0,50 a **1,80 pts (+1,30 pts)** conteniendo al suscriptor en cuotas 1 a 3.
+        * **General (+0,18 pts):**
+          - **Capacitación (9.3.2):** Cierre de cursos e inducciones en plataforma Toyota.
+        * **TCFA (+0,08 pts):**
+          - **Fidelidad y Seguros (7.5.4):** Sostenimiento de pólizas y retención en renovación.
+        """)
+
+    st.write("#### Comparativo de Cierre: Septiembre vs. Octubre por Área")
+    df_oct_areas = pd.DataFrame([
+        {"Área": "Posventa", "Ponderado": 27.0, "Septiembre Real": 25.95, "Octubre Proy.": 25.95, "Variación": 0.00, "Estado": "Sostenido (Top 11)"},
+        {"Área": "General", "Ponderado": 16.5, "Septiembre Real": 13.27, "Octubre Proy.": 13.45, "Variación": 0.18, "Estado": "Mejora Capacitación"},
+        {"Área": "Ventas Convencionales", "Ponderado": 22.0, "Septiembre Real": 9.63, "Octubre Proy.": 11.65, "Variación": 2.03, "Estado": "Recuperación SSI y Salesforce"},
+        {"Área": "Toyota Plan (TPA)", "Ponderado": 9.0, "Septiembre Real": 5.88, "Octubre Proy.": 7.18, "Variación": 1.30, "Estado": "Recuperación Caída Temprana"},
+        {"Área": "Usados", "Ponderado": 6.0, "Septiembre Real": 5.00, "Octubre Proy.": 5.00, "Variación": 0.00, "Estado": "Consolidado 83,3%"},
+        {"Área": "TCFA (Financiera)", "Ponderado": 4.0, "Septiembre Real": 3.32, "Octubre Proy.": 3.40, "Variación": 0.08, "Estado": "Retención de Seguros"},
+        {"Área": "KINTO", "Ponderado": 6.0, "Septiembre Real": 3.15, "Octubre Proy.": 3.15, "Variación": 0.00, "Estado": "Sostenido 52,5%"},
+        {"Área": "Ventas Especiales", "Ponderado": 5.0, "Septiembre Real": 1.50, "Octubre Proy.": 1.50, "Variación": 0.00, "Estado": "Sostenido"},
+        {"Área": "ESG", "Ponderado": 1.0, "Septiembre Real": 0.36, "Octubre Proy.": 0.36, "Variación": 0.00, "Estado": "Sostenido"},
+    ])
+    st.dataframe(
+        df_oct_areas.style.format({
+            "Ponderado": "{:.1f}",
+            "Septiembre Real": "{:.2f} pts",
+            "Octubre Proy.": "{:.2f} pts",
+            "Variación": "{:+.2f} pts"
+        }),
+        use_container_width=True
+    )
+
+# ==========================================
+# 3. EVOLUCIÓN HISTÓRICA (JUL-AGO-SEP-OCT)
+# ==========================================
+with tabs[2]:
+    st.subheader("📈 Evolución Histórica: Julio, Agosto, Septiembre y Octubre Proyectado")
+    st.caption("Trayectoria mensual del puntaje DEP, porcentaje de cumplimiento y ranking nacional.")
 
     df_hist = pd.DataFrame([
-        {"Mes": "Julio 2026", "Puntos": 65.90, "Cumplimiento": 68.29, "Ranking": 25, "Color": "#95a5a6"},
-        {"Mes": "Agosto 2026", "Puntos": 66.81, "Cumplimiento": 69.24, "Ranking": 24, "Color": "#3498db"},
-        {"Mes": "Septiembre 2026", "Puntos": 68.05, "Cumplimiento": 70.52, "Ranking": 26, "Color": "#2ecc71"}
+        {"Mes": "Julio 2026", "Puntos": 65.90, "Cumplimiento": 68.29, "Ranking": 25, "Tipo": "Real", "Color": "#95a5a6"},
+        {"Mes": "Agosto 2026", "Puntos": 66.81, "Cumplimiento": 69.24, "Ranking": 24, "Tipo": "Real", "Color": "#3498db"},
+        {"Mes": "Septiembre 2026", "Puntos": 68.05, "Cumplimiento": 70.52, "Ranking": 26, "Tipo": "Real", "Color": "#2980b9"},
+        {"Mes": "Octubre 2026 (Proy.)", "Puntos": 71.64, "Cumplimiento": 74.24, "Ranking": 16, "Tipo": "Proyectado", "Color": "#2ecc71"}
     ])
 
     col_h1, col_h2 = st.columns(2)
@@ -125,7 +198,7 @@ with tabs[1]:
             textposition="inside",
             textfont=dict(size=14, color="white", family="Arial Black")
         )
-        fig_bar_pts.update_layout(showlegend=False, yaxis_range=[55, 75], yaxis_title="Puntos DEP")
+        fig_bar_pts.update_layout(showlegend=False, yaxis_range=[55, 78], yaxis_title="Puntos DEP")
         st.plotly_chart(fig_bar_pts, use_container_width=True)
 
     with col_h2:
@@ -147,123 +220,62 @@ with tabs[1]:
         st.plotly_chart(fig_bar_rk, use_container_width=True)
 
     st.info("""
-    **La Paradoja de Septiembre Explicada:**
-    * **Autolux creció:** De Julio (65,90 pts) a Septiembre (68,05 pts) se sumaron **+2,15 puntos netos** y el cumplimiento subió del **68,29% al 70,52%**.
-    * **Por qué bajamos del puesto 24 al 26:** En el cierre del 3° trimestre, competidores directos sumaron puntaje masivo en Facilities y Caída Temprana (Autos del Sur +7,98 pts, Treos Norte +7,54 pts, Mendez +7,34 pts, Bosetti +2,43 pts). Esto elevó la exigencia de la tabla media.
+    **Conclusión del Tramo Octubre:**
+    * El salto proyectado para Octubre (+3,58 pts netos) colocaría a Autolux en **71,64 puntos (Puesto 16)**, revirtiendo la caída de septiembre y dejando al concesionario a solo **3,54 puntos del Top 10**.
     """)
 
 # ==========================================
-# 3. PROYECCIÓN VS. REAL SEPTIEMBRE
-# ==========================================
-with tabs[2]:
-    st.subheader("🔍 Comparativa: Proyección de Septiembre vs. Real TASA")
-    st.caption("Auditoría de desvíos entre los números proyectados y los resultados oficiales emitidos por Toyota.")
-
-    cp1, cp2, cp3 = st.columns(3)
-    cp1.metric("Score Proyectado (Prudente)", "69,67 pts", "Puesto #15 estimado")
-    cp2.metric("Score Real Oficial TASA", "68,05 pts", "Puesto #26 real")
-    cp3.metric("Desvío Neto", "-1,62 pts", "Diferencia de cómputo", delta_color="inverse")
-
-    st.markdown("---")
-
-    col_p1, col_p2 = st.columns(2)
-    with col_p1:
-        st.write("#### Comparativa Gráfica de Puntos")
-        df_comp_proy = pd.DataFrame([
-            {"Concepto": "Agosto Base", "Puntos": 66.81, "Tipo": "Histórico"},
-            {"Concepto": "Proyección Sept.", "Puntos": 69.67, "Tipo": "Proyectado"},
-            {"Concepto": "Real TASA Sept.", "Puntos": 68.05, "Tipo": "Real"}
-        ])
-        fig_proy = px.bar(
-            df_comp_proy, 
-            x="Concepto", 
-            y="Puntos", 
-            text="Puntos",
-            color="Tipo", 
-            color_discrete_map={"Histórico": "#95a5a6", "Proyectado": "#f39c12", "Real": "#2ecc71"}
-        )
-        fig_proy.update_traces(texttemplate="%{text:.2f} pts", textposition="inside")
-        fig_proy.update_layout(yaxis_range=[60, 75], showlegend=False)
-        st.plotly_chart(fig_proy, use_container_width=True)
-
-    with col_p2:
-        st.write("#### Causas de las Diferencias Detectadas")
-        st.markdown("""
-        1. **Aciertos Exactos de la Proyección:**
-           * **Facilities (9.4.1):** Se proyectaron 4,50 pts y se confirmaron **4,50 pts (+1,35 pts plenos)**.
-           * **Patentamientos vs. Ventas (1.5.3):** Se proyectaron 2,10 pts y se confirmaron **2,10 pts (+1,05 pts plenos)**.
-           * **Calidad Usados (6.1.1):** Se proyectaron 0,60 pts y se confirmaron **0,60 pts plenos**.
-        2. **Desvíos no imputados por TASA:**
-           * **CRM (1.5.6):** Se proyectaron +1,50 pts por cerrar el mes en 1,9 hs, pero TASA computó el promedio acumulado YTD en **4,3 hs**, manteniendo **0,00 pts**.
-           * **KINTO (5.5.6):** La planilla interna indicaba 4,16 pts, pero TASA computó **3,15 pts** (dejó en 0 el PN Corporativo One). Desvío: **-1,01 pts**.
-           * **Toyota Plan (TPA):** Retroceso en Caída Temprana (4.5.3 de 1,80 a 0,50 pts) y Cuotas emitidas (-0,61 pts).
-        """)
-
-    st.write("#### Balance Comparativo Ítem por Ítem")
-    df_detalle_comp = pd.DataFrame([
-        {
-            "Indicador": "1.4.1 / 9.4.1 Facilities", 
-            "Proyectado": "+1,35 pts", 
-            "Real TASA": "+1,35 pts", 
-            "Estado": "Exacto", 
-            "Comentario": "Puntaje perfecto 100%"
-        },
-        {
-            "Indicador": "1.5.3 Patentes vs. Ventas", 
-            "Proyectado": "+1,05 pts", 
-            "Real TASA": "+1,05 pts", 
-            "Estado": "Exacto", 
-            "Comentario": "90,9% cumplido"
-        },
-        {
-            "Indicador": "6.1.1 SSI Usados", 
-            "Proyectado": "+0,60 pts", 
-            "Real TASA": "+0,60 pts", 
-            "Estado": "Exacto", 
-            "Comentario": "75% capturado"
-        },
-        {
-            "Indicador": "1.5.6 CRM Tiempos de Respuesta", 
-            "Proyectado": "+1,50 pts", 
-            "Real TASA": "0,00 pts", 
-            "Estado": "Diferido", 
-            "Comentario": "TASA tomó acumulado 4,3 hs"
-        },
-        {
-            "Indicador": "Área KINTO", 
-            "Proyectado": "+1,66 pts", 
-            "Real TASA": "+0,65 pts", 
-            "Estado": "Parcial", 
-            "Comentario": "TASA computó 3,15 pts en vez de 4,16"
-        },
-        {
-            "Indicador": "TPA (Cuotas y Caída)", 
-            "Proyectado": "0,00 pts", 
-            "Real TASA": "-1,96 pts", 
-            "Estado": "Retroceso", 
-            "Comentario": "Caída temprana cayó a 0,50 pts"
-        }
-    ])
-    st.dataframe(df_detalle_comp, use_container_width=True)
-
-# ==========================================
-# 4. PLAN TÁCTICO DE CIERRE Q4
+# 4. AUDITORÍA REAL SEPTIEMBRE
 # ==========================================
 with tabs[3]:
-    st.subheader("🎯 Plan Táctico Q4: Cómo cerrar los 7,13 Puntos hacia el Top 10")
+    st.subheader("🔍 Auditoría Oficial Septiembre: Análisis de Desvíos TASA")
+    st.caption("Detalle de las diferencias entre el cierre proyectado preliminar y el resultado emitido en la Circular DES026-26.")
+
+    col_au1, col_au2 = st.columns(2)
+    with col_au1:
+        st.write("#### Balance de Puntos: Proyectado vs. Real")
+        df_audit = pd.DataFrame([
+            {"Concepto": "Agosto Base", "Puntos": 66.81, "Tipo": "Histórico"},
+            {"Concepto": "Proyección Preliminar", "Puntos": 69.67, "Tipo": "Proyectado"},
+            {"Concepto": "Real Oficial TASA", "Puntos": 68.05, "Tipo": "Real"}
+        ])
+        fig_audit = px.bar(
+            df_audit, x="Concepto", y="Puntos", text="Puntos",
+            color="Tipo", color_discrete_map={"Histórico": "#95a5a6", "Proyectado": "#f39c12", "Real": "#2ecc71"}
+        )
+        fig_audit.update_traces(texttemplate="%{text:.2f} pts", textposition="inside")
+        fig_audit.update_layout(yaxis_range=[60, 75], showlegend=False)
+        st.plotly_chart(fig_audit, use_container_width=True)
+
+    with col_au2:
+        st.write("#### Factores Clave del Cómputo TASA")
+        st.markdown("""
+        * **Aciertos confirmados:**
+          - **Facilities (9.4.1):** 4,50 pts plenos (+1,35 pts).
+          - **Patentamientos (1.5.3):** 2,10 pts plenos (+1,05 pts) con 90,9% de efectividad.
+          - **Calidad Usados (6.1.1):** 0,60 pts capturados.
+        * **Desvíos no imputados en el acumulado:**
+          - **CRM (1.5.6):** Se cerró en 1,9 hs en septiembre, pero TASA computó el acumulado anual en 4,3 hs (0,00 pts).
+          - **KINTO (5.5.6):** TASA computó 3,15 pts oficiales (sin el PN Corporativo One).
+          - **TPA:** Impacto de Caída Temprana (0,50 pts) y Cuotas (-1,96 pts netos en el área).
+        """)
+
+# ==========================================
+# 5. PLAN TÁCTICO DE CIERRE Q4
+# ==========================================
+with tabs[4]:
+    st.subheader("🎯 Plan Táctico Q4: Cómo cerrar la brecha hacia el Top 10")
     
     st.markdown("""
-    ### La Brecha al Top 10: -7,13 Puntos
-    Para alcanzar a Prana (Puesto 10 con 75,18 pts) antes del 31 de diciembre, la estrategia ejecutiva se apoya en 4 palancas:
+    ### La Ruta Definitiva para superar a Prana (75,18 pts)
+    Partiendo de los **71,64 puntos proyectados en Octubre**, solo se necesitan **+3,54 puntos** en Noviembre y Diciembre:
     
     1. **CRM Acumulado en menos de 2 hs (Recuperación: +1,50 pts):**
-       * Sostener la guardia comercial activa en octubre, noviembre y diciembre para bajar el promedio general YTD y destrabar el 1.5.6.
+       * Sostener la guardia comercial activa para bajar el promedio YTD y destrabar el 1.5.6.
     2. **Campañas de Recall Airbags al 70% (Recuperación: +0,70 pts):**
        * Pasar de 241 a 388 infladores en Posventa. Faltan 147 vehículos para cobrar el 75% del ítem 3.5.2.
-    3. **Calidad 0km: Sorteos y Tasa de Respuesta (Recuperación: +2,25 pts):**
-       * El SSI puro cerró en 95,0 (a solo 0,6 pts del target). Al ampliar la muestra de encuestas, se salta del 25% al 75% en SSI.
-    4. **Contención de Caída Temprana en TPA (Recuperación: +1,30 pts):**
-       * Revertir la penalización en 4.5.3 acompañando al ahorrista en las primeras 3 cuotas.
-    5. **KINTO One Corporativo (Recuperación: +1,20 pts):**
-       * Subir contratos corporativos activos a plataforma para cobrar el indicador 5.5.6.
+    3. **KINTO One Corporativo (Recuperación: +1,20 pts):**
+       * Subir los contratos corporativos vigentes a la intranet de KINTO para cobrar el indicador 5.5.6.
+    4. **Sorteos y Dilución en Encuestas 0km (Recuperación: +1,13 pts):**
+       * Alcanzar el escalón del 75% o 100% en SSI (1.1.1).
     """)
